@@ -23,3 +23,4 @@ include = ["forensix*"]
 
 [tool.setuptools.package-data]
 "forensix.audio.aasist" = ["LICENSE"]
+"forensix.audio.rawgat_st" = ["LICENSE"]

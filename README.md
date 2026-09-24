@@ -18,7 +18,7 @@ Weights are cached in `~/.cache/forensix` (override with `FORENSIX_CACHE`) and c
 ```python
 import forensix
 
-forensix.list_models()                 # ['aasist', 'aasist-l']
+forensix.list_models()                 # ['aasist', 'aasist-l', 'rawgat-st']
 forensix.list_models("audio")
 forensix.info("aasist")                # license, source, paper, description
 
@@ -37,12 +37,16 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 
 ## Models
 
-| Family | Name | License | Params | Trained on | Published EER | ForensiX eval |
-|---|---|---|---|---|---|---|
-| audio | `aasist` | MIT | 297K | ASVspoof 2019 LA | 0.83% (2019 LA eval) | pending |
-| audio | `aasist-l` | MIT | 85K | ASVspoof 2019 LA | 0.99% (2019 LA eval) | pending |
+| Family | Name | License | Params | Trained on | Published EER (full LA eval) | Subset EER, upstream scores | Subset EER, ForensiX |
+|---|---|---|---|---|---|---|---|
+| audio | `aasist` | MIT | 297K | ASVspoof 2019 LA | 0.83% | n/a | pending |
+| audio | `aasist-l` | MIT | 85K | ASVspoof 2019 LA | 0.99% | n/a | pending |
+| audio | `rawgat-st` | MIT | 441K | ASVspoof 2019 LA | 1.06% | 1.30% | pending |
+
+"Subset EER, upstream scores" is computed from the score files the authors released, restricted to our evaluation subset (see [Evaluation](#evaluation)). It's the number our own run should reproduce. With 1,000 bona fide trials the subset EER moves in 0.1-point steps.
 
 - **AASIST**: Jung et al., *AASIST: Audio Anti-Spoofing using Integrated Spectro-Temporal Graph Attention Networks*, ICASSP 2022 ([paper](https://arxiv.org/abs/2110.01200), [code](https://github.com/clovaai/aasist)). The network code is vendored verbatim and its outputs match the upstream evaluation pipeline exactly. The upstream MIT license is in [forensix/audio/aasist/LICENSE](forensix/audio/aasist/LICENSE).
+- **RawGAT-ST**: Tak et al., *End-to-End Spectro-Temporal Graph Attention Networks for Speaker Verification Anti-Spoofing and Speech Deepfake Detection*, ASVspoof 2021 Workshop ([paper](https://arxiv.org/abs/2107.12710), [code](https://github.com/eurecom-asp/RawGAT-ST-antispoofing)). This is the element-wise-multiplication fusion variant (`RawGAT_ST_mul`), the paper's best model. The network code is vendored verbatim and its outputs match upstream exactly. The license is in [forensix/audio/rawgat_st/LICENSE](forensix/audio/rawgat_st/LICENSE).
 
 ## Evaluation
 
@@ -54,7 +58,7 @@ Each model is evaluated on a fixed, reproducible subset of a benchmark with a co
 python scripts/eval_asvspoof2019_la.py \
     --protocol LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt \
     --audio-dir LA/ASVspoof2019_LA_eval/flac \
-    --models aasist aasist-l --out results/asvspoof2019_la_subset.json
+    --models aasist aasist-l rawgat-st --out results/asvspoof2019_la_subset.json
 ```
 
 The dataset is not downloaded by this repo. Run the script wherever the data lives (e.g. Google Colab).
@@ -71,7 +75,8 @@ forensix/
 └── audio/
     ├── io.py          # loading, mono, resampling
     ├── detector.py    # AudioDetector base (windowing, batching)
-    └── aasist/        # AASIST, AASIST-L
+    ├── aasist/        # AASIST, AASIST-L
+    └── rawgat_st/     # RawGAT-ST
 scripts/
 ├── download_weights.py
 └── eval_asvspoof2019_la.py

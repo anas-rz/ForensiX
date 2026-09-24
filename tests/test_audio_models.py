@@ -7,14 +7,14 @@ import torch
 import forensix
 
 
-@pytest.fixture(scope="module", params=["aasist", "aasist-l"])
+@pytest.fixture(scope="module", params=forensix.list_models("audio"))
 def detector(request):
     return forensix.load(request.param)
 
 
 def test_weights_load_and_param_count(detector):
     n = sum(p.numel() for p in detector.network.parameters())
-    assert n == {"aasist": 297_866, "aasist-l": 85_306}[detector.name]
+    assert n == {"aasist": 297_866, "aasist-l": 85_306, "rawgat-st": 440_810}[detector.name]
     assert not detector.network.training
 
 
