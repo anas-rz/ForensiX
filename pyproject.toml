@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "forensix"
+version = "0.1.0"
+description = "A PyTorch model zoo for deepfake detection and multimodal media forensics"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0",
+    "numpy",
+    "scipy",
+    "soundfile>=0.12",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ["forensix*"]
+
+[tool.setuptools.package-data]
+"forensix.audio.aasist" = ["LICENSE"]
