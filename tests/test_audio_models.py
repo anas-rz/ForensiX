@@ -1,4 +1,9 @@
-"""Tests that need the pretrained weights (downloaded on first run)."""
+"""Tests that need the pretrained weights (downloaded on first run).
+
+The 316M-parameter XLS-R models (1.2 GB each) only run with FORENSIX_TEST_HEAVY=1.
+"""
+
+import os
 
 import numpy as np
 import pytest
@@ -6,15 +11,31 @@ import torch
 
 import forensix
 
+HEAVY = {"xlsr-aasist", "xlsr-aasist-df"}
+MODELS = [
+    pytest.param(m, marks=pytest.mark.skipif(
+        m in HEAVY and not os.environ.get("FORENSIX_TEST_HEAVY"),
+        reason="large model; set FORENSIX_TEST_HEAVY=1",
+    ))
+    for m in forensix.list_models("audio")
+]
+PARAMS = {
+    "aasist": 297_866,
+    "aasist-l": 85_306,
+    "rawgat-st": 440_810,
+    "xlsr-aasist": 315_884_938,
+    "xlsr-aasist-df": 315_884_938,
+}
 
-@pytest.fixture(scope="module", params=forensix.list_models("audio"))
+
+@pytest.fixture(scope="module", params=MODELS)
 def detector(request):
     return forensix.load(request.param)
 
 
 def test_weights_load_and_param_count(detector):
     n = sum(p.numel() for p in detector.network.parameters())
-    assert n == {"aasist": 297_866, "aasist-l": 85_306, "rawgat-st": 440_810}[detector.name]
+    assert n == PARAMS[detector.name]
     assert not detector.network.training
 
 

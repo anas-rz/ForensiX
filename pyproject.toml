@@ -13,6 +13,7 @@ dependencies = [
     "numpy",
     "scipy",
     "soundfile>=0.12",
+    "transformers>=4.40",
 ]
 
 [project.optional-dependencies]
@@ -24,3 +25,4 @@ include = ["forensix*"]
 [tool.setuptools.package-data]
 "forensix.audio.aasist" = ["LICENSE"]
 "forensix.audio.rawgat_st" = ["LICENSE"]
+"forensix.audio.xlsr_aasist" = ["LICENSE"]

@@ -50,3 +50,37 @@ def test_eer():
     assert compute_eer([0.1, 0.2], [0.9, 0.8])[0] == 1.0
     eer, _ = compute_eer([0.9, 0.3], [0.1, 0.5])
     assert eer == pytest.approx(0.5)
+
+
+def test_convert_fairseq_state_dict():
+    from forensix.audio.xlsr_aasist import convert_fairseq_state_dict
+
+    p = "ssl_model.model."
+    fairseq = {
+        "module.pos_S": 0,
+        p + "feature_extractor.conv_layers.3.0.weight": 1,
+        p + "feature_extractor.conv_layers.3.2.1.bias": 2,
+        p + "layer_norm.weight": 3,
+        p + "post_extract_proj.bias": 4,
+        p + "encoder.pos_conv.0.weight_g": 5,
+        p + "encoder.layers.7.self_attn.q_proj.weight": 6,
+        p + "encoder.layers.7.self_attn_layer_norm.bias": 7,
+        p + "encoder.layers.7.fc2.weight": 8,
+        p + "encoder.layers.7.final_layer_norm.weight": 9,
+        p + "encoder.layer_norm.bias": 10,
+        p + "quantizer.vars": 11,
+        p + "mask_emb": 12,
+    }
+    assert convert_fairseq_state_dict(fairseq) == {
+        "pos_S": 0,
+        p + "feature_extractor.conv_layers.3.conv.weight": 1,
+        p + "feature_extractor.conv_layers.3.layer_norm.bias": 2,
+        p + "feature_projection.layer_norm.weight": 3,
+        p + "feature_projection.projection.bias": 4,
+        p + "encoder.pos_conv_embed.conv.parametrizations.weight.original0": 5,
+        p + "encoder.layers.7.attention.q_proj.weight": 6,
+        p + "encoder.layers.7.layer_norm.bias": 7,
+        p + "encoder.layers.7.feed_forward.output_dense.weight": 8,
+        p + "encoder.layers.7.final_layer_norm.weight": 9,
+        p + "encoder.layer_norm.bias": 10,
+    }
