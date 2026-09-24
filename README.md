@@ -90,6 +90,26 @@ python scripts/eval_asvspoof2019_la.py \
 
 The dataset is not downloaded by this repo. Run the script wherever the data lives (e.g. Google Colab).
 
+**Image: ForensiX image eval set (self-built, commercially usable).** No existing real-vs-generated benchmark we found has a commercially usable license: most use real photos from ImageNet, FFHQ or LAION, or carry NC terms. So ForensiX builds its own set:
+
+- **Real:** 1,000 Open Images V7 validation photos listed as [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). They are stored as the original JPEG bytes, and credits go in `ATTRIBUTION.csv`.
+- **Fake:** 250 images from each of four generators whose licenses allow commercial use of outputs: SDXL and PixArt-Σ (OpenRAIL++-M), Kandinsky 2.2 and FLUX.1-schnell (Apache-2.0). Revisions are pinned.
+- **Matched content:** each fake is prompted with the [Localized Narratives](https://google.github.io/localized-narratives/) caption (CC BY 4.0) of a real photo in the set and generated at that photo's aspect ratio.
+- **Format bias:** the reals are JPEG and the fakes PNG, and detectors can learn "not JPEG means fake". So every fake also gets a JPEG copy at the reals' median quality (estimated from their quantization tables). The `jpeg` condition is the headline number, and `png` is reported alongside.
+
+None of these generators is in the training data of the current image models, except where noted in the Models table.
+
+```bash
+# on a GPU runtime (e.g. Colab); resumable if the session drops
+pip install -e ".[eval]"
+huggingface-cli login     # FLUX.1-schnell requires accepting its terms once
+python scripts/build_image_eval_set.py --out /content/forensix_image_eval
+python scripts/eval_image.py --data /content/forensix_image_eval --models univfd \
+    --device cuda --out results/image_eval.json --scores-out results/image_scores.csv
+```
+
+The eval script reports ROC-AUC, AP and balanced accuracy at the default threshold, pooled and per generator, for both conditions. On GPUs with less than 24 GB (e.g. a Colab T4), pipelines run with CPU offload. FLUX.1-schnell is the slowest there, and a T4 has no bfloat16, which FLUX may need. Use `--generators` to build the set in parts, or build FLUX on a larger GPU.
+
 ## Verification
 
 Every model is checked against its upstream implementation before it's added.
@@ -112,7 +132,7 @@ forensix/
 ├── __init__.py        # load / download / list_models / info
 ├── registry.py        # ModelSpec + registry
 ├── hub.py             # weight download, cache, checksum
-├── metrics.py         # EER (ASVspoof-compatible)
+├── metrics.py         # EER (ASVspoof-compatible), ROC-AUC, AP
 ├── types.py           # Prediction
 ├── audio/
 │   ├── io.py          # loading, mono, resampling
@@ -129,7 +149,9 @@ forensix/
     └── univfd/        # UnivFD
 scripts/
 ├── download_weights.py
-└── eval_asvspoof2019_la.py
+├── eval_asvspoof2019_la.py
+├── build_image_eval_set.py
+└── eval_image.py
 ```
 
 ## Adding a model

@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.stats import rankdata
 
 
 def compute_eer(fake_scores: np.ndarray, real_scores: np.ndarray) -> tuple[float, float]:
@@ -27,3 +28,39 @@ def compute_eer(fake_scores: np.ndarray, real_scores: np.ndarray) -> tuple[float
 
     i = int(np.argmin(np.abs(frr - far)))
     return float((frr[i] + far[i]) / 2), float(-thresholds[i])
+
+
+def _binary_scores(fake_scores, real_scores) -> tuple[np.ndarray, np.ndarray]:
+    fake_scores = np.asarray(fake_scores, dtype=np.float64)
+    real_scores = np.asarray(real_scores, dtype=np.float64)
+    if fake_scores.size == 0 or real_scores.size == 0:
+        raise ValueError("Need at least one fake and one real score")
+    scores = np.concatenate([fake_scores, real_scores])
+    is_fake = np.concatenate([np.ones(fake_scores.size), np.zeros(real_scores.size)])
+    return scores, is_fake
+
+
+def roc_auc(fake_scores, real_scores) -> float:
+    """Area under the ROC curve (fake = positive), ties counted as 1/2."""
+    scores, is_fake = _binary_scores(fake_scores, real_scores)
+    # Mann-Whitney U with average ranks for ties
+    ranks = rankdata(scores)
+    n_fake = is_fake.sum()
+    n_real = is_fake.size - n_fake
+    u = ranks[is_fake == 1].sum() - n_fake * (n_fake + 1) / 2
+    return float(u / (n_fake * n_real))
+
+
+def average_precision(fake_scores, real_scores) -> float:
+    """Average precision (fake = positive), same definition as scikit-learn:
+    sum over thresholds of (recall_n - recall_{n-1}) * precision_n."""
+    scores, is_fake = _binary_scores(fake_scores, real_scores)
+    order = np.argsort(-scores, kind="mergesort")
+    scores, is_fake = scores[order], is_fake[order]
+    # one point per distinct threshold
+    last = np.r_[np.diff(scores) != 0, True]
+    tp = np.cumsum(is_fake)[last]
+    fp = np.cumsum(1 - is_fake)[last]
+    precision = tp / (tp + fp)
+    recall = tp / is_fake.sum()
+    return float(np.sum(np.diff(np.r_[0, recall]) * precision))

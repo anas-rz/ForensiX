@@ -21,6 +21,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
+# building the image evaluation set (scripts/build_image_eval_set.py)
+eval = ["diffusers", "accelerate", "sentencepiece", "protobuf"]
 
 [tool.setuptools.packages.find]
 include = ["forensix*"]

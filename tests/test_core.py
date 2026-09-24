@@ -90,3 +90,14 @@ def test_split_windows_without_padding_keeps_short_clips_whole():
     x = np.arange(3, dtype=np.float32)
     assert split_windows(x, 7, pad_short=False).tolist() == [[0, 1, 2]]
     assert split_windows(np.arange(10, dtype=np.float32), 4, pad_short=False).shape == (3, 4)
+
+
+def test_roc_auc_and_average_precision():
+    from forensix.metrics import average_precision, roc_auc
+
+    assert roc_auc([0.9, 0.8], [0.1, 0.2]) == 1.0
+    assert roc_auc([0.5], [0.5]) == 0.5
+    assert roc_auc([0.9, 0.3], [0.5, 0.1]) == 0.75
+    assert average_precision([0.9, 0.8], [0.1]) == 1.0
+    # ranking: fake 0.9, real 0.5, fake 0.3 -> AP = 0.5*1 + 0.5*(2/3)
+    assert average_precision([0.9, 0.3], [0.5]) == pytest.approx(0.5 + 1 / 3)
