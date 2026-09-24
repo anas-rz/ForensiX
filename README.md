@@ -33,6 +33,16 @@ detector.predict_batch(["a.wav", "b.wav"])
 forensix.load("aasist", weights_path="my_finetuned.pth")  # your own checkpoint
 ```
 
+Image detectors work the same way:
+
+```python
+detector = forensix.load("univfd")
+detector.predict("photo.png").fake_prob     # path, PIL image or (H, W, 3) uint8 array
+detector.predict_batch(["a.jpg", "b.png"])
+```
+
+Images are never resized or re-encoded before the model's own preprocessing, because the traces these detectors look for don't survive resampling or compression.
+
 Audio is converted to mono and resampled to 16 kHz. Clips longer than the model window (4.04 s) are split into windows and the window scores are averaged. `fake_prob` is the softmax output and is **not calibrated**, so pick thresholds per model.
 
 ## Models
@@ -47,6 +57,14 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 | audio | `nes2net-x` | Apache-2.0 | 316M (512K back end) | ASVspoof 2019 LA | 1.49% (2021 DF), 1.88% (2021 LA) | n/a | pending |
 | audio | `nes2net-x-itw` | Apache-2.0 | 316M (512K back end) | ASVspoof 2019 LA | 5.15% (In-the-Wild) | n/a | pending |
 
+**Image**
+
+| Family | Name | License | Params | Trained on | Published result | ForensiX eval |
+|---|---|---|---|---|---|---|
+| image | `univfd` | MIT† | 304M (769 trainable) | ProGAN vs real (ForenSynths) | 93.4 mAP, 81.4% mean accuracy over 19 test sets (ProGAN + 18 unseen GAN, diffusion and other generators) | pending |
+
+† The code and linear head are MIT. The frozen backbone is OpenAI CLIP ViT-L/14 (MIT license). OpenAI's model card lists "any deployed use case" as out of scope, which is an intended-use statement rather than a license term.
+
 \* The code is MIT. The weights are released by the authors through a link in the MIT repo's README, but they are hosted outside the repo and have no separate license of their own.
 
 "Subset EER, upstream scores" is computed from the score files the authors released, restricted to our evaluation subset (see [Evaluation](#evaluation)). It's the number our own run should reproduce. With 1,000 bona fide trials the subset EER moves in 0.1-point steps.
@@ -55,6 +73,7 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 - **RawGAT-ST**: Tak et al., *End-to-End Spectro-Temporal Graph Attention Networks for Speaker Verification Anti-Spoofing and Speech Deepfake Detection*, ASVspoof 2021 Workshop ([paper](https://arxiv.org/abs/2107.12710), [code](https://github.com/eurecom-asp/RawGAT-ST-antispoofing)). This is the element-wise-multiplication fusion variant (`RawGAT_ST_mul`), the paper's best model. The network code is vendored verbatim and its outputs match upstream exactly. The license is in [forensix/audio/rawgat_st/LICENSE](forensix/audio/rawgat_st/LICENSE).
 - **XLS-R + AASIST**: Tak et al., *Automatic speaker verification spoofing and deepfake detection using wav2vec 2.0 and data augmentation*, Odyssey 2022 ([paper](https://arxiv.org/abs/2202.12233), [code](https://github.com/TakHemlata/SSL_Anti-spoofing)). A wav2vec 2.0 XLS-R 300M front end (Apache-2.0) fine-tuned jointly with an AASIST back end, with RawBoost augmentation. `xlsr-aasist` is the LA-track checkpoint and `xlsr-aasist-df` the DF-track one; the DF one is the better choice for real-world, compressed deepfakes. Upstream depends on fairseq. ForensiX runs the front end with Hugging Face `transformers` and converts the checkpoint on load; the back end is vendored verbatim. Its outputs match the fairseq implementation (see [Verification](#verification)). The weights (1.2 GB each) are hosted on the authors' Google Drive, and inference takes about 1.3 s per 4 s window on CPU, so use a GPU. The license is in [forensix/audio/xlsr_aasist/LICENSE](forensix/audio/xlsr_aasist/LICENSE).
 - **Nes2Net-X**: Liu et al., *Nes2Net: A Lightweight Nested Architecture for Foundation Model Driven Speech Anti-spoofing*, IEEE T-IFS 2025 ([paper](https://arxiv.org/abs/2504.05657), [code](https://github.com/Liu-Tianchi/Nes2Net_ASVspoof_ITW)). A 512K-parameter nested Res2Net back end on the same XLS-R front end as XLS-R + AASIST (the shared HF port lives in [forensix/audio/xlsr.py](forensix/audio/xlsr.py)). `nes2net-x` is the ASVspoof 2021 checkpoint (an average of 5 epochs) and scores 4 s windows. `nes2net-x-itw` is trained with validation augmentation for out-of-domain audio and scores whole utterances; clips over 30 s are split into 30 s chunks. It is the best choice for real-world audio. The upstream README releases the code and models under Apache-2.0 and welcomes commercial use. The repo has no LICENSE file, so ForensiX ships the Apache-2.0 text in [forensix/audio/nes2net_x/LICENSE](forensix/audio/nes2net_x/LICENSE), with our changes noted in the file header.
+- **UnivFD**: Ojha et al., *Towards Universal Fake Image Detectors that Generalize Across Generative Models*, CVPR 2023 ([paper](https://arxiv.org/abs/2302.10174), [code](https://github.com/WisconsinAIVision/UniversalFakeDetect)). A linear classifier on frozen CLIP ViT-L/14 image embeddings. Following upstream evaluation, it scores the central 224×224 crop without resizing; smaller images are zero-padded. The backbone is loaded from Hugging Face `openai/clip-vit-large-patch14` at a pinned revision and shared with other CLIP-based detectors ([forensix/image/clip.py](forensix/image/clip.py)).
 
 ## Evaluation
 
@@ -84,6 +103,7 @@ Every model is checked against its upstream implementation before it's added.
 | `nes2net-x`, `nes2net-x-itw` | HF front end vs upstream fairseq, both checkpoints, 4 s batches and whole utterances of 0.5–6 s | max logit diff 3e-5 |
 | `nes2net-x` | upstream released scores + 2021 DF keys | 1.49% (2021 DF): matches paper |
 | `nes2net-x-itw` | In-the-Wild EER | not checked: needs the dataset's labels |
+| `univfd` | ForensiX (HF CLIP) vs upstream (OpenAI `clip` package, official ViT-L-14.pt) on PNG/JPEG/grayscale images of 180×150 to 1024×768 | max fake_prob diff 1.1e-6 |
 
 ## Structure
 
@@ -94,14 +114,19 @@ forensix/
 ├── hub.py             # weight download, cache, checksum
 ├── metrics.py         # EER (ASVspoof-compatible)
 ├── types.py           # Prediction
-└── audio/
-    ├── io.py          # loading, mono, resampling
-    ├── detector.py    # AudioDetector base (windowing, batching)
-    ├── xlsr.py        # shared XLS-R front end (HF) + fairseq checkpoint converter
-    ├── aasist/        # AASIST, AASIST-L
-    ├── nes2net_x/     # Nes2Net-X (2021, In-the-Wild)
-    ├── rawgat_st/     # RawGAT-ST
-    └── xlsr_aasist/   # XLS-R + AASIST (LA, DF)
+├── audio/
+│   ├── io.py          # loading, mono, resampling
+│   ├── detector.py    # AudioDetector base (windowing, batching)
+│   ├── xlsr.py        # shared XLS-R front end (HF) + fairseq checkpoint converter
+│   ├── aasist/        # AASIST, AASIST-L
+│   ├── nes2net_x/     # Nes2Net-X (2021, In-the-Wild)
+│   ├── rawgat_st/     # RawGAT-ST
+│   └── xlsr_aasist/   # XLS-R + AASIST (LA, DF)
+└── image/
+    ├── io.py          # image loading (RGB, no resizing)
+    ├── detector.py    # ImageDetector base (batching)
+    ├── clip.py        # shared OpenAI CLIP ViT-L/14 backbone (HF)
+    └── univfd/        # UnivFD
 scripts/
 ├── download_weights.py
 └── eval_asvspoof2019_la.py

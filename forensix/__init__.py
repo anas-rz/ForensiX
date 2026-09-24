@@ -1,14 +1,14 @@
 """ForensiX: a model zoo for deepfake detection.
 
     import forensix
-    forensix.list_models()              # ['aasist', 'aasist-l']
+    forensix.list_models()              # ['aasist', ..., 'univfd']
     detector = forensix.load("aasist")  # downloads weights on first use
     detector.predict("clip.wav")        # Prediction(fake_prob=..., ...)
 """
 
 from pathlib import Path
 
-from forensix import audio  # noqa: F401  (registers audio models)
+from forensix import audio, image  # noqa: F401  (registers models)
 from forensix.hub import cache_dir, fetch
 from forensix.registry import ModelSpec, get_spec, list_models
 from forensix.types import Prediction
@@ -30,8 +30,14 @@ def info(name: str) -> ModelSpec:
 
 
 def download(name: str, force: bool = False) -> Path | None:
-    """Download (and checksum) a model's pretrained weights into the cache."""
+    """Download (and checksum) a model's pretrained weights into the cache.
+
+    Returns the path to the model's own weights; shared backbones listed in
+    ``extra_weights`` are fetched too.
+    """
     spec = get_spec(name)
+    for extra in spec.extra_weights:
+        fetch(extra, force=force)
     return fetch(spec.weights, force=force) if spec.weights else None
 
 

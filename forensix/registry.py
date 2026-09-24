@@ -16,6 +16,8 @@ class ModelSpec:
     source: str
     paper: str
     description: str
+    # other files the builder fetches itself, e.g. a shared pretrained backbone
+    extra_weights: tuple[WeightFile, ...] = ()
 
 
 _REGISTRY: dict[str, ModelSpec] = {}

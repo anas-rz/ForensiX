@@ -10,6 +10,9 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "torch>=2.0",
+    "torchvision",
+    "pillow",
+    "safetensors",
     "numpy",
     "scipy",
     "soundfile>=0.12",
@@ -27,3 +30,4 @@ include = ["forensix*"]
 "forensix.audio.rawgat_st" = ["LICENSE"]
 "forensix.audio.xlsr_aasist" = ["LICENSE"]
 "forensix.audio.nes2net_x" = ["LICENSE"]
+"forensix.image.univfd" = ["LICENSE"]
