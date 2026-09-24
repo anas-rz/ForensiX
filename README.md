@@ -42,8 +42,10 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 | audio | `aasist` | MIT | 297K | ASVspoof 2019 LA | 0.83% (2019 LA eval) | n/a | pending |
 | audio | `aasist-l` | MIT | 85K | ASVspoof 2019 LA | 0.99% (2019 LA eval) | n/a | pending |
 | audio | `rawgat-st` | MIT | 441K | ASVspoof 2019 LA | 1.06% (2019 LA eval) | 1.30% | pending |
-| audio | `xlsr-aasist` | MIT | 316M | ASVspoof 2019 LA | 0.82% (2021 LA eval) | n/a | pending |
-| audio | `xlsr-aasist-df` | MIT | 316M | ASVspoof 2019 LA | 2.85% (2021 DF eval) | n/a | pending |
+| audio | `xlsr-aasist` | MIT* | 316M | ASVspoof 2019 LA | 0.82% (2021 LA eval) | n/a | pending |
+| audio | `xlsr-aasist-df` | MIT* | 316M | ASVspoof 2019 LA | 2.85% (2021 DF eval) | n/a | pending |
+
+\* The code is MIT. The weights are released by the authors through a link in the MIT repo's README, but they are hosted outside the repo and have no separate license of their own.
 
 "Subset EER, upstream scores" is computed from the score files the authors released, restricted to our evaluation subset (see [Evaluation](#evaluation)). It's the number our own run should reproduce. With 1,000 bona fide trials the subset EER moves in 0.1-point steps.
 

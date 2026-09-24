@@ -74,7 +74,8 @@ def _builder(name: str):
 
 _COMMON = dict(
     family="audio",
-    license="MIT (code, weights); XLS-R base model Apache-2.0",
+    license="MIT (code). Weights: linked from the MIT repo by the authors, "
+    "hosted on Google Drive, no separate weight license. XLS-R base model Apache-2.0",
     source="https://github.com/TakHemlata/SSL_Anti-spoofing/tree/4acaa61dcef5f7610f43aa4d0b29c4559b970cd2",
     paper="https://arxiv.org/abs/2202.12233",
 )
