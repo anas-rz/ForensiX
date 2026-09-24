@@ -5,10 +5,9 @@ MIT license
 
 Vendored from https://github.com/TakHemlata/SSL_Anti-spoofing
 (commit 4acaa61dcef5f7610f43aa4d0b29c4559b970cd2, model.py). See LICENSE in
-this directory. The only change: SSLModel wraps Hugging Face transformers'
-Wav2Vec2Model (Apache-2.0) instead of fairseq, with the XLS-R 300M
-architecture. Checkpoint keys are converted in forensix.audio.xlsr_aasist.
-The back end below the SSLModel class is unchanged.
+this directory. The only change: the fairseq-based SSLModel class is replaced
+by forensix.audio.xlsr.SSLModel (Hugging Face transformers' Wav2Vec2Model,
+Apache-2.0, XLS-R 300M architecture). The AASIST back end is unchanged.
 """
 
 import random
@@ -19,7 +18,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
-from transformers import Wav2Vec2Config, Wav2Vec2Model
 
 
 ___author__ = "Hemlata Tak"
@@ -30,43 +28,7 @@ __email__ = "tak@eurecom.fr"
 ############################
 
 
-# facebook/wav2vec2-xls-r-300m architecture; spec-augment masking disabled
-XLSR_300M_CONFIG = Wav2Vec2Config(
-    hidden_size=1024,
-    num_hidden_layers=24,
-    num_attention_heads=16,
-    intermediate_size=4096,
-    hidden_act="gelu",
-    feat_extract_norm="layer",
-    feat_extract_activation="gelu",
-    conv_dim=[512] * 7,
-    conv_kernel=[10, 3, 3, 3, 3, 2, 2],
-    conv_stride=[5, 2, 2, 2, 2, 2, 2],
-    conv_bias=True,
-    num_conv_pos_embeddings=128,
-    num_conv_pos_embedding_groups=16,
-    do_stable_layer_norm=True,
-    layer_norm_eps=1e-5,
-    apply_spec_augment=False,
-    mask_time_prob=0.0,
-    mask_feature_prob=0.0,
-)
-
-
-class SSLModel(nn.Module):
-    def __init__(self,device):
-        super(SSLModel, self).__init__()
-        self.model = Wav2Vec2Model(XLSR_300M_CONFIG)
-        self.device=device
-        self.out_dim = 1024
-        return
-
-    def extract_feat(self, input_data):
-        # input should be in shape (batch, length)
-        if input_data.ndim == 3:
-            input_data = input_data[:, :, 0]
-        # [batch, length, dim]
-        return self.model(input_data).last_hidden_state
+from forensix.audio.xlsr import SSLModel  # ForensiX: HF front end, replaces fairseq
 
 
 #---------AASIST back-end------------------------#

@@ -53,7 +53,7 @@ def test_eer():
 
 
 def test_convert_fairseq_state_dict():
-    from forensix.audio.xlsr_aasist import convert_fairseq_state_dict
+    from forensix.audio.xlsr import convert_fairseq_state_dict
 
     p = "ssl_model.model."
     fairseq = {
@@ -84,3 +84,9 @@ def test_convert_fairseq_state_dict():
         p + "encoder.layers.7.final_layer_norm.weight": 9,
         p + "encoder.layer_norm.bias": 10,
     }
+
+
+def test_split_windows_without_padding_keeps_short_clips_whole():
+    x = np.arange(3, dtype=np.float32)
+    assert split_windows(x, 7, pad_short=False).tolist() == [[0, 1, 2]]
+    assert split_windows(np.arange(10, dtype=np.float32), 4, pad_short=False).shape == (3, 4)

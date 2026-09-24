@@ -4,52 +4,16 @@ Upstream checkpoints store the XLS-R front end in fairseq's layout; they are
 converted to Hugging Face transformers' Wav2Vec2Model layout on load.
 """
 
-import re
 from pathlib import Path
 
 import torch
 
 from forensix.audio.detector import AudioDetector
+from forensix.audio.xlsr import convert_fairseq_state_dict
 from forensix.hub import WeightFile
 from forensix.registry import ModelSpec, register
 
-_SSL = "ssl_model.model."
 _DRIVE = "https://drive.usercontent.google.com/download?export=download&confirm=t&id="
-
-# fairseq wav2vec2 -> transformers Wav2Vec2Model (layer-norm feature extractor,
-# stable/pre-LN encoder). Applied in order; first match wins.
-_KEY_RULES = [
-    (r"feature_extractor\.conv_layers\.(\d+)\.0\.", r"feature_extractor.conv_layers.\1.conv."),
-    (r"feature_extractor\.conv_layers\.(\d+)\.2\.1\.", r"feature_extractor.conv_layers.\1.layer_norm."),
-    (r"^layer_norm\.", "feature_projection.layer_norm."),
-    (r"^post_extract_proj\.", "feature_projection.projection."),
-    (r"encoder\.pos_conv\.0\.weight_g$", "encoder.pos_conv_embed.conv.parametrizations.weight.original0"),
-    (r"encoder\.pos_conv\.0\.weight_v$", "encoder.pos_conv_embed.conv.parametrizations.weight.original1"),
-    (r"encoder\.pos_conv\.0\.bias$", "encoder.pos_conv_embed.conv.bias"),
-    (r"\.self_attn\.", ".attention."),
-    (r"\.self_attn_layer_norm\.", ".layer_norm."),
-    (r"\.fc1\.", ".feed_forward.intermediate_dense."),
-    (r"\.fc2\.", ".feed_forward.output_dense."),
-]
-# fairseq pretraining-only parameters, unused when extracting features
-_DROP = re.compile(r"^(quantizer|project_q|final_proj|mask_emb|label_embs_concat)")
-
-
-def convert_fairseq_state_dict(state: dict) -> dict:
-    """Map an upstream checkpoint's keys onto ``network.Model``."""
-    out = {}
-    for key, value in state.items():
-        key = key.removeprefix("module.")  # saved from nn.DataParallel
-        if not key.startswith(_SSL):
-            out[key] = value
-            continue
-        sub = key[len(_SSL) :]
-        if _DROP.match(sub):
-            continue
-        for pattern, repl in _KEY_RULES:
-            sub = re.sub(pattern, repl, sub)
-        out[_SSL + sub] = value
-    return out
 
 
 class XLSRAASISTDetector(AudioDetector):

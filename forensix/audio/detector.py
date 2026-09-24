@@ -8,14 +8,17 @@ from forensix.audio.io import AudioInput, load_audio
 from forensix.types import Prediction
 
 
-def split_windows(x: np.ndarray, window: int) -> np.ndarray:
+def split_windows(x: np.ndarray, window: int, pad_short: bool = True) -> np.ndarray:
     """Split a waveform into fixed-length windows, shape ``(n, window)``.
 
     Clips shorter than ``window`` are repeat-padded (as in the AASIST/RawNet
-    evaluation code). Longer clips are cut into consecutive windows, with a
-    final window aligned to the end so the tail is covered too.
+    evaluation code), or returned whole if ``pad_short`` is False. Longer clips
+    are cut into consecutive windows, with a final window aligned to the end so
+    the tail is covered too.
     """
     if len(x) <= window:
+        if not pad_short:
+            return x[None]
         reps = window // len(x) + 1
         return np.tile(x, reps)[:window][None]
     starts = list(range(0, len(x) - window + 1, window))
@@ -27,8 +30,10 @@ def split_windows(x: np.ndarray, window: int) -> np.ndarray:
 class AudioDetector:
     """Base class for raw-waveform audio deepfake detectors.
 
-    Subclasses implement ``_fake_probs`` for a batch of fixed-length windows.
-    A clip's score is the mean fake probability over its windows.
+    Subclasses implement ``_fake_probs`` for a batch of equal-length windows.
+    A clip's score is the mean fake probability over its windows. With
+    ``pad_short=False`` (models scored on whole utterances), clips up to
+    ``window`` samples are scored as they are and batched one clip at a time.
     """
 
     sample_rate = 16000
@@ -40,9 +45,11 @@ class AudioDetector:
         window: int,
         device: str | torch.device = "cpu",
         threshold: float = 0.5,
+        pad_short: bool = True,
     ):
         self.name = name
         self.window = window
+        self.pad_short = pad_short
         self.threshold = threshold
         self.device = torch.device(device)
         self.network = network.to(self.device).eval()
@@ -62,14 +69,18 @@ class AudioDetector:
         batch_size: int = 16,
     ) -> list[Prediction]:
         per_clip = [
-            split_windows(load_audio(a, self.sample_rate, sample_rate), self.window)
+            split_windows(
+                load_audio(a, self.sample_rate, sample_rate), self.window, self.pad_short
+            )
             for a in inputs
         ]
-        windows = np.concatenate(per_clip)
+        # windows of different lengths can't share a batch
+        groups = [np.concatenate(per_clip)] if self.pad_short else per_clip
         probs = np.concatenate(
             [
                 self._fake_probs(torch.from_numpy(chunk).to(self.device)).cpu().numpy()
-                for chunk in _chunks(windows, batch_size)
+                for group in groups
+                for chunk in _chunks(group, batch_size)
             ]
         )
         preds, i = [], 0

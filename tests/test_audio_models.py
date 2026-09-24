@@ -1,6 +1,6 @@
 """Tests that need the pretrained weights (downloaded on first run).
 
-The 316M-parameter XLS-R models (1.2 GB each) only run with FORENSIX_TEST_HEAVY=1.
+The 316M-parameter XLS-R-based models (1.2 GB each) only run with FORENSIX_TEST_HEAVY=1.
 """
 
 import os
@@ -11,7 +11,7 @@ import torch
 
 import forensix
 
-HEAVY = {"xlsr-aasist", "xlsr-aasist-df"}
+HEAVY = {"xlsr-aasist", "xlsr-aasist-df", "nes2net-x", "nes2net-x-itw"}
 MODELS = [
     pytest.param(m, marks=pytest.mark.skipif(
         m in HEAVY and not os.environ.get("FORENSIX_TEST_HEAVY"),
@@ -25,6 +25,8 @@ PARAMS = {
     "rawgat-st": 440_810,
     "xlsr-aasist": 315_884_938,
     "xlsr-aasist-df": 315_884_938,
+    "nes2net-x": 315_949_735,
+    "nes2net-x-itw": 315_949_735,
 }
 
 
@@ -52,7 +54,7 @@ def test_predict_array_and_file_agree(detector, tmp_path):
 
 
 def test_long_clip_gives_one_score_per_window(detector):
-    x = np.zeros(64600 * 2 + 100, dtype=np.float32) + 0.01
+    x = np.zeros(detector.window * 2 + 100, dtype=np.float32) + 0.01
     pred = detector.predict(x, sample_rate=16000)
     assert len(pred.segment_fake_probs) == 3
     assert pred.fake_prob == pytest.approx(np.mean(pred.segment_fake_probs))
