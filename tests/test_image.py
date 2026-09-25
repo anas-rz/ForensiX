@@ -2,7 +2,6 @@ import os
 
 import numpy as np
 import pytest
-import torch
 from PIL import Image
 from torch import nn
 from torchvision import transforms
@@ -45,7 +44,7 @@ def test_image_detector_batching(toy, tmp_path):
 
 
 def test_image_registry():
-    assert "univfd" in forensix.list_models("image")
+    assert {"univfd", "rine", "rine-ldm"} <= set(forensix.list_models("image"))
     spec = forensix.info("univfd")
     assert spec.family == "image" and spec.extra_weights
 
@@ -55,16 +54,25 @@ heavy = pytest.mark.skipif(
 )
 
 
+PARAMS = {"univfd": 303_966_977, "rine": 309_502_977, "rine-ldm": 313_701_377}
+
+
 @heavy
-def test_univfd():
-    d = forensix.load("univfd")
-    assert sum(p.numel() for p in d.network.parameters()) == 303_966_977
+@pytest.mark.parametrize("name", forensix.list_models("image"))
+def test_image_model(name):
+    d = forensix.load(name)
+    assert sum(p.numel() for p in d.network.parameters()) == PARAMS[name]
     rng = np.random.default_rng(0)
-    small = rng.integers(0, 255, (100, 150, 3), dtype=np.uint8)  # padded by CenterCrop
+    small = rng.integers(0, 255, (100, 150, 3), dtype=np.uint8)  # padded to 224
     large = rng.integers(0, 255, (600, 800, 3), dtype=np.uint8)
     batch = d.predict_batch([small, large], batch_size=2)
     for img, p in zip([small, large], batch):
         assert 0.0 <= p.fake_prob <= 1.0
         assert p.fake_prob == pytest.approx(d.predict(img).fake_prob, abs=1e-5)
-    with torch.inference_mode():
-        assert d.network(d.transform(load_image(large))[None]).shape == (1, 1)
+
+
+def test_rine_ten_crop_pads_small_images():
+    from forensix.image.rine import TEN_CROP
+
+    assert TEN_CROP(Image.new("RGB", (100, 300))).shape == (10, 3, 224, 224)
+    assert TEN_CROP(Image.new("RGB", (640, 480))).shape == (10, 3, 224, 224)
