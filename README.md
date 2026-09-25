@@ -64,6 +64,8 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 | image | `univfd` | MIT† | 304M (769 trainable) | ProGAN vs real (ForenSynths) | 93.4 mAP, 81.4% mean accuracy over 19 test sets (ProGAN + 18 unseen GAN, diffusion and other generators) | pending |
 | image | `rine` | Apache-2.0† | 310M (6.3M trainable) | ProGAN, 4 classes (ForenSynths) | 98.8 mAP, 91.5% mean accuracy over 20 test sets (ProGAN + 19 unseen) | pending |
 | image | `rine-ldm` | Apache-2.0† | 314M (10.5M trainable) | Latent Diffusion (DMID training set) | Synthbuster: 90.5 mAP, 87.5% mean accuracy over 9 generators (SDXL 99.8 AP; DALL-E 3 only 32.5 AP) | pending |
+| image | `commfor` | MIT | 22M | Community Forensics: 2.7M images from ~4,800 generators (mostly SD derivatives) | 0.986 mAP, 92.3% mean accuracy over 6 benchmarks (Synthbuster 0.974 mAP) | pending |
+| image | `commfor-224` | MIT | 22M | same, 224 input | 0.966 mAP, 88.9% mean accuracy over 6 benchmarks | pending |
 
 † For UnivFD the code and linear head are MIT, and for RINE the code and trainable weights are Apache-2.0. Their frozen backbone is OpenAI CLIP ViT-L/14 (MIT license). OpenAI's model card lists "any deployed use case" as out of scope, which is an intended-use statement rather than a license term.
 
@@ -77,6 +79,7 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 - **Nes2Net-X**: Liu et al., *Nes2Net: A Lightweight Nested Architecture for Foundation Model Driven Speech Anti-spoofing*, IEEE T-IFS 2025 ([paper](https://arxiv.org/abs/2504.05657), [code](https://github.com/Liu-Tianchi/Nes2Net_ASVspoof_ITW)). A 512K-parameter nested Res2Net back end on the same XLS-R front end as XLS-R + AASIST (the shared HF port lives in [forensix/audio/xlsr.py](forensix/audio/xlsr.py)). `nes2net-x` is the ASVspoof 2021 checkpoint (an average of 5 epochs) and scores 4 s windows. `nes2net-x-itw` is trained with validation augmentation for out-of-domain audio and scores whole utterances; clips over 30 s are split into 30 s chunks. It is the best choice for real-world audio. The upstream README releases the code and models under Apache-2.0 and welcomes commercial use. The repo has no LICENSE file, so ForensiX ships the Apache-2.0 text in [forensix/audio/nes2net_x/LICENSE](forensix/audio/nes2net_x/LICENSE), with our changes noted in the file header.
 - **UnivFD**: Ojha et al., *Towards Universal Fake Image Detectors that Generalize Across Generative Models*, CVPR 2023 ([paper](https://arxiv.org/abs/2302.10174), [code](https://github.com/WisconsinAIVision/UniversalFakeDetect)). A linear classifier on frozen CLIP ViT-L/14 image embeddings. Following upstream evaluation, it scores the central 224×224 crop without resizing; smaller images are zero-padded. The backbone is loaded from Hugging Face `openai/clip-vit-large-patch14` at a pinned revision and shared with other CLIP-based detectors ([forensix/image/clip.py](forensix/image/clip.py)).
 - **RINE**: Koutlis & Papadopoulos, *Leveraging Representations from Intermediate Encoder-blocks for Synthetic Image Detection*, ECCV 2024 ([paper](https://arxiv.org/abs/2402.19091), [code](https://github.com/mever-team/rine)). It combines the CLS tokens of all 24 CLIP ViT-L/14 blocks with learned per-block importance weights, then an MLP head. `rine` is the 4-class ProGAN checkpoint and scores the central 224×224 crop. `rine-ldm` is trained on latent-diffusion images and is the better choice for modern diffusion output. It averages logits over ten 224×224 crops, as upstream does on Synthbuster; images under 224 px are zero-padded, where upstream would raise an error. The trainable modules keep upstream's names, so the released checkpoints load unchanged. The block features come from hooks on the shared HF CLIP backbone. Upstream ran CLIP in fp16 on GPU, while ForensiX runs fp32, so scores can differ very slightly from the paper's.
+- **Community Forensics**: Park & Owens, *Community Forensics: Using Thousands of Generators to Train Fake Image Detectors*, CVPR 2025 ([paper](https://arxiv.org/abs/2411.04125), [code](https://github.com/JeongsooP/Community-Forensics)). A plain ViT-S/16, initialized from timm's AugReg ImageNet-21k weights (Apache-2.0) and trained on images from about 4,800 generators. Unlike the CLIP-based models, it follows upstream in resizing the short side (to 440, or 256 for `commfor-224`) before center-cropping 384 (or 224). Weights come from the authors' Hugging Face repos (MIT) at pinned revisions. Its training set covers a wide range of Stable Diffusion derivatives, so SDXL-family images in the ForensiX eval set are likely in-distribution for it.
 
 ## Evaluation
 
@@ -107,7 +110,7 @@ None of these generators is in the training data of the current image models, ex
 pip install -e ".[eval]"
 huggingface-cli login     # FLUX.1-schnell requires accepting its terms once
 python scripts/build_image_eval_set.py --out /content/forensix_image_eval
-python scripts/eval_image.py --data /content/forensix_image_eval --models univfd rine rine-ldm \
+python scripts/eval_image.py --data /content/forensix_image_eval --models univfd rine rine-ldm commfor commfor-224 \
     --device cuda --out results/image_eval.json --scores-out results/image_scores.csv
 ```
 
@@ -128,6 +131,7 @@ Every model is checked against its upstream implementation before it's added.
 | `nes2net-x-itw` | In-the-Wild EER | not checked: needs the dataset's labels |
 | `univfd` | ForensiX (HF CLIP) vs upstream (OpenAI `clip` package, official ViT-L-14.pt) on PNG/JPEG/grayscale images of 180×150 to 1024×768 | max fake_prob diff 1.1e-6 |
 | `rine`, `rine-ldm` | same images, upstream `src/models.py` + checkpoint loader + test transforms (CPU fp32) | max fake_prob diff 1.5e-6 / 4.2e-7 |
+| `commfor`, `commfor-224` | same images + upstream's 5 DALL-E 2 samples, upstream HF inference path (`CommForImageProcessor` + `ViTClassifier.from_pretrained`) | identical (diff 0) |
 
 ## Structure
 
@@ -150,6 +154,7 @@ forensix/
     ├── io.py          # image loading (RGB, no resizing)
     ├── detector.py    # ImageDetector base (batching)
     ├── clip.py        # shared OpenAI CLIP ViT-L/14 backbone (HF)
+    ├── commfor/       # Community Forensics (384, 224)
     ├── rine/          # RINE (ProGAN 4-class, LDM)
     └── univfd/        # UnivFD
 scripts/

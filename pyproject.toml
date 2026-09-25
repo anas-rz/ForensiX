@@ -17,6 +17,7 @@ dependencies = [
     "scipy",
     "soundfile>=0.12",
     "transformers>=4.40",
+    "timm",
 ]
 
 [project.optional-dependencies]
@@ -34,3 +35,4 @@ include = ["forensix*"]
 "forensix.audio.nes2net_x" = ["LICENSE"]
 "forensix.image.univfd" = ["LICENSE"]
 "forensix.image.rine" = ["LICENSE"]
+"forensix.image.commfor" = ["LICENSE"]

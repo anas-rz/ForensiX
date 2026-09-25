@@ -44,7 +44,7 @@ def test_image_detector_batching(toy, tmp_path):
 
 
 def test_image_registry():
-    assert {"univfd", "rine", "rine-ldm"} <= set(forensix.list_models("image"))
+    assert {"univfd", "rine", "rine-ldm", "commfor", "commfor-224"} <= set(forensix.list_models("image"))
     spec = forensix.info("univfd")
     assert spec.family == "image" and spec.extra_weights
 
@@ -54,7 +54,13 @@ heavy = pytest.mark.skipif(
 )
 
 
-PARAMS = {"univfd": 303_966_977, "rine": 309_502_977, "rine-ldm": 313_701_377}
+PARAMS = {
+    "univfd": 303_966_977,
+    "rine": 309_502_977,
+    "rine-ldm": 313_701_377,
+    "commfor": 21_811_969,
+    "commfor-224": 21_666_049,
+}
 
 
 @heavy
