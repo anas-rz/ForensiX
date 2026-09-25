@@ -55,7 +55,7 @@ def test_confident_strategy():
 
 
 def test_video_registry():
-    assert "dfdc-selim" in forensix.list_models("video")
+    assert set(forensix.list_models("video")) == {"dfdc-selim", "dfdc-wm", "gend", "gend-pe", "dfdet-clip"}
     assert len(forensix.info("dfdc-selim").extra_weights) == 6 + 3
 
 
@@ -64,3 +64,56 @@ def test_dfdc_selim_no_face_video(tmp_path):
     _write_video(tmp_path / "v.mp4", 40, size=(320, 240))
     pred = forensix.load("dfdc-selim").predict(tmp_path / "v.mp4")
     assert pred.fake_prob == 0.5 and pred.segment_fake_probs == ()
+
+
+def test_align_face_maps_landmarks_to_template():
+    from forensix.video.faces import _TEMPLATE, align_face
+
+    rng = np.random.default_rng(0)
+    img = rng.integers(0, 255, (400, 300, 3), dtype=np.uint8)
+    # landmarks = template placed at 1.5x scale with a 30 degree rotation and shift
+    theta = np.deg2rad(30)
+    rot = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+    lms = (_TEMPLATE * 120) @ rot.T + [120, 150]
+    face = align_face(img, lms, size=256, scale=1.3)
+    assert face.shape == (256, 256, 3)
+    # warping the landmarks with the same transform lands them on the scaled template
+    dst = (_TEMPLATE * 256 + 256 * 0.15) * (256 / (256 * 1.3))
+    matrix = cv2.estimateAffinePartial2D(lms.astype(np.float32), dst.astype(np.float32), method=cv2.LMEDS)[0]
+    warped = cv2.transform(lms[None].astype(np.float32), matrix)[0]
+    assert np.abs(warped - dst).max() < 1e-3
+
+
+@pytest.mark.skipif(not os.environ.get("FORENSIX_TEST_HEAVY"), reason="large model; set FORENSIX_TEST_HEAVY=1")
+@pytest.mark.parametrize("name, params", [("gend", 303_181_826), ("gend-pe", 316_104_706), ("dfdet-clip", 303_181_826)])
+def test_gend_family(tmp_path, name, params):
+    d = forensix.load(name)
+    assert sum(p.numel() for p in d.network.parameters()) == params
+    _write_video(tmp_path / "v.mp4", 40, size=(320, 240))
+    assert d.predict(tmp_path / "v.mp4").fake_prob == 0.5
+    faces = [np.random.default_rng(i).integers(0, 255, (256, 256, 3), dtype=np.uint8) for i in range(3)]
+    probs = d.face_fake_probs(faces)
+    assert probs.shape == (3,) and ((0 <= probs) & (probs <= 1)).all()
+
+
+def test_similarity_transform_recovers_known_transform():
+    from forensix.video.retinaface import ARCFACE_320, norm_crop, similarity_transform
+
+    theta, scale, shift = np.deg2rad(-12), 0.7, np.array([35.0, -20.0])
+    rot = scale * np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+    src = (ARCFACE_320 - shift) @ np.linalg.inv(rot).T  # points that map exactly onto the template
+    matrix = similarity_transform(src, ARCFACE_320)
+    assert np.allclose(matrix[:, :2], rot) and np.allclose(src @ matrix[:, :2].T + matrix[:, 2], ARCFACE_320)
+    assert norm_crop(np.zeros((400, 400, 3), np.uint8), src).shape == (320, 320, 3)
+
+
+@pytest.mark.skipif(not os.environ.get("FORENSIX_TEST_HEAVY"), reason="large model; set FORENSIX_TEST_HEAVY=1")
+def test_dfdc_wm(tmp_path):
+    d = forensix.load("dfdc-wm")
+    counts = [sum(p.numel() for p in m.parameters()) for m in (d.xception, d.wsdan_x, d.wsdan_e, d.face_detector.net)]
+    assert counts == [20_811_050, 20_856_120, 12_270_112, 27_293_600]
+    _write_video(tmp_path / "v.mp4", 40, size=(320, 240))
+    assert d.predict(tmp_path / "v.mp4").fake_prob == 0.5
+    faces = [np.random.default_rng(i).integers(0, 255, (320, 320, 3), dtype=np.uint8) for i in range(3)]
+    probs = d.face_fake_probs(faces)
+    assert probs.shape == (3,) and ((0 <= probs) & (probs <= 1)).all()

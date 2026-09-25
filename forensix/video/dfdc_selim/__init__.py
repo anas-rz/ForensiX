@@ -17,7 +17,7 @@ from PIL import Image
 from torch import nn
 from torchvision.transforms import Normalize
 
-from forensix.hub import WeightFile, fetch
+from forensix.hub import WeightFile, fetch, torch_load
 from forensix.registry import ModelSpec, register
 from forensix.video.detector import VideoDetector, VideoInput
 from forensix.video.io import read_frames
@@ -59,16 +59,8 @@ class DeepFakeClassifier(nn.Module):
 
 
 def _load_checkpoint(path: Path) -> dict:
-    # checkpoints hold {"epoch", "state_dict", "bce_best": numpy float64}; allow
-    # only the numpy scalar types needed instead of unrestricted unpickling
-    try:
-        from numpy._core.multiarray import scalar  # numpy >= 2
-    except ImportError:
-        from numpy.core.multiarray import scalar
-
-    allowed = [(scalar, "numpy.core.multiarray.scalar"), np.dtype, type(np.dtype(np.float64))]
-    with torch.serialization.safe_globals(allowed):
-        state = torch.load(path, map_location="cpu", weights_only=True)["state_dict"]
+    # checkpoints hold {"epoch", "state_dict", "bce_best": numpy float64}
+    state = torch_load(path)["state_dict"]
     return {k.removeprefix("module."): v for k, v in state.items()}
 
 

@@ -21,9 +21,13 @@ CLIP_MEAN = (0.48145466, 0.4578275, 0.40821073)
 CLIP_STD = (0.26862954, 0.26130258, 0.27577711)
 
 
-def clip_vit_l14():
+def clip_vit_l14(state: dict | None = None):
     """``CLIPVisionModelWithProjection`` with OpenAI ViT-L/14 weights; its
-    ``image_embeds`` equal OpenAI CLIP's ``encode_image``."""
+    ``image_embeds`` equal OpenAI CLIP's ``encode_image``.
+
+    Pass ``state`` (``vision_model.*`` and optionally ``visual_projection.*``
+    keys) to load a fine-tuned copy of the same architecture instead.
+    """
     from transformers import CLIPVisionConfig, CLIPVisionModelWithProjection
 
     config = CLIPVisionConfig(
@@ -38,6 +42,14 @@ def clip_vit_l14():
         layer_norm_eps=1e-5,
     )
     model = CLIPVisionModelWithProjection(config)
+    if state is not None:
+        if "visual_projection.weight" in state:
+            model.load_state_dict(state)
+        else:  # vision tower only (callers that don't use the projection)
+            model.vision_model.load_state_dict(
+                {k.removeprefix("vision_model."): v for k, v in state.items()}
+            )
+        return model
     # the checkpoint also holds the text tower; load only the vision side
     with safe_open(fetch(CLIP_VIT_L14), framework="pt") as f:
         state = {

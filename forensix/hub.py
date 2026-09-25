@@ -56,3 +56,25 @@ def fetch(weights: WeightFile, force: bool = False) -> Path:
         if os.path.exists(tmp):
             os.unlink(tmp)
     return dest
+
+
+def torch_load(path: str | Path) -> dict:
+    """``torch.load`` with ``weights_only=True``, also allowing the numpy
+    types (arrays, scalars, dtypes) that some upstream checkpoints store next
+    to their weights, e.g. training logs. Nothing else is unpickled."""
+    import numpy as np
+    import torch
+
+    try:  # numpy >= 2 moved numpy.core to numpy._core; pickles use the old name
+        from numpy._core import multiarray
+    except ImportError:
+        from numpy.core import multiarray
+    allowed = [
+        (multiarray.scalar, "numpy.core.multiarray.scalar"),
+        (multiarray._reconstruct, "numpy.core.multiarray._reconstruct"),
+        np.ndarray,
+        np.dtype,
+        *{type(np.dtype(t)) for t in (np.float16, np.float32, np.float64, np.int32, np.int64, np.bool_)},
+    ]
+    with torch.serialization.safe_globals(allowed):
+        return torch.load(path, map_location="cpu", weights_only=True)
