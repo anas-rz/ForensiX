@@ -10,11 +10,11 @@ Phase-2 priors are provisional ranges from the rPPG literature (marked in
 
 import numpy as np
 
+from forensix.physics.base import PhysicsVideoDetector, constraint_report
 from forensix.physics.face.regions import REGIONS, region_masks
 from forensix.physics.face.tracker import FACE_LANDMARKER, FaceTrack, track_face
 from forensix.physics.signals.rppg import coherence, heart_rate, pos
 from forensix.registry import ModelSpec, register
-from forensix.types import Prediction
 
 MIN_SECONDS = 6.0
 # provisional priors (phase 2): (value where the violation starts, value where it saturates)
@@ -37,14 +37,8 @@ def region_rgb(frames: np.ndarray, track: FaceTrack) -> dict[str, np.ndarray]:
     return out
 
 
-def _violation(value: float, start: float, full: float) -> float:
-    """0 inside the expected range, rising linearly to 1 at ``full``."""
-    return float(np.clip((value - start) / (full - start), 0.0, 1.0))
-
-
-class BloodFlowDetector:
+class BloodFlowDetector(PhysicsVideoDetector):
     name = "phys-bloodflow"
-    threshold = None  # anomaly score
 
     def analyze(self, frames: np.ndarray, fps: float, track: FaceTrack | None = None) -> dict:
         track = track or track_face(frames, fps)
@@ -69,29 +63,14 @@ class BloodFlowDetector:
             "hr_spread_bpm": float(np.std([r["heart_rate_bpm"] for r in regions.values()])),
             "median_snr_db": float(np.median([r["snr_db"] for r in regions.values()])),
         }
-        violations = {k: _violation(v, *PRIORS[k]) for k, v in measured.items()}
+        score, evidence = constraint_report(measured, PRIORS)
         return {
-            "score": float(np.mean(list(violations.values()))),
-            "constraints": {
-                k: {"measured": round(measured[k], 3), "expected_range_start": PRIORS[k][0],
-                    "violation": round(violations[k], 3), "prior": "provisional (literature)"}
-                for k in measured
-            },
+            "score": score,
+            "constraints": evidence,
             "regions": regions,
             "coherence_matrix": {"regions": names, "values": corr.round(3).tolist()},
             "heart_rate_bpm": round(float(np.median([r["heart_rate_bpm"] for r in regions.values()])), 1),
         }
-
-    def predict(self, video) -> Prediction:
-        from forensix.physics.io import read_video
-
-        frames, fps = read_video(video)
-        result = self.analyze(frames, fps)
-        return Prediction(model=self.name, fake_prob=result["score"], threshold=None,
-                          score_type="anomaly", details=result)
-
-    def predict_batch(self, videos) -> list[Prediction]:
-        return [self.predict(v) for v in videos]
 
 
 register(
@@ -106,7 +85,7 @@ register(
         paper="https://doi.org/10.1109/TBME.2016.2609282",
         description="Blood-flow physics (physdf): POS pulse signals in 5 facial skin regions "
         "(MediaPipe mesh); scores missing, inconsistent or incoherent pulses. Anomaly score "
-        "in [0, 1] with per-constraint evidence in Prediction.details. Needs >= 6 s of a "
+        "in [0, 1] (the most violated constraint) with per-constraint evidence in Prediction.details. Needs >= 6 s of a "
         "visible face. Priors are provisional until learned priors (phase 3).",
     )
 )

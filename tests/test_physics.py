@@ -4,7 +4,8 @@ import numpy as np
 import pytest
 
 import forensix
-from forensix.physics.bloodflow import BloodFlowDetector, _violation
+from forensix.physics.base import violation as _violation
+from forensix.physics.bloodflow import BloodFlowDetector
 from forensix.physics.signals.rppg import chrom, coherence, heart_rate, pos
 
 FACE = Path(__file__).parent / "data" / "face_public_domain.jpg"
@@ -39,7 +40,7 @@ def test_violation_ramp():
 
 
 def test_physics_registry():
-    assert "phys-bloodflow" in forensix.list_models("physics")
+    assert {"phys-bloodflow", "phys-motion", "phys-lighting"} <= set(forensix.list_models("physics"))
 
 
 @pytest.fixture(scope="module")
@@ -86,3 +87,207 @@ def test_bloodflow_on_face_clips(face_clips):
 def test_bloodflow_rejects_short_video(face_clips):
     with pytest.raises(ValueError, match="at least"):
         BloodFlowDetector().analyze(face_clips[0][:60], FPS)
+
+
+# ---- phys-motion -------------------------------------------------------------
+
+from scipy.spatial.transform import Rotation  # noqa: E402
+
+from forensix.physics.base import constraint_report  # noqa: E402
+from forensix.physics.motion import (  # noqa: E402
+    RIGID_LANDMARKS,
+    MotionDetector,
+    angular_kinematics,
+    hf_energy_ratio,
+    jaw_lip_coupling,
+    rigid_deformation,
+)
+
+
+def _poses(angles_deg_z):
+    pose = np.tile(np.eye(4), (len(angles_deg_z), 1, 1))
+    pose[:, :3, :3] = Rotation.from_euler("z", np.asarray(angles_deg_z)[:, None], degrees=True).as_matrix()
+    return pose
+
+
+def test_angular_kinematics_constant_rotation():
+    velocity, acceleration = angular_kinematics(_poses(np.arange(60) * 2.0), FPS)  # 2 deg/frame
+    assert np.allclose(np.linalg.norm(velocity, axis=1), 60.0)  # deg/s at 30 fps
+    assert np.allclose(acceleration, 0, atol=1e-6)
+
+
+def test_hf_energy_ratio_smooth_vs_jitter():
+    t = np.arange(300) / FPS
+    smooth = np.degrees(angular_kinematics(_poses(10 * np.sin(2 * np.pi * 0.5 * t)), FPS)[0])
+    jitter = angular_kinematics(_poses(10 * np.sin(2 * np.pi * 0.5 * t) + np.random.default_rng(0).normal(0, 1, 300)), FPS)[0]
+    assert hf_energy_ratio(smooth, FPS) < 0.05 < 0.5 < hf_energy_ratio(jitter, FPS)
+    assert np.isnan(hf_energy_ratio(smooth, 12.0))  # Nyquist below the cutoff
+
+
+def _landmark_template():
+    rng = np.random.default_rng(0)
+    lm = rng.normal(0, 30, (478, 3))
+    lm[33], lm[263] = [-40, 0, 0], [40, 0, 0]  # outer eye corners
+    return lm
+
+
+def test_rigid_deformation_invariant_to_similarity_motion():
+    base = _landmark_template()
+    frames = []
+    for i in range(20):
+        r = Rotation.from_euler("xyz", [i, -i, 2 * i], degrees=True).as_matrix()
+        frames.append((1 + 0.01 * i) * base @ r.T + [i, -2 * i, 3])
+    assert rigid_deformation(np.stack(frames)).max() < 1e-9
+    warped = np.stack(frames)
+    warped[10, RIGID_LANDMARKS[0]] += [0, 20, 0]  # the forehead point moves off the skull
+    d = rigid_deformation(warped)
+    assert d[10] > 0.02 and np.delete(d, 10).max() < 0.02
+
+
+def test_jaw_lip_coupling():
+    t = np.linspace(0, 4 * np.pi, 120)
+    base = _landmark_template()
+    base[168], base[152], base[13], base[14] = [0, 20, 0], [0, 120, 0], [0, 80, 0], [0, 82, 0]
+    coupled, lips_only = np.repeat(base[None], 120, 0), np.repeat(base[None], 120, 0)
+    opening = 15 * (1 + np.sin(t))
+    coupled[:, 14, 1] += opening
+    coupled[:, 152, 1] += 0.8 * opening  # the jaw carries the chin down
+    lips_only[:, 14, 1] += opening  # chin stays put
+    lips_only[:, 152, 1] += np.random.default_rng(1).normal(0, 1, 120)
+    assert jaw_lip_coupling(coupled) > 0.95
+    assert jaw_lip_coupling(lips_only) < 0.3
+    assert np.isnan(jaw_lip_coupling(np.repeat(base[None], 120, 0)))  # mouth never moves
+
+
+def test_constraint_report_uses_worst_applicable_constraint():
+    score, ev = constraint_report({"a": 0.2, "b": float("nan")}, {"a": (0.0, 0.4), "b": (0.0, 1.0)})
+    assert score == 0.5 and ev["b"]["applicable"] is False and ev["b"]["violation"] is None
+
+
+@pytest.fixture(scope="module")
+def motion_clips():
+    pytest.importorskip("mediapipe")
+    import cv2
+    from PIL import Image
+
+    img = np.array(Image.open(FACE))
+    h, w = img.shape[:2]
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    rng = np.random.default_rng(0)
+
+    def frame(angle, dx, stretch=0.0):
+        m = cv2.getRotationMatrix2D((w / 2, h / 2), angle, 1.0)
+        m[0, 2] += dx
+        f = cv2.warpAffine(img, m, (w, h), borderMode=cv2.BORDER_REFLECT)
+        if stretch:  # stretch the upper face about the eye line: non-rigid
+            y0 = 0.42 * h
+            weight = np.clip((y0 - yy) / (0.3 * h), 0, 1)
+            f = cv2.remap(f, xx, (yy - weight * stretch * (yy - y0)).astype(np.float32), cv2.INTER_LINEAR,
+                          borderMode=cv2.BORDER_REFLECT)
+        return f
+
+    t = np.arange(120) / FPS
+    angle = 8 * np.sin(2 * np.pi * 0.3 * t)
+    return {
+        "smooth": np.stack([frame(a, 10 * np.sin(2 * np.pi * 0.2 * ti)) for a, ti in zip(angle, t)]),
+        "jitter": np.stack([frame(a + rng.normal(0, 2.0), 0) for a in angle]),
+        "nonrigid": np.stack([frame(a, 0, 0.10 * np.sin(2 * np.pi * 0.5 * ti)) for a, ti in zip(angle, t)]),
+    }
+
+
+def test_motion_on_face_clips(motion_clips):
+    det = MotionDetector()
+    results = {k: det.analyze(v, FPS) for k, v in motion_clips.items()}
+    assert results["smooth"]["score"] < 0.1
+    assert results["jitter"]["constraints"]["rotation_hf_energy_ratio"]["violation"] > 0.5
+    rigid = {k: r["constraints"]["rigid_deformation"] for k, r in results.items()}
+    assert rigid["nonrigid"]["measured"] > 2 * rigid["smooth"]["measured"]  # well above tracker noise
+    assert rigid["nonrigid"]["violation"] > 0 and rigid["smooth"]["violation"] == 0
+    assert results["jitter"]["score"] > 0.5 and results["nonrigid"]["score"] > 0
+    assert len(results["smooth"]["timeline"]["rigid_deformation"]) == len(motion_clips["smooth"])
+
+
+# ---- phys-lighting -----------------------------------------------------------
+
+from forensix.physics.lighting import (  # noqa: E402
+    LightingDetector,
+    coupling,
+    direction_jitter,
+    sh_basis,
+)
+
+
+def test_sh_fit_recovers_known_lighting():
+    rng = np.random.default_rng(0)
+    normals = rng.normal(size=(2000, 3))
+    normals[:, 2] = -np.abs(normals[:, 2])  # facing the camera
+    normals /= np.linalg.norm(normals, axis=1, keepdims=True)
+    coeffs = np.array([100, 5, -8, 12, 1, -2, 3, 0.5, -1.5])
+    lum = sh_basis(normals) @ coeffs + rng.normal(0, 0.5, 2000)
+    fitted, *_ = np.linalg.lstsq(sh_basis(normals), lum, rcond=None)
+    assert np.allclose(fitted, coeffs, atol=0.2)
+
+
+def test_direction_jitter_and_coupling():
+    steady = np.tile([0.0, 0.6, -0.8], (30, 1))
+    assert direction_jitter(steady) < 1e-6
+    jumpy = np.random.default_rng(0).normal(size=(30, 3))
+    assert direction_jitter(jumpy / np.linalg.norm(jumpy, axis=1, keepdims=True)) > 45
+    assert np.isnan(direction_jitter(np.full((30, 3), np.nan)))  # flat light: direction undefined
+    scene = 100 * (1 + 0.2 * np.sin(np.linspace(0, 6, 60)))
+    assert coupling(0.5 * scene, scene) > 0.99
+    assert np.isnan(coupling(np.full(60, 50.0), np.full(60, 100.0)))  # static scene: not applicable
+
+
+@pytest.fixture(scope="module")
+def lighting_clips():
+    pytest.importorskip("mediapipe")
+    import cv2
+    from PIL import Image
+    from scipy.interpolate import griddata
+
+    from forensix.physics.face.fit import fit_frame
+    from forensix.physics.face.tracker import track_face
+    from forensix.physics.lighting import skin_mask, skin_vertices
+
+    img = np.array(Image.open(FACE)).astype(np.float64)
+    h, w = img.shape[:2]
+    track = track_face(img.astype(np.uint8)[None], 25.0)
+    fit, lms = fit_frame(track, 0), track.landmarks[0, :, :2]
+    idx = skin_vertices(fit, lms, (h, w), min_facing=0.0)
+    face = skin_mask(lms, (h, w))
+    ys, xs = np.nonzero(face)
+    nmap = griddata(fit.vertices[idx, :2], fit.normals[idx], (xs, ys), method="linear")
+    ok = ~np.isnan(nmap).any(1)
+    ys, xs, nmap = ys[ok], xs[ok], nmap[ok] / np.linalg.norm(nmap[ok], axis=1, keepdims=True)
+    l0 = np.array([0.3, -0.3, -1.0]) / np.linalg.norm([0.3, -0.3, -1.0])
+    shade = lambda light: 0.45 + 0.55 * np.clip(nmap @ light, 0, None)  # Lambertian
+    background = ~cv2.dilate(face.astype(np.uint8), np.ones((25, 25))).astype(bool)
+    rng = np.random.default_rng(0)
+
+    def clip(kind):
+        frames = []
+        for ti in np.arange(60) / 25.0:
+            f = img.copy()
+            gain = 1 + 0.15 * np.sin(2 * np.pi * 0.5 * ti)
+            if kind == "consistent":  # the room light dims and brightens
+                f *= gain
+            elif kind == "jitter":  # face relit from a random direction every frame
+                light = l0 + rng.normal(0, 0.6, 3) * [1, 1, 0.3]
+                f[ys, xs] *= (shade(light / np.linalg.norm(light)) / shade(l0))[:, None]
+            elif kind == "decoupled":  # only the surroundings change
+                f[background] *= gain
+            frames.append(np.clip(f + rng.normal(0, 1.0, f.shape), 0, 255).astype(np.uint8))
+        return np.stack(frames)
+
+    return {k: clip(k) for k in ("consistent", "jitter", "decoupled")}
+
+
+def test_lighting_on_face_clips(lighting_clips):
+    det = LightingDetector()
+    r = {k: det.analyze(v, 25.0) for k, v in lighting_clips.items()}
+    assert r["consistent"]["score"] < 0.1
+    assert r["consistent"]["constraints"]["face_scene_coupling"]["measured"] > 0.9
+    assert r["jitter"]["constraints"]["light_direction_jitter_deg"]["violation"] > 0.5
+    assert r["decoupled"]["constraints"]["face_scene_coupling"]["violation"] > 0.5
+    assert len(r["jitter"]["timeline"]["light_direction"]) == 60

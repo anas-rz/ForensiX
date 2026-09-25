@@ -107,6 +107,8 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 | Family | Name | License | Needs | Status |
 |---|---|---|---|---|
 | physics | `phys-bloodflow` | ForensiX + MediaPipe (Apache-2.0) | ≥ 6 s of a continuously visible face | signals verified on synthetic video; provisional priors |
+| physics | `phys-motion` | ForensiX + MediaPipe (Apache-2.0) | ≥ 2 s of a tracked face at ≥ 20 fps (for the smoothness check) | signals verified on synthetic data; provisional priors |
+| physics | `phys-lighting` | ForensiX + MediaPipe (Apache-2.0) + ICT-FaceKit (MIT) | ≥ 2 s of a tracked face | signals verified on synthetic relighting; provisional priors |
 
 ‡ Training data: several image and video models were trained on data with non-commercial terms. UnivFD, RINE and SAFE used ForenSynths (CC BY-NC-SA 4.0), `clipdet` used COCO (mixed Flickr licenses), and Community Forensics used ImageNet, LAION and others. `avad` was trained on LRS2 (BBC, research-only terms). The video models were trained on DFDC (`dfdc-selim`, `dfdc-wm`) and FaceForensics++ (`gend`, `gend-pe`, `dfdet-clip`), both of which have research-only terms of use. ForensiX lists the licenses of the code and weights, which are what govern redistribution. Whether a training set's non-commercial terms carry over to the trained weights is legally unsettled; check with counsel for commercial deployment.
 
@@ -161,13 +163,13 @@ Most detectors learn the fingerprints of particular generators. physdf instead m
 | Detector | Physical constraint | Status |
 |---|---|---|
 | `phys-bloodflow` | one heart drives the pulse in all facial skin: plausible heart rate, consistent across regions, coherent signals | done (provisional priors) |
-| `phys-motion` | rigid-head and jaw biomechanics | next |
-| `phys-lighting` | the face's lighting matches the scene and stays stable | planned (ICT-FaceKit) |
-| `phys-voice` | voice production within anatomical limits: glottal source, formants, vocal-tract length, breathing | planned |
+| `phys-motion` | the head is a rigid body with inertia; the jaw is a hinge | done (provisional priors) |
+| `phys-lighting` | one light field: the face's lighting is stable and follows the scene | done (provisional priors) |
+| `phys-voice` | voice production within anatomical limits: glottal source, formants, vocal-tract length, breathing | next |
 | `phys-room` | one room and one microphone | planned |
 | `physdf` | graph-network priors learned from real media only, audio-visual articulatory coupling, localization, forensic report | planned |
 
-Physics detectors return an anomaly score (`score_type="anomaly"`, higher = more physics violated). `Prediction.details` holds the evidence for each constraint: the measured value, where the expected range ends, and the violation.
+Physics detectors return an anomaly score in [0, 1] (`score_type="anomaly"`). It is the violation of the **most-violated constraint**, because one clearly broken physical law is evidence on its own. `Prediction.details` holds the evidence for every constraint: the measured value, where the expected range ends, and the violation. Constraints that don't apply to a clip are listed but left out of the score, e.g. jaw coupling when the mouth never moves.
 
 ```python
 pred = forensix.load("phys-bloodflow").predict("clip.mp4")
@@ -180,8 +182,33 @@ pred.details["constraints"]         # {"mean_coherence": {"measured": 0.986, ...
 - **Pipeline:** rPPG pulse signals from 5 skin regions on the MediaPipe mesh (forehead, cheeks, nose, chin) via POS (Wang et al., 2017), with heart rate and SNR from the 42 to 180 bpm band.
 - **What it checks:** that the regions' pulses are coherent (mean correlation), that their heart rates agree, and that a pulse is detectable at all.
 - **Priors:** the current ranges are provisional, literature-informed values, labelled as such in `details`. Learned priors trained on real video (VoxCeleb, CC BY 4.0) will replace them.
-- **Tested on:** synthetic video of a public-domain portrait. A coherent 72 bpm pulse scores 0.00 (72.1 bpm measured), no pulse scores 0.65, and different heart rates on the two halves of the face score 0.33.
+- **Tested on:** synthetic video of a public-domain portrait. A coherent 72 bpm pulse scores 0.00 (72.1 bpm measured), while no pulse and different heart rates on the two halves of the face both score 1.00.
 - **Limits:** rPPG needs about 6 s or more of a steady, visible face, and heavy compression weakens the signal.
+
+**`phys-motion`.** It runs on MediaPipe head pose and landmarks, and checks:
+- **Smoothness:** the share of head-rotation velocity power above 8 Hz. A head has inertia, and per-frame generation adds jitter.
+- **Kinematic limits:** 99th-percentile angular velocity and acceleration.
+- **Skull rigidity:** the 90th-percentile Procrustes residual of rigid landmarks (forehead midline, nose bridge, eye corners) against their consensus shape, relative to the eye distance.
+- **Jaw-lip coupling:** wide mouth openings need the chin to drop.
+
+`details["timeline"]` gives per-frame angular speed and deformation, for localizing the manipulation in time. On synthetic motion of the portrait, rigid motion scores 0.00. Per-frame rotation jitter scores 0.89 (67% of rotation energy above 8 Hz, versus 7% for smooth motion), and a 10% periodic stretch of the upper face scores 0.22 (deformation 0.016, versus a tracker noise floor of 0.006).
+
+**`phys-lighting`.** Each frame, the ICT-FaceKit face (MIT, 9,409 vertices) is placed on the video:
+- **Expression:** MediaPipe's ARKit blendshapes drive ICT's 53 expression shapes.
+- **Placement:** a 3D similarity fit from 14 ICT landmark vertices onto MediaPipe's 3D landmarks, with about a 2 px residual on the test portrait.
+- **Lighting:** a 9-coefficient spherical-harmonic model (Ramamoorthi & Hanrahan, 2001) is fitted to skin luminance at the camera-facing vertices. Eyes, brows and lips are excluded.
+
+It then checks three constraints:
+- **Light-direction stability:** p90 frame-to-frame change of the dominant light direction.
+- **Shading plausibility:** the fit residual.
+- **Face-scene coupling:** the correlation of the face's ambient light with the brightness of the frame border. Checked only when the scene's brightness actually changes.
+
+On synthetic relighting of the portrait, which uses its fitted normals:
+- **Consistent:** a global brightness change scores 0.00 (coupling 0.996).
+- **Jitter:** a per-frame random light direction on the face scores 1.00 (98° jitter).
+- **Decoupled:** only the background brightening and dimming scores 1.00 (coupling −0.77).
+
+ICT's 54 source meshes (about 140 MB, pinned and hash-checked) are downloaded once and cached as a 2.5 MB file. Identity shapes aren't fitted yet.
 
 ## Evaluation
 
@@ -295,9 +322,12 @@ forensix/
 │   └── avad/          # AVAD (self-supervised A/V anomaly detection)
 └── physics/           # physdf
     ├── io.py          # full-frame-rate video reading
-    ├── face/          # MediaPipe face tracker, skin regions
+    ├── face/          # MediaPipe tracker, skin regions, ICT-FaceKit model + fitting
     ├── signals/       # rPPG (POS, CHROM), heart rate, coherence
-    └── bloodflow.py   # phys-bloodflow
+    ├── base.py        # constraint scoring and evidence
+    ├── bloodflow.py   # phys-bloodflow
+    ├── motion.py      # phys-motion
+    └── lighting.py    # phys-lighting
 scripts/
 ├── download_weights.py
 ├── eval_asvspoof2019_la.py
