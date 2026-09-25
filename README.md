@@ -102,6 +102,12 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 
 `avad` returns an **anomaly score**, not a probability: `Prediction.score_type == "anomaly"`, and `threshold`, `is_fake` and `label` are `None`. Choose a threshold on your own data. AUC and AP are threshold-free.
 
+**Physics (physdf)**: detectors that learn the physics of real faces and voices and flag violations. See [Physics-based detection](#physics-based-detection-physdf).
+
+| Family | Name | License | Needs | Status |
+|---|---|---|---|---|
+| physics | `phys-bloodflow` | ForensiX + MediaPipe (Apache-2.0) | ≥ 6 s of a continuously visible face | signals verified on synthetic video; provisional priors |
+
 ‡ Training data: several image and video models were trained on data with non-commercial terms. UnivFD, RINE and SAFE used ForenSynths (CC BY-NC-SA 4.0), `clipdet` used COCO (mixed Flickr licenses), and Community Forensics used ImageNet, LAION and others. `avad` was trained on LRS2 (BBC, research-only terms). The video models were trained on DFDC (`dfdc-selim`, `dfdc-wm`) and FaceForensics++ (`gend`, `gend-pe`, `dfdet-clip`), both of which have research-only terms of use. ForensiX lists the licenses of the code and weights, which are what govern redistribution. Whether a training set's non-commercial terms carry over to the trained weights is legally unsettled; check with counsel for commercial deployment.
 
 † For UnivFD the code and linear head are MIT, for RINE the code and trainable weights are Apache-2.0, and the video models `gend` and `dfdet-clip` are MIT and fine-tuned from the same CLIP. Their backbone is OpenAI CLIP ViT-L/14 (MIT license). OpenAI's model card lists "any deployed use case" as out of scope, which is an intended-use statement rather than a license term.
@@ -145,6 +151,37 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
   - **Vendored code:** the model files are vendored with their licenses (MIT, BSD-3 for the Xception port). EfficientNet-PyTorch is vendored at the exact 2020 commit WM trained with: later PyPI releases pad convolutions differently, and they change the model's outputs by up to 0.86.
   - **No scikit-image:** the alignment's similarity fit (Umeyama) is implemented directly instead of depending on it.
   - **Speed:** about 6 s per video on CPU.
+
+## Physics-based detection (physdf)
+
+Most detectors learn the fingerprints of particular generators. physdf instead measures physically meaningful quantities in the media, compares them with how real faces and voices behave, and reports which physical constraint was broken. Each constraint family is its own detector, and `physdf` will fuse them. Everything is built from permissively licensed parts:
+- **Face geometry:** MediaPipe FaceLandmarker (Apache-2.0) and the ICT-FaceKit morphable model (MIT). FLAME is research-only, so it isn't used.
+- **Signal processing:** written from the papers, instead of GPL or unlicensed toolkits.
+
+| Detector | Physical constraint | Status |
+|---|---|---|
+| `phys-bloodflow` | one heart drives the pulse in all facial skin: plausible heart rate, consistent across regions, coherent signals | done (provisional priors) |
+| `phys-motion` | rigid-head and jaw biomechanics | next |
+| `phys-lighting` | the face's lighting matches the scene and stays stable | planned (ICT-FaceKit) |
+| `phys-voice` | voice production within anatomical limits: glottal source, formants, vocal-tract length, breathing | planned |
+| `phys-room` | one room and one microphone | planned |
+| `physdf` | graph-network priors learned from real media only, audio-visual articulatory coupling, localization, forensic report | planned |
+
+Physics detectors return an anomaly score (`score_type="anomaly"`, higher = more physics violated). `Prediction.details` holds the evidence for each constraint: the measured value, where the expected range ends, and the violation.
+
+```python
+pred = forensix.load("phys-bloodflow").predict("clip.mp4")
+pred.fake_prob                      # 0.0 (nothing violated)
+pred.details["heart_rate_bpm"]      # 72.1
+pred.details["constraints"]         # {"mean_coherence": {"measured": 0.986, ...}, ...}
+```
+
+**`phys-bloodflow`.**
+- **Pipeline:** rPPG pulse signals from 5 skin regions on the MediaPipe mesh (forehead, cheeks, nose, chin) via POS (Wang et al., 2017), with heart rate and SNR from the 42 to 180 bpm band.
+- **What it checks:** that the regions' pulses are coherent (mean correlation), that their heart rates agree, and that a pulse is detectable at all.
+- **Priors:** the current ranges are provisional, literature-informed values, labelled as such in `details`. Learned priors trained on real video (VoxCeleb, CC BY 4.0) will replace them.
+- **Tested on:** synthetic video of a public-domain portrait. A coherent 72 bpm pulse scores 0.00 (72.1 bpm measured), no pulse scores 0.65, and different heart rates on the two halves of the face score 0.33.
+- **Limits:** rPPG needs about 6 s or more of a steady, visible face, and heavy compression weakens the signal.
 
 ## Evaluation
 
@@ -252,10 +289,15 @@ forensix/
 │   ├── dfdc_selim/    # DFDC winner (7 x EfficientNet-B7)
 │   ├── dfdc_wm/       # DFDC 2nd place (WS-DAN + Xception)
 │   └── gend/          # GenD (CLIP, Perception Encoder) + its predecessor dfdet-clip
-└── audiovisual/
-    ├── io.py          # 25 fps frames + 16 kHz audio via ffmpeg
-    ├── facetrack.py   # face tracks and talking-face crops (syncnet_python-style)
-    └── avad/          # AVAD (self-supervised A/V anomaly detection)
+├── audiovisual/
+│   ├── io.py          # 25 fps frames + 16 kHz audio via ffmpeg
+│   ├── facetrack.py   # face tracks and talking-face crops (syncnet_python-style)
+│   └── avad/          # AVAD (self-supervised A/V anomaly detection)
+└── physics/           # physdf
+    ├── io.py          # full-frame-rate video reading
+    ├── face/          # MediaPipe face tracker, skin regions
+    ├── signals/       # rPPG (POS, CHROM), heart rate, coherence
+    └── bloodflow.py   # phys-bloodflow
 scripts/
 ├── download_weights.py
 ├── eval_asvspoof2019_la.py

@@ -22,6 +22,7 @@ dependencies = [
     "open_clip_torch",
     "opencv-python-headless",
     "einops",
+    "mediapipe",
 ]
 
 [project.optional-dependencies]

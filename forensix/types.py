@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,8 @@ class Prediction:
     threshold: float | None = 0.5
     segment_fake_probs: tuple[float, ...] = field(default_factory=tuple)
     score_type: str = "probability"
+    # structured evidence, e.g. physics detectors' measured values and expected ranges
+    details: dict[str, Any] = field(default_factory=dict, compare=False)
 
     @property
     def is_fake(self) -> bool | None:
