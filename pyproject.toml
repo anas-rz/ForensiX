@@ -19,6 +19,7 @@ dependencies = [
     "transformers>=4.40",
     "timm",
     "PyWavelets",
+    "open_clip_torch",
 ]
 
 [project.optional-dependencies]
@@ -38,3 +39,4 @@ include = ["forensix*"]
 "forensix.image.rine" = ["LICENSE"]
 "forensix.image.commfor" = ["LICENSE"]
 "forensix.image.safe" = ["LICENSE"]
+"forensix.image.clipdet" = ["LICENSE"]

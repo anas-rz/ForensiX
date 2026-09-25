@@ -44,7 +44,7 @@ def test_image_detector_batching(toy, tmp_path):
 
 
 def test_image_registry():
-    assert {"univfd", "rine", "rine-ldm", "commfor", "commfor-224", "safe"} <= set(
+    assert {"univfd", "rine", "rine-ldm", "commfor", "commfor-224", "safe", "clipdet"} <= set(
         forensix.list_models("image")
     )
     spec = forensix.info("univfd")
@@ -63,6 +63,7 @@ PARAMS = {
     "commfor": 21_811_969,
     "commfor-224": 21_666_049,
     "safe": 1_438_274,
+    "clipdet": 303_180_801,
 }
 
 

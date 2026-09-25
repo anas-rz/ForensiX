@@ -67,6 +67,9 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 | image | `commfor` | MIT | 22M | Community Forensics: 2.7M images from ~4,800 generators (mostly SD derivatives) | 0.986 mAP, 92.3% mean accuracy over 6 benchmarks (Synthbuster 0.974 mAP) | pending |
 | image | `commfor-224` | MIT | 22M | same, 224 input | 0.966 mAP, 88.9% mean accuracy over 6 benchmarks | pending |
 | image | `safe` | Apache-2.0 | 1.4M | ProGAN (ForenSynths), from scratch | 96.7% ACC / 99.3 AP averaged over 33 test subsets from 26 generators; FLUX 99.3 / 99.9, PixArt 99.6 / 100 (authors' DiTFake) | pending |
+| image | `clipdet` | Apache-2.0 | 303M (1,025 trainable) | 10k COCO real + 10k latent-diffusion, augmented | 90.0 mean AUC over 18 generators (GAN, diffusion, commercial tools); 85.2 on cropped/resized/compressed images | pending |
+
+‡ Training data: several image models were trained on data with non-commercial terms. UnivFD, RINE and SAFE used ForenSynths (CC BY-NC-SA 4.0), `clipdet` used COCO (mixed Flickr licenses), and Community Forensics used ImageNet, LAION and others. ForensiX lists the licenses of the code and weights, which are what govern redistribution. Whether a training set's non-commercial terms carry over to the trained weights is legally unsettled; check with counsel for commercial deployment.
 
 † For UnivFD the code and linear head are MIT, and for RINE the code and trainable weights are Apache-2.0. Their frozen backbone is OpenAI CLIP ViT-L/14 (MIT license). OpenAI's model card lists "any deployed use case" as out of scope, which is an intended-use statement rather than a license term.
 
@@ -82,6 +85,7 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 - **RINE**: Koutlis & Papadopoulos, *Leveraging Representations from Intermediate Encoder-blocks for Synthetic Image Detection*, ECCV 2024 ([paper](https://arxiv.org/abs/2402.19091), [code](https://github.com/mever-team/rine)). It combines the CLS tokens of all 24 CLIP ViT-L/14 blocks with learned per-block importance weights, then an MLP head. `rine` is the 4-class ProGAN checkpoint and scores the central 224×224 crop. `rine-ldm` is trained on latent-diffusion images and is the better choice for modern diffusion output. It averages logits over ten 224×224 crops, as upstream does on Synthbuster; images under 224 px are zero-padded, where upstream would raise an error. The trainable modules keep upstream's names, so the released checkpoints load unchanged. The block features come from hooks on the shared HF CLIP backbone. Upstream ran CLIP in fp16 on GPU, while ForensiX runs fp32, so scores can differ very slightly from the paper's.
 - **Community Forensics**: Park & Owens, *Community Forensics: Using Thousands of Generators to Train Fake Image Detectors*, CVPR 2025 ([paper](https://arxiv.org/abs/2411.04125), [code](https://github.com/JeongsooP/Community-Forensics)). A plain ViT-S/16, initialized from timm's AugReg ImageNet-21k weights (Apache-2.0) and trained on images from about 4,800 generators. Unlike the CLIP-based models, it follows upstream in resizing the short side (to 440, or 256 for `commfor-224`) before center-cropping 384 (or 224). Weights come from the authors' Hugging Face repos (MIT) at pinned revisions. Its training set covers a wide range of Stable Diffusion derivatives, so SDXL-family images in the ForensiX eval set are likely in-distribution for it.
 - **SAFE**: Li et al., *Improving Synthetic Image Detection Towards Generalization: An Image Transformation Perspective*, KDD 2025 ([paper](https://arxiv.org/abs/2408.06741), [code](https://github.com/Ouxiang-Li/SAFE)). A 1.4M-parameter network (the first two stages of a ResNet-50) applied to the diagonal (HH) band of a one-level bior1.3 wavelet transform. It scores the central 256×256 crop without resizing or normalization. Upstream's `models/resnet.py` is about 80% shared with NPR's code, and NPR has no license. So ForensiX does not copy it: the network is written from torchvision's ResNet blocks (BSD-3), and the wavelet step is a small implementation on PyWavelets filters. The Apache-2.0 weights were trained from scratch, and they load unchanged into this implementation.
+- **CLIP-based detector (GRIP)**: Cozzolino et al., *Raising the Bar of AI-generated Image Detection with CLIP*, CVPR-W 2024 ([paper](https://arxiv.org/abs/2312.00195), [code](https://github.com/grip-unina/ClipBased-SyntheticImageDetection)). A linear classifier on L2-normalized, pre-projection OpenCLIP ViT-L/14 features, using the CommonPool.XL checkpoint (MIT). It is the released `clipdet_latent10k_plus`, the paper's "10k+" variant. Its output is a log-likelihood ratio (positive means synthetic), and `fake_prob` is its sigmoid. It follows upstream in a bicubic resize of the short side to 224 before center-cropping. The backbone is run with `open_clip` (MIT), exactly as upstream does, and loaded at a pinned revision.
 
 ## Evaluation
 
@@ -112,7 +116,7 @@ None of these generators is in the training data of the current image models, ex
 pip install -e ".[eval]"
 huggingface-cli login     # FLUX.1-schnell requires accepting its terms once
 python scripts/build_image_eval_set.py --out /content/forensix_image_eval
-python scripts/eval_image.py --data /content/forensix_image_eval --models univfd rine rine-ldm commfor commfor-224 safe \
+python scripts/eval_image.py --data /content/forensix_image_eval --models univfd rine rine-ldm commfor commfor-224 safe clipdet \
     --device cuda --out results/image_eval.json --scores-out results/image_scores.csv
 ```
 
@@ -135,6 +139,7 @@ Every model is checked against its upstream implementation before it's added.
 | `rine`, `rine-ldm` | same images, upstream `src/models.py` + checkpoint loader + test transforms (CPU fp32) | max fake_prob diff 1.5e-6 / 4.2e-7 |
 | `commfor`, `commfor-224` | same images + upstream's 5 DALL-E 2 samples, upstream HF inference path (`CommForImageProcessor` + `ViTClassifier.from_pretrained`) | identical (diff 0) |
 | `safe` | ForensiX reimplementation vs upstream `models/resnet.py` + eval transform; DWT step vs `pytorch_wavelets` and PyWavelets `dwt2` | max fake_prob diff 2.6e-8; DWT diff ≤ 1.2e-7 (fp32), 1e-12 (fp64) |
+| `clipdet` | same images, upstream `create_architecture` + `load_weights` + `main.py` transform | max fake_prob diff 1.8e-7 |
 
 ## Structure
 
@@ -157,6 +162,7 @@ forensix/
     ├── io.py          # image loading (RGB, no resizing)
     ├── detector.py    # ImageDetector base (batching)
     ├── clip.py        # shared OpenAI CLIP ViT-L/14 backbone (HF)
+    ├── clipdet/       # GRIP CLIP-based detector (OpenCLIP)
     ├── commfor/       # Community Forensics (384, 224)
     ├── rine/          # RINE (ProGAN 4-class, LDM)
     ├── safe/          # SAFE (reimplemented network + wavelet front end)
