@@ -44,7 +44,9 @@ def test_image_detector_batching(toy, tmp_path):
 
 
 def test_image_registry():
-    assert {"univfd", "rine", "rine-ldm", "commfor", "commfor-224"} <= set(forensix.list_models("image"))
+    assert {"univfd", "rine", "rine-ldm", "commfor", "commfor-224", "safe"} <= set(
+        forensix.list_models("image")
+    )
     spec = forensix.info("univfd")
     assert spec.family == "image" and spec.extra_weights
 
@@ -60,6 +62,7 @@ PARAMS = {
     "rine-ldm": 313_701_377,
     "commfor": 21_811_969,
     "commfor-224": 21_666_049,
+    "safe": 1_438_274,
 }
 
 
@@ -82,3 +85,15 @@ def test_rine_ten_crop_pads_small_images():
 
     assert TEN_CROP(Image.new("RGB", (100, 300))).shape == (10, 3, 224, 224)
     assert TEN_CROP(Image.new("RGB", (640, 480))).shape == (10, 3, 224, 224)
+
+
+@pytest.mark.parametrize("shape", [(2, 3, 64, 64), (1, 3, 31, 50)])
+def test_safe_dwt_matches_pywavelets(shape):
+    import pywt
+    import torch
+
+    from forensix.image.safe import dwt_hh
+
+    x = torch.rand(shape, dtype=torch.float64)
+    _, (_, _, hh) = pywt.dwt2(x.numpy(), "bior1.3", mode="symmetric", axes=(-2, -1))
+    assert np.allclose(dwt_hh(x).numpy(), hh, atol=1e-12)
