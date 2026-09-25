@@ -23,7 +23,8 @@ def constraint_report(measured: dict[str, float], priors: dict[str, Prior]) -> t
     evidence, violations = {}, []
     for k, value in measured.items():
         start, full, *source = priors[k]
-        entry = {"expected_range_start": start, "prior": source[0] if source else "provisional"}
+        entry = {"expected_range_start": start, "worse": "higher" if full > start else "lower",
+                 "prior": source[0] if source else "provisional"}
         if value is not None and np.isfinite(value):
             v = violation(value, start, full)
             violations.append(v)

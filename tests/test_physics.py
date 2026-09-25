@@ -465,3 +465,124 @@ def test_measure_file_and_split():
     groups = [f"spk{i}" for i in range(2000)]
     held = [g for g in groups if in_holdout(g, 0.2)]
     assert 0.15 < len(held) / len(groups) < 0.25 and held == [g for g in groups if in_holdout(g, 0.2)]
+
+
+# ---- physdf: graph prior, localization, report --------------------------------
+
+import torch  # noqa: E402
+
+from forensix.physics.graph import train as G  # noqa: E402
+from forensix.physics.graph.features import GraphSequence, build_sequence  # noqa: E402
+from forensix.physics.graph.model import PhysicsGNN, adjacency  # noqa: E402
+from forensix.physics.graph.schema import EDGE_TYPES, EDGES, NODE_NAMES, NODES, RESIDUAL_GROUPS  # noqa: E402
+from forensix.physics.physdf import PhysDF  # noqa: E402
+from forensix.physics.report import build_report, verify_report  # noqa: E402
+from graph_synth import sequence as graph_sequence  # noqa: E402
+
+
+def test_graph_schema_is_consistent():
+    assert all(u in NODES and v in NODES and r in EDGE_TYPES for u, v, r in EDGES)
+    a = adjacency()
+    assert a.shape == (len(EDGE_TYPES), len(NODE_NAMES), len(NODE_NAMES))
+    assert torch.allclose(a.sum(-1)[a.sum(-1) > 0], torch.tensor(1.0))
+    connected = (a.sum(0) > 0).any(1)
+    assert connected.all()  # every node has a physical partner
+    assert all(n in NODES for scored, hidden in RESIDUAL_GROUPS.values() for n in scored + (hidden or []))
+
+
+def test_audio_graph_sequence_and_roundtrip(tmp_path):
+    x = utterance(seconds=4).astype(np.float64)
+    seq = build_sequence(audio=x, sr=SR)
+    assert len(seq) == 100 and seq.valid["tract"].all() and not seq.valid["jaw"].any()
+    voiced = seq.features["glottis"][:, 1]
+    assert 0.3 < voiced.mean() < 0.95  # phrases with pauses
+    seq.save(tmp_path / "s.npz")
+    back = GraphSequence.load(tmp_path / "s.npz")
+    assert all(np.array_equal(back.features[n], seq.features[n]) for n in NODE_NAMES)
+
+
+def test_hidden_nodes_do_not_leak():
+    torch.manual_seed(0)
+    model = PhysicsGNN(dim=16, layers=2).eval()
+    x = {n: torch.randn(1, 50, len(NODES[n][1])) for n in NODE_NAMES}
+    visible = torch.ones(1, 50, len(NODE_NAMES), dtype=torch.bool)
+    visible[:, :, NODE_NAMES.index("jaw")] = False
+    before = model(x, visible)["jaw"][0]
+    x2 = dict(x, jaw=torch.randn(1, 50, len(NODES["jaw"][1])) * 10)
+    assert torch.equal(model(x2, visible)["jaw"][0], before)
+
+
+@pytest.fixture(scope="module")
+def synthetic_graph_prior():
+    torch.manual_seed(0)
+    seqs = [graph_sequence(seed=i) for i in range(40)]
+    model, norm, history = G.train(seqs, steps=400, batch=16, dim=32, layers=4, lr=3e-3, log_every=400, log=lambda m: None)
+    calibration = G.calibrate(model, norm, [graph_sequence(seed=100 + i) for i in range(12)])
+    return model, norm, calibration, history
+
+
+def _z(prior, seq, group):
+    model, norm, calibration, _ = prior
+    r = G.node_residuals(model, norm, seq)["groups"][group]
+    c = calibration["audio_video"][group]
+    return (G.clip_summary(G.window_scores(r)) - c["clip_mean"]) / c["clip_std"]
+
+
+def test_graph_prior_detects_broken_couplings(synthetic_graph_prior):
+    real = [_z(synthetic_graph_prior, graph_sequence(seed=200 + i), "graph_av_mouth_from_audio") for i in range(3)]
+    lipsync = [_z(synthetic_graph_prior, graph_sequence(seed=210 + i, audio_seed=900 + i), "graph_av_mouth_from_audio")
+               for i in range(3)]
+    assert min(lipsync) > max(real) and min(lipsync) > 3.0
+    real = [_z(synthetic_graph_prior, graph_sequence(seed=220 + i), "graph_bloodflow_residual") for i in range(3)]
+    rogue = [_z(synthetic_graph_prior, graph_sequence(seed=230 + i, rogue_pulse="pulse_nose"), "graph_bloodflow_residual")
+             for i in range(3)]
+    assert min(rogue) > max(real)
+
+
+def test_physdf_graph_checkpoint_localizes(synthetic_graph_prior, tmp_path):
+    model, norm, calibration, _ = synthetic_graph_prior
+    G.save(tmp_path / "g.safetensors", model, norm, calibration, {"data": "synthetic"})
+    det = PhysDF(tmp_path / "g.safetensors")
+    assert det.graph[2] == calibration  # checkpoint round trip, with the real residual distributions
+    assert "graph_av_mouth_from_audio" in calibration["audio_video"]
+    assert "graph_av_mouth_from_audio" not in calibration["audio_only"] and "graph_voice_residual" in calibration["audio_only"]
+    # mismatched audio in the second half only
+    seq = graph_sequence(seed=300, seconds=10)
+    fake = graph_sequence(seed=301, seconds=10, audio_seed=77)
+    half = len(seq) // 2
+    for n in ("glottis", "tract", "breath"):
+        seq.features[n][half:] = fake.features[n][half:]
+    res = G.node_residuals(*det.graph[:2], seq)["groups"]["graph_av_mouth_from_audio"]
+    windows = G.window_scores(res)
+    assert np.nanmean(windows[len(windows) // 2 + 1 :]) > np.nanmean(windows[: len(windows) // 2 - 1])
+
+
+def test_physdf_audio_only_report_without_graph():
+    det = PhysDF()
+    x = forensix.audio.io.load_audio(SPEECH, 16000)
+    result = det.analyze(audio=x, sr=16000)
+    report = result["report"]
+    assert result["score"] == 0.0 and report["verification"]["passed"]
+    assert result["status"]["phys-motion"] == "no video" and "no trained graph" in result["status"]["graph"]
+    assert report["verdict"] in ("no physical violation found", "inconclusive")
+    assert "# physdf forensic report" in report["markdown"] and report["counter_evidence"]
+
+
+def test_report_claims_verdict_and_verification():
+    def entry(v, measured=1.0, prior="provisional"):
+        return {"expected_range_start": 0.5, "prior": prior, "measured": measured, "violation": v}
+
+    constraints = {f"phys-voice/c{i}": entry(0.0) for i in range(6)}
+    constraints["phys-motion/rigid_deformation"] = entry(0.9, 0.05, "learned")
+    constraints["phys-room/rt60_variation"] = {"expected_range_start": 0.35, "prior": "provisional",
+                                               "measured": None, "violation": None, "applicable": False}
+    result = {"score": 0.9, "constraints": constraints, "status": {}}
+    report = build_report(result)
+    assert report["verdict"] == "physical violations found" and report["confidence"] == "high"
+    assert [c["constraint"] for c in report["claims"]] == ["phys-motion/rigid_deformation"]
+    assert "the skull is rigid" in report["markdown"].lower() and report["verification"]["passed"]
+    tampered = dict(report, claims=[dict(report["claims"][0], measured=0.001)])
+    assert verify_report(tampered, result)
+    # too few applicable checks and only weak violations: abstain
+    few = {"score": 0.2, "constraints": {"phys-voice/hnr_db": entry(0.2)}, "status": {}}
+    assert build_report(few)["verdict"] == "inconclusive"

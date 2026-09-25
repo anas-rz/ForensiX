@@ -11,3 +11,5 @@ DETECTORS = {
 }
 VIDEO_DETECTORS = ("phys-bloodflow", "phys-motion", "phys-lighting")
 AUDIO_DETECTORS = ("phys-voice", "phys-room")
+
+from forensix.physics import physdf  # noqa: E402,F401  (registers physdf; uses DETECTORS)

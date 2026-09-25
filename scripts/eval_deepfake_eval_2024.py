@@ -79,6 +79,8 @@ def main() -> None:
     parser.add_argument("--file-col")
     parser.add_argument("--label-col")
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--weights", nargs="+", default=[], metavar="NAME=PATH",
+                        help="checkpoints for models you trained yourself, e.g. avcons=avcons.safetensors")
     parser.add_argument("--out", type=Path, help="write results JSON here")
     parser.add_argument("--scores-out", type=Path, help="write per-file scores CSV here")
     args = parser.parse_args()
@@ -116,7 +118,8 @@ def main() -> None:
                "n_fake": n_fake, "n_real": len(items) - n_fake, "seed": args.seed, "models": {}}
     all_scores = {}
     for name in models:
-        detector = forensix.load(name, device=args.device)
+        weights = dict(w.split("=", 1) for w in args.weights)
+        detector = forensix.load(name, device=args.device, weights_path=weights.get(name))
         start = time.perf_counter()
         scores, failed = [], 0
         for k, (path, _) in enumerate(items, 1):
