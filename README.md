@@ -169,6 +169,7 @@ Most detectors learn the fingerprints of particular generators. physdf instead m
 | `phys-lighting` | one light field: the face's lighting is stable and follows the scene | done (provisional priors) |
 | `phys-voice` | voice production within anatomical limits: pitch continuity, jitter, noise, vocal-tract length, breathing | done (provisional priors) |
 | `phys-room` | one room and one microphone: stable reverberation, noise floor, microphone colouration and noise spectrum; never digitally silent | done (provisional priors) |
+| learned priors | expected ranges of every constraint fitted on real media only (`scripts/calibrate_physics.py`) | done (fit on Colab) |
 | `physdf` | graph-network priors learned from real media only, audio-visual articulatory coupling, localization, forensic report | planned |
 
 Physics detectors return an anomaly score in [0, 1] (`score_type="anomaly"`). It is the violation of the **most-violated constraint**, because one clearly broken physical law is evidence on its own. `Prediction.details` holds the evidence for every constraint: the measured value, where the expected range ends, and the violation. Constraints that don't apply to a clip are listed but left out of the score, e.g. jaw coupling when the mouth never moves.
@@ -183,7 +184,7 @@ pred.details["constraints"]         # {"mean_coherence": {"measured": 0.986, ...
 **`phys-bloodflow`.**
 - **Pipeline:** rPPG pulse signals from 5 skin regions on the MediaPipe mesh (forehead, cheeks, nose, chin) via POS (Wang et al., 2017), with heart rate and SNR from the 42 to 180 bpm band.
 - **What it checks:** that the regions' pulses are coherent (mean correlation), that their heart rates agree, and that a pulse is detectable at all.
-- **Priors:** the current ranges are provisional, literature-informed values, labelled as such in `details`. Learned priors trained on real video (VoxCeleb, CC BY 4.0) will replace them.
+- **Priors:** the ranges are provisional, literature-informed values, labelled as such in `details`, until [learned priors](#learned-priors) are fitted.
 - **Tested on:** synthetic video of a public-domain portrait. A coherent 72 bpm pulse scores 0.00 (72.1 bpm measured), while no pulse and different heart rates on the two halves of the face both score 1.00.
 - **Limits:** rPPG needs about 6 s or more of a steady, visible face, and heavy compression weakens the signal.
 
@@ -255,6 +256,44 @@ Checks: pitch continuity (jumps over 4 semitones within 10 ms, per voiced second
 - **Spliced rooms:** reverberation splices score only 0.23, because blind RT60 from 3 to 4 decays per stretch is noisy.
 
 Phase-3 priors learned from real recordings should tighten both.
+
+### Learned priors
+
+The provisional ranges are hand-set, and the physics measurements haven't been checked on real video yet. Learned priors replace each constraint's range with one measured on **real media only**, so no generator's artefacts are learned:
+- **Start of the range:** the real-data quantile 1 − α/K of the constraint, where K is the detector's number of constraints. A real clip then trips any one constraint of a detector with probability of about α (default 1%).
+- **End of the range (violation 1):** two more excursions (start − median) beyond the start. It is never shorter than a quarter of the provisional range, and never past a provisional physical limit (e.g. jitter 0.1%) unless real data already reaches it.
+- **Too little data:** a constraint with fewer than 100 applicable real clips keeps its provisional range.
+
+`details["constraints"][k]["prior"]` says which kind of range each constraint used.
+
+```python
+det = forensix.load("phys-room")
+det.load_priors("learned_priors.json")   # or ship it as forensix/physics/learned_priors.json (the default)
+```
+
+`scripts/calibrate_physics.py` has three steps:
+1. **`measure`:** run the detectors once per clip and store the raw constraint values (JSONL, resumable). Video is tracked once, and its sound track goes to the audio detectors.
+2. **`fit`:** fit the priors on real clips. It reports the false-alarm rate on held-out speakers (learned vs provisional) and writes the table.
+3. **`eval`:** real-vs-fake AUC per detector, per constraint and for the max over detectors. Scores are recomputed from the stored values, so refitting doesn't mean re-measuring.
+
+Suggested real data (commercially usable):
+- **Audio:** LibriSpeech (CC BY 4.0).
+- **Video with sound:** VoxCeleb2 test (CC BY 4.0; video copyright stays with the owners).
+
+Calibrate on media like the media you'll check. Evaluate with real clips that weren't used for fitting, e.g. the real half of Deepfake-Eval-2024.
+
+```bash
+python scripts/calibrate_physics.py measure --media /content/LibriSpeech/test-clean --kind audio \
+    --label real --source librispeech-test-clean --max-files 2000 --out m/librispeech.jsonl
+python scripts/calibrate_physics.py measure --media /content/voxceleb2_test/mp4 --kind video --with-audio \
+    --label real --source voxceleb2-test --max-files 1000 --out m/voxceleb2.jsonl
+python scripts/calibrate_physics.py fit --measurements m/librispeech.jsonl m/voxceleb2.jsonl --out learned_priors.json
+python scripts/calibrate_physics.py measure --media /content/de2024/video-data --kind video --with-audio \
+    --labels-csv /content/de2024/video-metadata-publish.csv --source de2024 --out m/de2024.jsonl
+python scripts/calibrate_physics.py eval --measurements m/de2024.jsonl --priors learned_priors.json --out results/physics_de2024.json
+```
+
+**Checked here** on synthetic audio: 120 "real" clips in varied rooms, and 40 with physical violations. On held-out speakers, learned priors cut phys-voice false alarms from 37.5% (provisional) to 6.2%. Constraints with too few applicable clips kept their provisional ranges. A smoke test on a slowly rotating photo encoded as MP4 also showed why real video is needed: the provisional bloodflow and lighting ranges flagged it.
 
 ## Evaluation
 
@@ -371,6 +410,8 @@ forensix/
     ├── face/          # MediaPipe tracker, skin regions, ICT-FaceKit model + fitting
     ├── signals/       # rPPG (POS, CHROM); speech: YIN, jitter, HNR, LPC formants, VTL; room: pause VAD, band spectra, blind RT60
     ├── base.py        # constraint scoring and evidence
+    ├── priors.py      # learned priors: fitting and loading
+    ├── calibration.py # measuring constraints on media; scoring stored measurements
     ├── bloodflow.py   # phys-bloodflow
     ├── motion.py      # phys-motion
     ├── lighting.py    # phys-lighting
@@ -380,6 +421,7 @@ scripts/
 ├── download_weights.py
 ├── eval_asvspoof2019_la.py
 ├── eval_deepfake_eval_2024.py
+├── calibrate_physics.py
 ├── build_image_eval_set.py
 └── eval_image.py
 ```

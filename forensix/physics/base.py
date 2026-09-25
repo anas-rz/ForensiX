@@ -11,16 +11,20 @@ def violation(value: float, start: float, full: float) -> float:
     return float(np.clip((value - start) / (full - start), 0.0, 1.0))
 
 
-def constraint_report(measured: dict[str, float], priors: dict[str, tuple[float, float]]) -> tuple[float, dict]:
+Prior = tuple  # (start, full) or (start, full, source)
+
+
+def constraint_report(measured: dict[str, float], priors: dict[str, Prior]) -> tuple[float, dict]:
     """Score = the largest violation among applicable constraints (one clearly
     broken physical law is evidence on its own), plus per-constraint evidence.
     A NaN measurement means the constraint doesn't apply to this clip (e.g. the
-    mouth never moves); it is reported but left out of the score."""
+    mouth never moves); it is reported but left out of the score. Each prior is
+    ``(start, full)`` or ``(start, full, source)``, source "provisional" or "learned"."""
     evidence, violations = {}, []
     for k, value in measured.items():
-        start, full = priors[k]
-        entry = {"expected_range_start": start, "prior": "provisional"}
-        if np.isfinite(value):
+        start, full, *source = priors[k]
+        entry = {"expected_range_start": start, "prior": source[0] if source else "provisional"}
+        if value is not None and np.isfinite(value):
             v = violation(value, start, full)
             violations.append(v)
             entry.update(measured=round(float(value), 4), violation=round(v, 3))
@@ -30,11 +34,32 @@ def constraint_report(measured: dict[str, float], priors: dict[str, tuple[float,
     return (float(max(violations)) if violations else 0.0), evidence
 
 
-class PhysicsVideoDetector:
+class _PriorsMixin:
+    """Priors of a detector: the learned table shipped with the package (or
+    given with ``load_priors``) where it covers a constraint, else the
+    provisional range in the detector's ``provisional_priors``."""
+
+    name = ""
+    provisional_priors: dict[str, tuple[float, float]] = {}
+
+    def __init__(self, priors=None):
+        self.load_priors(priors)
+
+    def load_priors(self, priors=None) -> None:
+        """``priors``: a learned-priors JSON path or dict (see
+        ``forensix.physics.priors``); None uses the packaged table if any."""
+        from forensix.physics.priors import resolve
+
+        self.priors = resolve(self.name, self.provisional_priors, priors)
+
+    def report(self, measured: dict[str, float]) -> tuple[float, dict]:
+        return constraint_report(measured, self.priors)
+
+
+class PhysicsVideoDetector(_PriorsMixin):
     """Base for physdf video detectors: ``analyze(frames, fps)`` returns a dict
     with ``score`` and evidence; ``predict(path)`` wraps it in a Prediction."""
 
-    name = ""
     threshold = None  # anomaly score
 
     def analyze(self, frames: np.ndarray, fps: float, track=None) -> dict:
@@ -52,10 +77,9 @@ class PhysicsVideoDetector:
         return [self.predict(v) for v in videos]
 
 
-class PhysicsAudioDetector:
+class PhysicsAudioDetector(_PriorsMixin):
     """Base for physdf audio detectors: ``analyze(x, sr)`` on 16 kHz mono audio."""
 
-    name = ""
     threshold = None
     sample_rate = 16000
 

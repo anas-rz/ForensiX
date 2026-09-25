@@ -12,12 +12,13 @@ Lambertian shading is well captured by 9 SH coefficients). Checks:
 - face-scene coupling: when the scene's brightness changes, the face's ambient
   light changes with it; composited faces don't follow.
 
-Phase-2 priors are provisional (marked in ``details``).
+Priors are provisional ranges (marked in ``details``) until learned priors,
+fitted on real media with ``scripts/calibrate_physics.py``, are loaded.
 """
 
 import numpy as np
 
-from forensix.physics.base import PhysicsVideoDetector, constraint_report
+from forensix.physics.base import PhysicsVideoDetector
 from forensix.physics.face.fit import fit_frame
 from forensix.physics.face.ict import ICT_FILES
 from forensix.physics.face.tracker import FACE_LANDMARKER, FaceTrack, track_face
@@ -132,6 +133,7 @@ def coupling(face_ambient: np.ndarray, scene: np.ndarray, min_rel_std: float = 0
 
 class LightingDetector(PhysicsVideoDetector):
     name = "phys-lighting"
+    provisional_priors = PRIORS
 
     def analyze(self, frames: np.ndarray, fps: float, track: FaceTrack | None = None) -> dict:
         track = track or track_face(frames, fps)
@@ -154,7 +156,7 @@ class LightingDetector(PhysicsVideoDetector):
             "shading_residual": float(np.nanmedian(residuals)) if np.isfinite(residuals).any() else float("nan"),
             "face_scene_coupling": coupling(coeffs[:, 0], scene),
         }
-        score, evidence = constraint_report(measured, PRIORS)
+        score, evidence = self.report(measured)
         return {
             "score": score,
             "constraints": evidence,
@@ -181,6 +183,6 @@ register(
         description="Lighting physics (physdf): 9-coefficient spherical-harmonic lighting fitted to "
         "skin on the ICT-FaceKit face (placed via MediaPipe); checks light-direction stability, "
         "shading plausibility and face-scene brightness coupling. Anomaly score in [0, 1] with "
-        "evidence and per-frame timelines. Priors are provisional until phase 3.",
+        "evidence and per-frame timelines. Priors: learned from real media when available, else provisional.",
     )
 )

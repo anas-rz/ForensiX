@@ -9,15 +9,15 @@ Checks on the tracked face over time:
 - jaw coupling: large mouth openings come with the chin dropping (the jaw is a
   hinge); lip-sync fakes often move the lips alone.
 
-Phase-2 priors are provisional ranges (marked in ``details``); learned priors
-from real video replace them in phase 3.
+Priors are provisional ranges (marked in ``details``) until learned priors,
+fitted on real media with ``scripts/calibrate_physics.py``, are loaded.
 """
 
 import numpy as np
 from scipy.signal import welch
 from scipy.spatial.transform import Rotation
 
-from forensix.physics.base import PhysicsVideoDetector, constraint_report
+from forensix.physics.base import PhysicsVideoDetector
 from forensix.physics.face.tracker import FACE_LANDMARKER, FaceTrack, track_face
 from forensix.registry import ModelSpec, register
 
@@ -34,7 +34,7 @@ PRIORS = {
     "p99_angular_acceleration_deg_s2": (6000.0, 20000.0),
     # p90 RMS residual / inter-ocular distance. On synthetic rigid motion MediaPipe's
     # noise floor is ~0.006; a 10% periodic stretch of the upper face gives ~0.015.
-    # Start at ~2x the noise floor; real-video noise is calibrated in phase 3.
+    # Start at ~2x the noise floor; real-video noise is calibrated by learned priors.
     "rigid_deformation": (0.012, 0.03),
     "jaw_lip_coupling": (0.4, 0.0),  # correlation; lower is worse
 }
@@ -109,6 +109,7 @@ def jaw_lip_coupling(landmarks: np.ndarray, min_aperture_std: float = 0.03) -> f
 
 class MotionDetector(PhysicsVideoDetector):
     name = "phys-motion"
+    provisional_priors = PRIORS
 
     def analyze(self, frames: np.ndarray, fps: float, track: FaceTrack | None = None) -> dict:
         track = track or track_face(frames, fps)
@@ -134,7 +135,7 @@ class MotionDetector(PhysicsVideoDetector):
             "rigid_deformation": float(np.percentile(deformation, 90)),
             "jaw_lip_coupling": jaw_lip_coupling(landmarks),
         }
-        score, evidence = constraint_report(measured, PRIORS)
+        score, evidence = self.report(measured)
         worst = int(np.argmax(deformation))
         return {
             "score": score,
@@ -159,6 +160,6 @@ register(
         description="Head and jaw biomechanics (physdf): smoothness of head rotation (energy "
         "above 8 Hz), angular velocity/acceleration limits, skull rigidity (Procrustes "
         "residual of rigid landmarks) and jaw-lip coupling. Anomaly score in [0, 1] with "
-        "per-constraint evidence and per-frame timelines. Priors are provisional until phase 3.",
+        "per-constraint evidence and per-frame timelines. Priors: learned from real media when available, else provisional.",
     )
 )

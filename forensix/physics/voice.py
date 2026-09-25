@@ -9,12 +9,13 @@ Measured with source-filter estimators (forensix.physics.signals.voice):
   children to large adults) and stable over time (one speaker, one tract);
 - breathing: the lungs force pauses; long stretches without one are suspicious.
 
-Phase-2 priors are provisional (marked in ``details``).
+Priors are provisional ranges (marked in ``details``) until learned priors,
+fitted on real media with ``scripts/calibrate_physics.py``, are loaded.
 """
 
 import numpy as np
 
-from forensix.physics.base import PhysicsAudioDetector, constraint_report
+from forensix.physics.base import PhysicsAudioDetector
 from forensix.physics.signals import voice as V
 from forensix.registry import ModelSpec, register
 
@@ -89,6 +90,7 @@ def vtl_estimates(formants: np.ndarray, min_frames: int = 30) -> tuple[float, fl
 
 class VoiceDetector(PhysicsAudioDetector):
     name = "phys-voice"
+    provisional_priors = PRIORS
 
     def analyze(self, x: np.ndarray, sr: int) -> dict:
         x = np.asarray(x, dtype=np.float64)
@@ -109,7 +111,7 @@ class VoiceDetector(PhysicsAudioDetector):
             "vtl_variation": vtl_var,
             "longest_pause_free_s": float(max(runs)) if runs else float("nan"),
         }
-        score, evidence = constraint_report(measured, PRIORS)
+        score, evidence = self.report(measured)
         return {
             "score": score,
             "constraints": evidence,
@@ -137,7 +139,7 @@ register(
         paper="https://doi.org/10.1121/1.1458024",
         description="Voice-production physics (physdf): F0 continuity (jump rate), jitter, HNR, vocal-tract "
         "length from formant dispersion (range and stability) and breathing pauses. No model "
-        "weights. Anomaly score in [0, 1] with per-constraint evidence. Priors are provisional "
-        "until phase 3.",
+        "weights. Anomaly score in [0, 1] with per-constraint evidence. Priors: learned from "
+        "real media when available, else provisional.",
     )
 )

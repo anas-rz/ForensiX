@@ -4,20 +4,20 @@ A real face shows a pulse (rPPG) in every skin region, at the same heart rate,
 with signals that move together. Face swaps and synthesized faces often break
 this: the pulse is missing, differs between regions, or is incoherent.
 
-Phase-2 priors are provisional ranges from the rPPG literature (marked in
-``details``); learned priors trained on real video replace them in phase 3.
+Priors are provisional ranges (marked in ``details``) until learned priors,
+fitted on real media with ``scripts/calibrate_physics.py``, are loaded.
 """
 
 import numpy as np
 
-from forensix.physics.base import PhysicsVideoDetector, constraint_report
+from forensix.physics.base import PhysicsVideoDetector
 from forensix.physics.face.regions import REGIONS, region_masks
 from forensix.physics.face.tracker import FACE_LANDMARKER, FaceTrack, track_face
 from forensix.physics.signals.rppg import coherence, heart_rate, pos
 from forensix.registry import ModelSpec, register
 
 MIN_SECONDS = 6.0
-# provisional priors (phase 2): (value where the violation starts, value where it saturates)
+# provisional priors: (value where the violation starts, value where it saturates)
 PRIORS = {
     "mean_coherence": (0.5, 0.0),  # correlation between regions' pulses; lower is worse
     "hr_spread_bpm": (5.0, 20.0),  # std of region heart rates; higher is worse
@@ -39,6 +39,7 @@ def region_rgb(frames: np.ndarray, track: FaceTrack) -> dict[str, np.ndarray]:
 
 class BloodFlowDetector(PhysicsVideoDetector):
     name = "phys-bloodflow"
+    provisional_priors = PRIORS
 
     def analyze(self, frames: np.ndarray, fps: float, track: FaceTrack | None = None) -> dict:
         track = track or track_face(frames, fps)
@@ -63,7 +64,7 @@ class BloodFlowDetector(PhysicsVideoDetector):
             "hr_spread_bpm": float(np.std([r["heart_rate_bpm"] for r in regions.values()])),
             "median_snr_db": float(np.median([r["snr_db"] for r in regions.values()])),
         }
-        score, evidence = constraint_report(measured, PRIORS)
+        score, evidence = self.report(measured)
         return {
             "score": score,
             "constraints": evidence,
@@ -86,6 +87,6 @@ register(
         description="Blood-flow physics (physdf): POS pulse signals in 5 facial skin regions "
         "(MediaPipe mesh); scores missing, inconsistent or incoherent pulses. Anomaly score "
         "in [0, 1] (the most violated constraint) with per-constraint evidence in Prediction.details. Needs >= 6 s of a "
-        "visible face. Priors are provisional until learned priors (phase 3).",
+        "visible face. Priors: learned from real media when available, else provisional.",
     )
 )

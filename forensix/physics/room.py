@@ -11,12 +11,13 @@
 - noise-spectrum stability: the background noise keeps its spectral shape
   (no switch between two noise regimes).
 
-Phase-2 priors are provisional (marked in ``details``).
+Priors are provisional ranges (marked in ``details``) until learned priors,
+fitted on real media with ``scripts/calibrate_physics.py``, are loaded.
 """
 
 import numpy as np
 
-from forensix.physics.base import PhysicsAudioDetector, constraint_report
+from forensix.physics.base import PhysicsAudioDetector
 from forensix.physics.signals import room as R
 from forensix.registry import ModelSpec, register
 
@@ -39,6 +40,7 @@ PRIORS = {
 
 class RoomDetector(PhysicsAudioDetector):
     name = "phys-room"
+    provisional_priors = PRIORS
 
     def analyze(self, x: np.ndarray, sr: int) -> dict:
         x = np.asarray(x, dtype=np.float64)
@@ -88,7 +90,7 @@ class RoomDetector(PhysicsAudioDetector):
             "channel_variation_db": R.shape_variation_db(speech_spectra),
             "noise_spectrum_change_db": R.shape_change_db(noise_spectra),
         }
-        score, evidence = constraint_report(measured, PRIORS)
+        score, evidence = self.report(measured)
         return {
             "score": score,
             "constraints": evidence,
@@ -118,6 +120,6 @@ register(
         description="Recording-environment physics (physdf): blind reverberation-time stability, "
         "noise-floor continuity, microphone self-noise (no digital silence), and stability of "
         "the channel and noise spectra. No model weights. Anomaly score in [0, 1] with "
-        "per-constraint evidence and timelines. Priors are provisional until phase 3.",
+        "per-constraint evidence and timelines. Priors: learned from real media when available, else provisional.",
     )
 )

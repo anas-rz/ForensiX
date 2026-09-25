@@ -401,3 +401,67 @@ def test_room_detector_no_false_alarm_on_real_speech():
     pred = forensix.load("phys-room").predict(SPEECH)
     assert pred.score_type == "anomaly" and pred.fake_prob == 0.0
     assert pred.details["constraints"]["digital_silence_fraction"]["measured"] == 0.0
+
+
+# ---- learned priors (phase 3) -------------------------------------------------
+
+from forensix.physics import DETECTORS  # noqa: E402
+from forensix.physics.calibration import (  # noqa: E402
+    in_holdout,
+    measure_file,
+    measurements_by_detector,
+    score_rows,
+)
+from forensix.physics.priors import FORMAT, fit_constraint, fit_priors, provisional_priors, resolve  # noqa: E402
+
+
+def test_fit_constraint_directions_and_limits():
+    rng = np.random.default_rng(0)
+    higher = rng.normal(1.0, 0.2, 2000)  # e.g. a jump rate; provisional (2, 6)
+    e = fit_constraint(higher, (2.0, 6.0), quantile=0.99)
+    assert e["start"] == pytest.approx(np.quantile(higher, 0.99))
+    assert e["full"] > e["start"]
+    lower = rng.normal(0.9, 0.2, 2000)  # e.g. jitter %; lower is worse, provisional (0.25, 0.1)
+    e = fit_constraint(lower, (0.25, 0.1), quantile=0.99)
+    assert e["start"] == pytest.approx(np.quantile(lower, 0.01))
+    assert e["full"] == 0.1  # capped at the physical limit instead of ramping past it
+    assert fit_constraint([1.0, np.nan, None] * 30, (2.0, 6.0), 0.99) is None  # too few finite values
+
+
+def test_fit_priors_and_resolve():
+    rng = np.random.default_rng(1)
+    provisional = provisional_priors()
+    measurements = {"phys-voice": {"hnr_db": list(rng.normal(20, 3, 500))}}
+    table = fit_priors(measurements, provisional, alpha=0.01)
+    assert table["format"] == FORMAT and list(table["detectors"]) == ["phys-voice"]
+    assert table["detectors"]["phys-voice"]["hnr_db"]["quantile"] == pytest.approx(1 - 0.01 / 6)
+    priors = resolve("phys-voice", provisional["phys-voice"], table)
+    assert priors["hnr_db"][2] == "learned" and priors["jitter_percent"][2] == "provisional"
+    flipped = {"format": FORMAT, "detectors": {"phys-voice": {"hnr_db": {"start": 30, "full": 20}}}}
+    with pytest.raises(ValueError, match="wrong way"):
+        resolve("phys-voice", provisional["phys-voice"], flipped)
+
+
+def test_learned_priors_change_scores_and_are_labelled(tmp_path):
+    rows = [{"file": "a", "group": "spk1", "label": "real", "detectors": {
+        "phys-voice": {"measured": {"hnr_db": 30.0, "jitter_percent": 1.0}}}}]
+    table = {"format": FORMAT, "detectors": {"phys-voice": {"hnr_db": {"start": 25.0, "full": 35.0}}}}
+    assert score_rows(rows, "phys-voice", {"format": FORMAT})[0][0] == 0.0  # provisional: HNR fine below 35 dB
+    assert score_rows(rows, "phys-voice", table)[0][0] == pytest.approx(0.5)
+    path = tmp_path / "priors.json"
+    path.write_text(__import__("json").dumps(table))
+    det = DETECTORS["phys-voice"]()
+    det.load_priors(path)
+    evidence = det.predict(SPEECH).details["constraints"]
+    assert evidence["hnr_db"]["prior"] == "learned" and evidence["jitter_percent"]["prior"] == "provisional"
+
+
+def test_measure_file_and_split():
+    detectors = {name: DETECTORS[name]() for name in ("phys-voice", "phys-room")}
+    result = measure_file(SPEECH, "audio", detectors)
+    assert set(result) == {"phys-voice", "phys-room"}
+    assert result["phys-room"]["score"] == 0.0 and "noise_spectrum_change_db" in result["phys-room"]["measured"]
+    assert measurements_by_detector([{"detectors": result}])["phys-voice"]["hnr_db"][0] is not None
+    groups = [f"spk{i}" for i in range(2000)]
+    held = [g for g in groups if in_holdout(g, 0.2)]
+    assert 0.15 < len(held) / len(groups) < 0.25 and held == [g for g in groups if in_holdout(g, 0.2)]
