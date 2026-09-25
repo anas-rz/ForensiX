@@ -347,3 +347,57 @@ def test_voice_detector_no_false_alarm_on_real_speech():
     assert pred.score_type == "anomaly" and pred.fake_prob == 0.0
     assert 15 < pred.details["voice"]["vocal_tract_length_cm"] < 20
     assert 80 < pred.details["voice"]["f0_median_hz"] < 180
+
+
+# ---- phys-room ---------------------------------------------------------------
+
+from voice_synth import in_room, mic, noise  # noqa: E402
+
+from forensix.physics.room import RoomDetector  # noqa: E402
+from forensix.physics.signals import room as Rm  # noqa: E402
+
+
+def test_shape_change_catches_two_regimes():
+    white = Rm.band_spectrum_db(noise(SR, -50), SR)
+    brown = Rm.band_spectrum_db(noise(SR, -50, "brown"), SR)
+    mixed = [white] * 4 + [brown] * 4
+    assert Rm.shape_change_db(mixed) > 9.0  # full white-brown difference (~10 dB RMS)
+    assert Rm.shape_variation_db(mixed) < 6.0  # deviation from the median only sees half of it
+    assert Rm.shape_change_db([white] * 8) < 1.0
+
+
+@pytest.fixture(scope="module")
+def room_cases():
+    dry = utterance(seconds=16, phrase_s=2.0, pause_s=0.6, floor=0.0).astype(np.float64)
+    n, half = len(dry), len(dry) // 2
+    room = in_room(dry, 0.5)
+
+    def splice(a, b):
+        return np.concatenate([a[:half], b[half:]])
+
+    return {
+        "one_room": room + noise(n, -60),
+        "noise_floor_jump_db": room + splice(noise(n, -70), noise(n, -45)),
+        "digital_silence_fraction": dry,
+        "channel_variation_db": splice(room, mic(room, 400, 2500)) + noise(n, -60),
+        "noise_spectrum_change_db": room + splice(noise(n, -55), noise(n, -55, "brown")),
+    }
+
+
+def test_room_detector_synthetic(room_cases):
+    det = RoomDetector()
+    r = det.analyze(room_cases["one_room"], SR)
+    assert r["score"] == 0.0
+    assert abs(r["room"]["rt60_s_median"] - 0.5) < 0.15
+    for constraint in ["noise_floor_jump_db", "digital_silence_fraction", "channel_variation_db"]:
+        r = det.analyze(room_cases[constraint], SR)
+        assert r["constraints"][constraint]["violation"] > 0.5, constraint
+    # a change in noise colour at the same level is a weak cue (margin over real speech is small)
+    r = det.analyze(room_cases["noise_spectrum_change_db"], SR)
+    assert r["constraints"]["noise_spectrum_change_db"]["violation"] > 0.1
+
+
+def test_room_detector_no_false_alarm_on_real_speech():
+    pred = forensix.load("phys-room").predict(SPEECH)
+    assert pred.score_type == "anomaly" and pred.fake_prob == 0.0
+    assert pred.details["constraints"]["digital_silence_fraction"]["measured"] == 0.0

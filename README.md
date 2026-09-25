@@ -110,6 +110,7 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 | physics | `phys-motion` | ForensiX + MediaPipe (Apache-2.0) | ≥ 2 s of a tracked face at ≥ 20 fps (for the smoothness check) | signals verified on synthetic data; provisional priors |
 | physics | `phys-lighting` | ForensiX + MediaPipe (Apache-2.0) + ICT-FaceKit (MIT) | ≥ 2 s of a tracked face | signals verified on synthetic relighting; provisional priors |
 | physics | `phys-voice` | ForensiX (no model weights) | ≥ 1.5 s of voiced speech | estimators verified on synthetic speech; priors anchored on real speech; no false alarms on 10 real excerpts |
+| physics | `phys-room` | ForensiX (no model weights) | ≥ 6 s of speech with pauses | verified on synthetic rooms and microphones; priors anchored on real speech; no false alarms on 10 real excerpts |
 
 ‡ Training data: several image and video models were trained on data with non-commercial terms. UnivFD, RINE and SAFE used ForenSynths (CC BY-NC-SA 4.0), `clipdet` used COCO (mixed Flickr licenses), and Community Forensics used ImageNet, LAION and others. `avad` was trained on LRS2 (BBC, research-only terms). The video models were trained on DFDC (`dfdc-selim`, `dfdc-wm`) and FaceForensics++ (`gend`, `gend-pe`, `dfdet-clip`), both of which have research-only terms of use. ForensiX lists the licenses of the code and weights, which are what govern redistribution. Whether a training set's non-commercial terms carry over to the trained weights is legally unsettled; check with counsel for commercial deployment.
 
@@ -167,7 +168,7 @@ Most detectors learn the fingerprints of particular generators. physdf instead m
 | `phys-motion` | the head is a rigid body with inertia; the jaw is a hinge | done (provisional priors) |
 | `phys-lighting` | one light field: the face's lighting is stable and follows the scene | done (provisional priors) |
 | `phys-voice` | voice production within anatomical limits: pitch continuity, jitter, noise, vocal-tract length, breathing | done (provisional priors) |
-| `phys-room` | one room and one microphone | next |
+| `phys-room` | one room and one microphone: stable reverberation, noise floor, microphone colouration and noise spectrum; never digitally silent | done (provisional priors) |
 | `physdf` | graph-network priors learned from real media only, audio-visual articulatory coupling, localization, forensic report | planned |
 
 Physics detectors return an anomaly score in [0, 1] (`score_type="anomaly"`). It is the violation of the **most-violated constraint**, because one clearly broken physical law is evidence on its own. `Prediction.details` holds the evidence for every constraint: the measured value, where the expected range ends, and the violation. Constraints that don't apply to a clip are listed but left out of the score, e.g. jaw coupling when the mouth never moves.
@@ -224,6 +225,36 @@ Checks: pitch continuity (jumps over 4 semitones within 10 ms, per voiced second
 **Verification.** On source-filter speech synthesized with known physics, the estimators recover F0 within 3%, formants within 5% and tract length within 1 cm (17 and 14 cm tracts). They flag a too-periodic voice (0.71), a 28 cm tract (1.00) and 20 s without a breath (0.62).
 
 **Real speech.** The priors are anchored just above values measured on real read speech: two CC0 LibriVox readers, ten 20 s excerpts. All ten score 0.00, and a 10 s excerpt is a test fixture. That check showed the first version of the pitch-continuity check gave false alarms on real speech (0.2 to 1.0), because of YIN octave errors at voicing edges. With octave-error correction, real speech measures 0 to 1.6 jumps per second. The check is still weak: at this tracker quality it can't separate fast genuine pitch moves from a synthetic octave-jumping voice.
+
+**`phys-room`.** A recording happens in one room, through one microphone. It measures the recording environment from speech pauses and decays:
+- **Reverberation:** blind RT60 from free decays at speech offsets (after Löllmann et al., 2010). The slow end of the decay times in consecutive stretches of the file should agree.
+- **Noise floor:** the quietest level of each pause. The detector compares the quietest pause before and after every point, because breaths in pauses only raise their level.
+- **Microphone self-noise:** real microphones and preamps are never digitally silent (below −90 dBFS). Synthetic or gated speech often is.
+- **Channel:** the level-normalized long-term speech spectrum of each 3 s chunk (microphone and codec colouration) keeps its shape.
+- **Noise spectrum:** the spectral shape of the background noise in quiet pauses doesn't switch between two regimes.
+
+`details["room"]` gives the median RT60 and the noise floor, and `details["timeline"]` gives RT60 per stretch and the floor of each pause, for localization.
+
+**Verification.** On synthetic speech in synthetic rooms:
+
+| Case | Score | Measured |
+|---|---|---|
+| one room (RT60 0.5 s) | 0.00 | RT60 0.47 to 0.57 s |
+| noise floor jumps −70 → −45 dBFS | 1.00 | 24.7 dB |
+| digitally silent pauses | 1.00 | 100% of pause frames |
+| microphone change (band-pass) mid-file | 1.00 | 11.3 dB |
+| rooms spliced (RT60 0.15 s and 1.0 s) | 0.23 | RT60 variation 0.45 |
+| white → brown noise at the same level | 0.25 | 8.2 dB |
+
+**Real speech.** The priors are anchored above values measured on the same ten 20 s LibriVox excerpts used for `phys-voice`. All ten score 0.00, and the 10 s fixture is a test. The first version gave false alarms on real speech:
+- **Noise floor:** measured per 3 s window, it read speech level in windows that were nearly all speech (jumps of 8 to 33 dB). It now uses pauses only.
+- **Noise spectrum:** real pauses hold breaths, so only pauses at the floor are used.
+
+**Limits.** Two cues are weak:
+- **Noise colour:** real read speech (64 kbps MP3) reaches 6 dB of noise-spectrum change, close to the 8 dB of a white-to-brown switch.
+- **Spliced rooms:** reverberation splices score only 0.23, because blind RT60 from 3 to 4 decays per stretch is noisy.
+
+Phase-3 priors learned from real recordings should tighten both.
 
 ## Evaluation
 
@@ -338,12 +369,13 @@ forensix/
 └── physics/           # physdf
     ├── io.py          # full-frame-rate video reading
     ├── face/          # MediaPipe tracker, skin regions, ICT-FaceKit model + fitting
-    ├── signals/       # rPPG (POS, CHROM); speech: YIN, jitter, HNR, LPC formants, VTL
+    ├── signals/       # rPPG (POS, CHROM); speech: YIN, jitter, HNR, LPC formants, VTL; room: pause VAD, band spectra, blind RT60
     ├── base.py        # constraint scoring and evidence
     ├── bloodflow.py   # phys-bloodflow
     ├── motion.py      # phys-motion
     ├── lighting.py    # phys-lighting
-    └── voice.py       # phys-voice
+    ├── voice.py       # phys-voice
+    └── room.py        # phys-room
 scripts/
 ├── download_weights.py
 ├── eval_asvspoof2019_la.py
