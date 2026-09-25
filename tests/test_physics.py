@@ -40,7 +40,7 @@ def test_violation_ramp():
 
 
 def test_physics_registry():
-    assert {"phys-bloodflow", "phys-motion", "phys-lighting"} <= set(forensix.list_models("physics"))
+    assert {"phys-bloodflow", "phys-motion", "phys-lighting", "phys-voice"} <= set(forensix.list_models("physics"))
 
 
 @pytest.fixture(scope="module")
@@ -291,3 +291,59 @@ def test_lighting_on_face_clips(lighting_clips):
     assert r["jitter"]["constraints"]["light_direction_jitter_deg"]["violation"] > 0.5
     assert r["decoupled"]["constraints"]["face_scene_coupling"]["violation"] > 0.5
     assert len(r["jitter"]["timeline"]["light_direction"]) == 60
+
+
+# ---- phys-voice --------------------------------------------------------------
+
+import sys  # noqa: E402
+
+sys.path.insert(0, str(Path(__file__).parent))
+from voice_synth import SR, tube_formants, utterance  # noqa: E402
+
+from forensix.physics.signals import voice as V  # noqa: E402
+from forensix.physics.voice import VoiceDetector, f0_jump_rate  # noqa: E402
+
+SPEECH = Path(__file__).parent / "data" / "speech_cc0.flac"
+
+
+@pytest.mark.parametrize("f0, length", [(120.0, 17.0), (210.0, 14.0)])
+def test_voice_estimators_recover_ground_truth(f0, length):
+    x = utterance(f0=f0, length_cm=length).astype(np.float64)
+    f0_est, _ = V.yin_f0(x, SR)
+    assert abs(np.nanmedian(f0_est) - f0) / f0 < 0.03
+    formants = V.lpc_formants(x, SR, f0_est)
+    assert np.allclose(np.nanmedian(formants, 0), tube_formants(length)[:4], rtol=0.05)
+    assert abs(np.nanmedian(V.vocal_tract_length_cm(formants)) - length) < 1.0
+    jitter, shimmer = V.jitter_shimmer(V.pitch_marks(x, SR, f0_est), SR)
+    assert 0.3 < jitter < 1.2  # synthesized with 0.8%
+    assert V.speech_runs_s(x, SR)[:2] == pytest.approx([2.5, 2.5], abs=0.1)
+
+
+def test_f0_jump_rate_ignores_isolated_octave_errors():
+    f0 = np.full(300, 120.0)
+    aper = np.full(300, 0.05)
+    errors = f0.copy()
+    errors[[50, 51, 150, 220]] *= 2  # 1-2 frame octave errors, as trackers make
+    assert f0_jump_rate(errors, aper) == 0.0
+    shifted = f0 * np.where((np.arange(300) // 40) % 2, 2.0, 1.0)  # sustained octave shifts
+    assert f0_jump_rate(shifted, aper) > 1.0
+
+
+def test_voice_detector_synthetic_violations():
+    det = VoiceDetector()
+    assert det.analyze(utterance(), SR)["score"] == 0.0
+    cases = {
+        "jitter_percent": dict(jitter=0.0, shimmer=0.0, aspiration=0.0),
+        "vtl_out_of_range_cm": dict(length_cm=28.0),
+        "longest_pause_free_s": dict(seconds=20, pause_s=0),
+    }
+    for constraint, kw in cases.items():
+        r = det.analyze(utterance(**kw), SR)
+        assert r["constraints"][constraint]["violation"] > 0.5, constraint
+
+
+def test_voice_detector_no_false_alarm_on_real_speech():
+    pred = forensix.load("phys-voice").predict(SPEECH)
+    assert pred.score_type == "anomaly" and pred.fake_prob == 0.0
+    assert 15 < pred.details["voice"]["vocal_tract_length_cm"] < 20
+    assert 80 < pred.details["voice"]["f0_median_hz"] < 180

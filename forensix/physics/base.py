@@ -50,3 +50,25 @@ class PhysicsVideoDetector:
 
     def predict_batch(self, videos) -> list[Prediction]:
         return [self.predict(v) for v in videos]
+
+
+class PhysicsAudioDetector:
+    """Base for physdf audio detectors: ``analyze(x, sr)`` on 16 kHz mono audio."""
+
+    name = ""
+    threshold = None
+    sample_rate = 16000
+
+    def analyze(self, x: np.ndarray, sr: int) -> dict:
+        raise NotImplementedError
+
+    def predict(self, audio, sample_rate: int | None = None) -> Prediction:
+        from forensix.audio.io import load_audio
+
+        x = load_audio(audio, self.sample_rate, sample_rate)
+        result = self.analyze(x, self.sample_rate)
+        return Prediction(model=self.name, fake_prob=result["score"], threshold=None,
+                          score_type="anomaly", details=result)
+
+    def predict_batch(self, inputs, sample_rate: int | None = None) -> list[Prediction]:
+        return [self.predict(a, sample_rate) for a in inputs]
