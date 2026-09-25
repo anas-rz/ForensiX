@@ -71,7 +71,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--data", type=Path, required=True, help="local copy of the dataset")
     parser.add_argument("--modality", choices=["video", "audio", "image"], required=True)
-    parser.add_argument("--models", nargs="+", help="default: every model of the modality's family")
+    parser.add_argument("--models", nargs="+",
+                        help="default: every model of the modality's family (for video, add "
+                             "audio-visual models such as avad explicitly)")
     parser.add_argument("--max-per-class", type=int, help="balanced random subset per class")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--file-col")

@@ -51,6 +51,13 @@ pred = detector.predict("clip.mp4")
 pred.fake_prob, pred.segment_fake_probs    # video score, per-face scores
 ```
 
+Audio-visual detectors take a video with an audio track (requires ffmpeg):
+
+```python
+pred = forensix.load("avad").predict("talking_head.mp4")
+pred.fake_prob, pred.score_type     # 0.14, "anomaly" (higher = more likely fake)
+```
+
 Audio is converted to mono and resampled to 16 kHz. Clips longer than the model window (4.04 s) are split into windows and the window scores are averaged. `fake_prob` is the softmax output and is **not calibrated**, so pick thresholds per model.
 
 ## Models
@@ -87,11 +94,19 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 | video | `dfdet-clip` | MIT†‡ | 303M | FaceForensics++ | video-level AUROC: CDFv2 96.6, DFD 98.0, DFDC 87.2, FFIW 91.5, DeepSpeak v1 92.0 | pending |
 | video | `dfdc-wm` | MIT‡ | 4 nets, 81M total (incl. RetinaFace) | DFDC training set | 2nd place, Deepfake Detection Challenge: private-test log loss 0.4284 |  pending |
 
-‡ Training data: several image and video models were trained on data with non-commercial terms. UnivFD, RINE and SAFE used ForenSynths (CC BY-NC-SA 4.0), `clipdet` used COCO (mixed Flickr licenses), and Community Forensics used ImageNet, LAION and others. The video models were trained on DFDC (`dfdc-selim`, `dfdc-wm`) and FaceForensics++ (`gend`, `gend-pe`, `dfdet-clip`), both of which have research-only terms of use. ForensiX lists the licenses of the code and weights, which are what govern redistribution. Whether a training set's non-commercial terms carry over to the trained weights is legally unsettled; check with counsel for commercial deployment.
+**Audiovisual**
+
+| Family | Name | License | Params | Trained on | Published result | ForensiX eval |
+|---|---|---|---|---|---|---|
+| audiovisual | `avad` | MIT*‡ | 41.6M + RetinaFace | real videos only (LRS2), self-supervised | FakeAVCeleb: 94.5 AUC averaged over the 4 fake-video categories; 71.6 AUC on fake audio with real video | pending |
+
+`avad` returns an **anomaly score**, not a probability: `Prediction.score_type == "anomaly"`, and `threshold`, `is_fake` and `label` are `None`. Choose a threshold on your own data. AUC and AP are threshold-free.
+
+‡ Training data: several image and video models were trained on data with non-commercial terms. UnivFD, RINE and SAFE used ForenSynths (CC BY-NC-SA 4.0), `clipdet` used COCO (mixed Flickr licenses), and Community Forensics used ImageNet, LAION and others. `avad` was trained on LRS2 (BBC, research-only terms). The video models were trained on DFDC (`dfdc-selim`, `dfdc-wm`) and FaceForensics++ (`gend`, `gend-pe`, `dfdet-clip`), both of which have research-only terms of use. ForensiX lists the licenses of the code and weights, which are what govern redistribution. Whether a training set's non-commercial terms carry over to the trained weights is legally unsettled; check with counsel for commercial deployment.
 
 † For UnivFD the code and linear head are MIT, for RINE the code and trainable weights are Apache-2.0, and the video models `gend` and `dfdet-clip` are MIT and fine-tuned from the same CLIP. Their backbone is OpenAI CLIP ViT-L/14 (MIT license). OpenAI's model card lists "any deployed use case" as out of scope, which is an intended-use statement rather than a license term.
 
-\* The code is MIT. The weights are released by the authors through a link in the MIT repo's README, but they are hosted outside the repo and have no separate license of their own.
+\* The code is MIT. The weights (for `avad`, its synchronization model) are released by the authors through a link in the MIT repo's README, but they are hosted outside the repo and have no separate license of their own.
 
 "Subset EER, upstream scores" is computed from the score files the authors released, restricted to our evaluation subset (see [Evaluation](#evaluation)). It's the number our own run should reproduce. With 1,000 bona fide trials the subset EER moves in 0.1-point steps.
 
@@ -118,6 +133,13 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
   - **`gend-pe`:** the same method on Meta's Perception Encoder (PE-Core L/14, Apache-2.0) through timm, with timm's eval transform (bicubic 224, mean/std 0.5), as upstream.
   - **`dfdet-clip`:** GenD's predecessor, *Unlocking the Hidden Potential of CLIP in Generalizable Deepfake Detection* ([paper](https://arxiv.org/abs/2503.19683), [code](https://github.com/yermandy/deepfake-detection), MIT), with the same face pipeline. Its Lightning checkpoint stores PEFT LayerNorm-tuning wrappers, and ForensiX folds the tuned LayerNorms into a plain CLIP. The checkpoint loads with `weights_only=True`.
   - **Upstream preprocessing is non-commercial:** DeepfakeBench (CC BY-NC) for `dfdet-clip` and InsightFace for GenD. MTCNN plus GenD's alignment replaces both.
+- **AVAD**: Feng, Chen & Owens, *Self-Supervised Video Forensics by Audio-Visual Anomaly Detection*, CVPR 2023 ([paper](https://arxiv.org/abs/2301.01767), [code](https://github.com/cfeng16/audio-visual-forensics)).
+  - **Method:** an audio-visual synchronization network trained only on real talking-head videos scores 31 audio offsets (±15 frames) for each 5-frame window. An autoregressive model of those offset distributions then measures how unusual the video's sync pattern is (KL divergence).
+  - **Scoring:** as upstream's `detect.py` with `lam=0` and `max_len=50`. The optional PCA feature branch is omitted because it needs a pickled scikit-learn object.
+  - **Face tracks:** upstream expects face tracks pre-cropped by `syncnet_python`. ForensiX builds them itself: 25 fps, RetinaFace detection with NMS, then syncnet_python's IoU tracking, median-smoothed crops and 0.4 crop scale (MIT, [forensix/audiovisual/facetrack.py](forensix/audiovisual/facetrack.py)). There is no scene-cut detection and no JPEG/XVID re-encoding.
+  - **Track selection:** the longest track is scored. If none meets upstream's minimum (100 frames, 100 px face), the longest track of at least 5 frames is used.
+  - **Rewritten parts:** the visual encoder's upstream code comes from an unlicensed repo, so it is written independently with the same parameter names. The log-mel front end is also reimplemented, without librosa, and without `torch.stft(return_complex=False)`, which current PyTorch has removed.
+  - **Speed:** the visual embedding is computed once per window instead of 31 times; the math is identical.
 - **DFDC 2nd place (Team WM)**: Zhao, Cui & Zhou ([code](https://github.com/cuihaoleo/kaggle-dfdc); results in the [challenge paper](https://arxiv.org/abs/2006.07397), Table 2).
   - **Pipeline:** every 10th frame, up to 25 faces. RetinaFace-ResNet50 (biubug6, MIT) finds the largest face, keeping upstream's lack of NMS. Each face gets an ArcFace-style 5-point alignment to 320×320, then an ensemble scores it: Xception (0.2), WS-DAN/Xception (0.7) and WS-DAN/EfficientNet-B3 (0.1). The video score is the mean.
   - **Vendored code:** the model files are vendored with their licenses (MIT, BSD-3 for the Xception port). EfficientNet-PyTorch is vendored at the exact 2020 commit WM trained with: later PyPI releases pad convolutions differently, and they change the model's outputs by up to 0.86.
@@ -192,6 +214,7 @@ Every model is checked against its upstream implementation before it's added.
 | `gend` | upstream `modeling_gend.GenD` + `detector.align_face` + `CLIPProcessor` on faces from a public-domain portrait: alignment, preprocessing and model checked separately | identical (diff 0) for all three |
 | `gend-pe` | same check against upstream `modeling_gend.GenD` (timm Perception Encoder) | identical (diff 0) for all three |
 | `dfdet-clip` | upstream `DeepfakeDetectionModel` with its PEFT LN-tuning wrappers and `get_preprocessing()`, on the same aligned faces | identical (diff 0) |
+| `avad` | upstream `detect.test2` + models (torch 1.13, librosa 0.9.2) fed the same 60-frame face track and audio; visual encoder, mel filterbank and log-mel checked separately | anomaly score diff 4.5e-8; encoder diff 0; mel filterbank 1.9e-9; log-mel 4.8e-7. Upstream took 17.5 min on CPU for this track |
 | `dfdc-wm` | upstream `submission.py` loop (`FaceDetector`, scikit-image `norm_crop`, WS-DAN, Xception; CUDA swapped for CPU) on the test clips | landmarks identical; similarity matrix diff 6e-6; model ensemble on identical crops diff 2e-6. End to end 4e-3, entirely from OpenCV 5.0 vs 4.8 `warpAffine` rounding (≤3/255 per pixel) |
 
 ## Structure
@@ -220,15 +243,19 @@ forensix/
 │   ├── rine/          # RINE (ProGAN 4-class, LDM)
 │   ├── safe/          # SAFE (reimplemented network + wavelet front end)
 │   └── univfd/        # UnivFD
-└── video/
-    ├── io.py          # evenly spaced frame reading (OpenCV)
-    ├── detector.py    # VideoDetector base
-    ├── faces.py       # 5-point face alignment (GenD template)
-    ├── mtcnn/         # MTCNN face detector (vendored, MIT)
-    ├── retinaface/    # RetinaFace-ResNet50 detector (vendored, MIT) + ArcFace alignment
-    ├── dfdc_selim/    # DFDC winner (7 x EfficientNet-B7)
-    ├── dfdc_wm/       # DFDC 2nd place (WS-DAN + Xception)
-    └── gend/          # GenD (CLIP, Perception Encoder) + its predecessor dfdet-clip
+├── video/
+│   ├── io.py          # evenly spaced frame reading (OpenCV)
+│   ├── detector.py    # VideoDetector base
+│   ├── faces.py       # 5-point face alignment (GenD template)
+│   ├── mtcnn/         # MTCNN face detector (vendored, MIT)
+│   ├── retinaface/    # RetinaFace-ResNet50 detector (vendored, MIT) + ArcFace alignment
+│   ├── dfdc_selim/    # DFDC winner (7 x EfficientNet-B7)
+│   ├── dfdc_wm/       # DFDC 2nd place (WS-DAN + Xception)
+│   └── gend/          # GenD (CLIP, Perception Encoder) + its predecessor dfdet-clip
+└── audiovisual/
+    ├── io.py          # 25 fps frames + 16 kHz audio via ffmpeg
+    ├── facetrack.py   # face tracks and talking-face crops (syncnet_python-style)
+    └── avad/          # AVAD (self-supervised A/V anomaly detection)
 scripts/
 ├── download_weights.py
 ├── eval_asvspoof2019_la.py

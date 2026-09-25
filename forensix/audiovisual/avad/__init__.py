@@ -73,6 +73,7 @@ class AVADDetector:
 
     def __init__(self, sync: SyncNetwork, decoder: nn.Module, face_detector, device="cpu", max_len: int = MAX_LEN):
         self.name = "avad"
+        self.threshold = None  # anomaly score, no calibrated decision threshold
         self.device = torch.device(device)
         self.sync = sync.to(self.device).eval()
         self.decoder = decoder.to(self.device).eval()
