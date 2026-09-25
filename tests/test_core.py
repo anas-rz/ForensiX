@@ -101,3 +101,25 @@ def test_roc_auc_and_average_precision():
     assert average_precision([0.9, 0.8], [0.1]) == 1.0
     # ranking: fake 0.9, real 0.5, fake 0.3 -> AP = 0.5*1 + 0.5*(2/3)
     assert average_precision([0.9, 0.3], [0.5]) == pytest.approx(0.5 + 1 / 3)
+
+
+@pytest.mark.skipif(__import__("shutil").which("ffmpeg") is None, reason="needs ffmpeg")
+def test_load_audio_ffmpeg_fallback(tmp_path):
+    import subprocess
+
+    import soundfile as sf
+
+    t = np.arange(8000) / 8000
+    sf.write(tmp_path / "a.wav", (0.3 * np.sin(2 * np.pi * 440 * t)).astype(np.float32), 8000)
+    subprocess.run(["ffmpeg", "-v", "error", "-i", str(tmp_path / "a.wav"), str(tmp_path / "a.m4a")], check=True)
+    x = load_audio(tmp_path / "a.m4a", target_sr=16000)
+    assert x.dtype == np.float32 and abs(len(x) - 16000) < 2000
+    assert 0.2 < np.abs(x).max() < 0.4
+
+
+def test_binary_summary():
+    from forensix.metrics import binary_summary
+
+    s = binary_summary([0.9, 0.6, 0.4], [0.1, 0.2], threshold=0.5)
+    assert s["auc"] == 1.0 and s["real_acc"] == 1.0 and s["fake_acc"] == pytest.approx(0.6667, abs=1e-4)
+    assert s["n_fake"] == 3 and s["n_real"] == 2

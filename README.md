@@ -142,6 +142,17 @@ python scripts/eval_image.py --data /content/forensix_image_eval --models univfd
 
 The eval script reports ROC-AUC, AP and balanced accuracy at the default threshold, pooled and per generator, for both conditions. On GPUs with less than 24 GB (e.g. a Colab T4), pipelines run with CPU offload. FLUX.1-schnell is the slowest there, and a T4 has no bfloat16, which FLUX may need. Use `--generators` to build the set in parts, or build FLUX on a larger GPU.
 
+**Real-world data: Deepfake-Eval-2024** ([dataset](https://huggingface.co/datasets/nuriachandra/Deepfake-Eval-2024), [paper](https://arxiv.org/abs/2503.02857)). It holds 2024 in-the-wild deepfakes and real media collected from social media and fact-checking reports: 44 h of video, 56.5 h of audio and 1,975 images. It is CC BY-SA 4.0, for evaluation only, and gated, so you request access on Hugging Face. This is the benchmark for video models, and a real-world check for the audio and image models alongside the benchmarks above.
+
+```bash
+huggingface-cli download nuriachandra/Deepfake-Eval-2024 --repo-type dataset --local-dir /content/de2024
+python scripts/eval_deepfake_eval_2024.py --data /content/de2024 --modality video \
+    --device cuda --max-per-class 250 --out results/de2024_video.json
+# likewise --modality audio / --modality image
+```
+
+The script finds the metadata CSV's file and label columns by itself and prints them; `--file-col` and `--label-col` override that. Media a model can't decode is skipped and counted. Audio formats libsndfile can't read (e.g. m4a) are decoded with ffmpeg.
+
 ## Verification
 
 Every model is checked against its upstream implementation before it's added.
@@ -196,6 +207,7 @@ forensix/
 scripts/
 ├── download_weights.py
 ├── eval_asvspoof2019_la.py
+├── eval_deepfake_eval_2024.py
 ├── build_image_eval_set.py
 └── eval_image.py
 ```

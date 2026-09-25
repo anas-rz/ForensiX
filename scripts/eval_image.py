@@ -22,20 +22,7 @@ from pathlib import Path
 import numpy as np
 
 import forensix
-from forensix.metrics import average_precision, roc_auc
-
-
-def summarize(fake: np.ndarray, real: np.ndarray, threshold: float) -> dict:
-    real_acc = float(np.mean(real < threshold))
-    fake_acc = float(np.mean(fake >= threshold))
-    return {
-        "auc": round(roc_auc(fake, real), 4),
-        "ap": round(average_precision(fake, real), 4),
-        "balanced_acc": round((real_acc + fake_acc) / 2, 4),
-        "real_acc": round(real_acc, 4),
-        "fake_acc": round(fake_acc, 4),
-        "n_fake": int(fake.size),
-    }
+from forensix.metrics import binary_summary
 
 
 def main() -> None:
@@ -76,10 +63,10 @@ def main() -> None:
             is_cond = np.array([r["condition"] == condition for r in rows])
             if not is_cond.any():
                 continue
-            cond = summarize(scores[is_cond], real, detector.threshold)
+            cond = binary_summary(scores[is_cond], real, detector.threshold)
             gens = sorted({r["generator"] for r in rows if r["condition"] == condition})
             cond["per_generator"] = {
-                g: summarize(
+                g: binary_summary(
                     scores[is_cond & np.array([r["generator"] == g for r in rows])],
                     real,
                     detector.threshold,
