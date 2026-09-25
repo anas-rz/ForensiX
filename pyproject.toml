@@ -21,6 +21,7 @@ dependencies = [
     "PyWavelets",
     "open_clip_torch",
     "opencv-python-headless",
+    "einops",
 ]
 
 [project.optional-dependencies]
@@ -46,4 +47,6 @@ include = ["forensix*"]
 "forensix.video.gend" = ["LICENSE"]
 "forensix.video.dfdc_wm" = ["LICENSE", "LICENSE-xception", "LICENSE-wsdan"]
 "forensix.video.retinaface" = ["LICENSE"]
+"forensix.audiovisual" = ["LICENSE-syncnet"]
+"forensix.audiovisual.avad" = ["LICENSE"]
 "forensix.video.dfdc_wm.efficientnet_pytorch" = ["LICENSE"]

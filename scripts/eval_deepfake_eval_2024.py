@@ -138,7 +138,7 @@ def main() -> None:
         results["models"][name] = summary
         if "auc" in summary:
             print(f"  {name}: AUC {summary['auc']:.3f}  AP {summary['ap']:.3f}  "
-                  f"bal.acc {summary['balanced_acc']:.3f}  (failed {failed})")
+                  f"bal.acc {summary.get('balanced_acc', float('nan')):.3f}  (failed {failed})")
         else:
             print(f"  {name}: {summary['error']} (failed {failed})")
 

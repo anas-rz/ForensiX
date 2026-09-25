@@ -123,3 +123,12 @@ def test_binary_summary():
     s = binary_summary([0.9, 0.6, 0.4], [0.1, 0.2], threshold=0.5)
     assert s["auc"] == 1.0 and s["real_acc"] == 1.0 and s["fake_acc"] == pytest.approx(0.6667, abs=1e-4)
     assert s["n_fake"] == 3 and s["n_real"] == 2
+
+
+def test_anomaly_prediction_and_summary_without_threshold():
+    from forensix.metrics import binary_summary
+
+    p = Prediction("m", 3.7, threshold=None, score_type="anomaly")
+    assert p.is_fake is None and p.label is None
+    s = binary_summary([5.0, 4.0], [1.0, 2.0], threshold=None)
+    assert s["auc"] == 1.0 and "balanced_acc" not in s

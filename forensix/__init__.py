@@ -8,7 +8,7 @@
 
 from pathlib import Path
 
-from forensix import audio, image, video  # noqa: F401  (registers models)
+from forensix import audio, audiovisual, image, video  # noqa: F401  (registers models)
 from forensix.hub import cache_dir, fetch
 from forensix.registry import ModelSpec, get_spec, list_models
 from forensix.types import Prediction

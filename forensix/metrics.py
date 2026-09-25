@@ -66,18 +66,21 @@ def average_precision(fake_scores, real_scores) -> float:
     return float(np.sum(np.diff(np.r_[0, recall]) * precision))
 
 
-def binary_summary(fake_scores, real_scores, threshold: float = 0.5) -> dict:
-    """ROC-AUC, AP and accuracies at ``threshold`` for fake-vs-real scores."""
+def binary_summary(fake_scores, real_scores, threshold: float | None = 0.5) -> dict:
+    """ROC-AUC, AP and (if ``threshold`` is given) accuracies for fake-vs-real scores."""
     fake = np.asarray(fake_scores, dtype=np.float64)
     real = np.asarray(real_scores, dtype=np.float64)
-    real_acc = float(np.mean(real < threshold))
-    fake_acc = float(np.mean(fake >= threshold))
-    return {
+    summary = {
         "auc": round(roc_auc(fake, real), 4),
         "ap": round(average_precision(fake, real), 4),
-        "balanced_acc": round((real_acc + fake_acc) / 2, 4),
-        "real_acc": round(real_acc, 4),
-        "fake_acc": round(fake_acc, 4),
-        "n_fake": int(fake.size),
-        "n_real": int(real.size),
     }
+    if threshold is not None:
+        real_acc = float(np.mean(real < threshold))
+        fake_acc = float(np.mean(fake >= threshold))
+        summary.update(
+            balanced_acc=round((real_acc + fake_acc) / 2, 4),
+            real_acc=round(real_acc, 4),
+            fake_acc=round(fake_acc, 4),
+        )
+    summary.update(n_fake=int(fake.size), n_real=int(real.size))
+    return summary

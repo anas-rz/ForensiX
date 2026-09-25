@@ -76,7 +76,7 @@ def main() -> None:
             model_result[condition] = cond
             per_gen = ", ".join(f"{g} {v['auc']:.3f}" for g, v in cond["per_generator"].items())
             print(f"  {name} [{condition}] AUC {cond['auc']:.3f}  AP {cond['ap']:.3f}  "
-                  f"bal.acc {cond['balanced_acc']:.3f}  | AUC per generator: {per_gen}")
+                  f"bal.acc {cond.get('balanced_acc', float('nan')):.3f}  | AUC per generator: {per_gen}")
         results["models"][name] = model_result
 
     if args.out:

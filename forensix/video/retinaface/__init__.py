@@ -2,7 +2,7 @@
 
 ``RetinaFaceDetector`` follows the DFDC 2nd-place (Team WM) wrapper in
 face_utils.py (MIT): BGR input with mean subtraction, confidence threshold 0.8,
-and no NMS (callers pick the largest box).
+and by default no NMS (callers pick the largest box).
 """
 
 from pathlib import Path
@@ -12,13 +12,20 @@ import torch
 
 
 class RetinaFaceDetector:
-    def __init__(self, weights_path: Path, device: str | torch.device = "cpu", confidence_threshold: float = 0.8):
+    def __init__(
+        self,
+        weights_path: Path,
+        device: str | torch.device = "cpu",
+        confidence_threshold: float = 0.8,
+        nms_threshold: float | None = None,
+    ):
         from forensix.hub import torch_load
         from forensix.video.retinaface.config import cfg_re50
         from forensix.video.retinaface.retinaface import RetinaFace
 
         self.device = torch.device(device)
         self.confidence_threshold = confidence_threshold
+        self.nms_threshold = nms_threshold  # None: keep all boxes (Team WM's wrapper)
         self.cfg = dict(cfg_re50, pretrain=False)
         self.net = RetinaFace(cfg=self.cfg, phase="test")
         self.net.load_state_dict(torch_load(weights_path))
@@ -48,7 +55,13 @@ class RetinaFaceDetector:
         scores = conf.squeeze(0).cpu()[:, 1]
         landms = decode_landm(landms.squeeze(0).cpu(), priors, variance) * scale1
         keep = scores > self.confidence_threshold
-        return boxes[keep], landms[keep]
+        boxes, landms, scores = boxes[keep], landms[keep], scores[keep]
+        if self.nms_threshold is not None and len(boxes):
+            from torchvision.ops import nms
+
+            keep = nms(boxes, scores, self.nms_threshold)
+            boxes, landms = boxes[keep], landms[keep]
+        return boxes, landms
 
 
 # ArcFace 5-point template for a 320x320 crop (Team WM's norm_crop)
