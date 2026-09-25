@@ -20,6 +20,7 @@ dependencies = [
     "timm",
     "PyWavelets",
     "open_clip_torch",
+    "opencv-python-headless",
 ]
 
 [project.optional-dependencies]
@@ -40,3 +41,5 @@ include = ["forensix*"]
 "forensix.image.commfor" = ["LICENSE"]
 "forensix.image.safe" = ["LICENSE"]
 "forensix.image.clipdet" = ["LICENSE"]
+"forensix.video.mtcnn" = ["LICENSE"]
+"forensix.video.dfdc_selim" = ["LICENSE"]

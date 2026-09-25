@@ -10,7 +10,7 @@ from forensix.types import Prediction
 
 def test_registry():
     assert {"aasist", "aasist-l"} <= set(forensix.list_models("audio"))
-    assert forensix.list_models("video") == []
+    assert forensix.list_models("graph") == []
     assert forensix.info("aasist").license == "MIT"
     with pytest.raises(KeyError, match="Unknown model"):
         forensix.info("nope")

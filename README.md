@@ -43,6 +43,14 @@ detector.predict_batch(["a.jpg", "b.png"])
 
 Images are never resized or re-encoded before the model's own preprocessing, because the traces these detectors look for don't survive resampling or compression.
 
+Video detectors take a file path:
+
+```python
+detector = forensix.load("dfdc-selim")
+pred = detector.predict("clip.mp4")
+pred.fake_prob, pred.segment_fake_probs    # video score, per-face scores
+```
+
 Audio is converted to mono and resampled to 16 kHz. Clips longer than the model window (4.04 s) are split into windows and the window scores are averaged. `fake_prob` is the softmax output and is **not calibrated**, so pick thresholds per model.
 
 ## Models
@@ -69,7 +77,13 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 | image | `safe` | Apache-2.0 | 1.4M | ProGAN (ForenSynths), from scratch | 96.7% ACC / 99.3 AP averaged over 33 test subsets from 26 generators; FLUX 99.3 / 99.9, PixArt 99.6 / 100 (authors' DiTFake) | pending |
 | image | `clipdet` | Apache-2.0 | 303M (1,025 trainable) | 10k COCO real + 10k latent-diffusion, augmented | 90.0 mean AUC over 18 generators (GAN, diffusion, commercial tools); 85.2 on cropped/resized/compressed images | pending |
 
-‡ Training data: several image models were trained on data with non-commercial terms. UnivFD, RINE and SAFE used ForenSynths (CC BY-NC-SA 4.0), `clipdet` used COCO (mixed Flickr licenses), and Community Forensics used ImageNet, LAION and others. ForensiX lists the licenses of the code and weights, which are what govern redistribution. Whether a training set's non-commercial terms carry over to the trained weights is legally unsettled; check with counsel for commercial deployment.
+**Video**
+
+| Family | Name | License | Params | Trained on | Published result | ForensiX eval |
+|---|---|---|---|---|---|---|
+| video | `dfdc-selim` | MIT‡ | 7 × 66M (ensemble) + MTCNN | DFDC training set | 1st place, Deepfake Detection Challenge: 65.18% accuracy on the private black-box test set | pending |
+
+‡ Training data: several image and video models were trained on data with non-commercial terms. UnivFD, RINE and SAFE used ForenSynths (CC BY-NC-SA 4.0), `clipdet` used COCO (mixed Flickr licenses), and Community Forensics used ImageNet, LAION and others. The video model `dfdc-selim` was trained on the DFDC dataset, which has its own research terms of use. ForensiX lists the licenses of the code and weights, which are what govern redistribution. Whether a training set's non-commercial terms carry over to the trained weights is legally unsettled; check with counsel for commercial deployment.
 
 † For UnivFD the code and linear head are MIT, and for RINE the code and trainable weights are Apache-2.0. Their frozen backbone is OpenAI CLIP ViT-L/14 (MIT license). OpenAI's model card lists "any deployed use case" as out of scope, which is an intended-use statement rather than a license term.
 
@@ -86,6 +100,12 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 - **Community Forensics**: Park & Owens, *Community Forensics: Using Thousands of Generators to Train Fake Image Detectors*, CVPR 2025 ([paper](https://arxiv.org/abs/2411.04125), [code](https://github.com/JeongsooP/Community-Forensics)). A plain ViT-S/16, initialized from timm's AugReg ImageNet-21k weights (Apache-2.0) and trained on images from about 4,800 generators. Unlike the CLIP-based models, it follows upstream in resizing the short side (to 440, or 256 for `commfor-224`) before center-cropping 384 (or 224). Weights come from the authors' Hugging Face repos (MIT) at pinned revisions. Its training set covers a wide range of Stable Diffusion derivatives, so SDXL-family images in the ForensiX eval set are likely in-distribution for it.
 - **SAFE**: Li et al., *Improving Synthetic Image Detection Towards Generalization: An Image Transformation Perspective*, KDD 2025 ([paper](https://arxiv.org/abs/2408.06741), [code](https://github.com/Ouxiang-Li/SAFE)). A 1.4M-parameter network (the first two stages of a ResNet-50) applied to the diagonal (HH) band of a one-level bior1.3 wavelet transform. It scores the central 256×256 crop without resizing or normalization. Upstream's `models/resnet.py` is about 80% shared with NPR's code, and NPR has no license. So ForensiX does not copy it: the network is written from torchvision's ResNet blocks (BSD-3), and the wavelet step is a small implementation on PyWavelets filters. The Apache-2.0 weights were trained from scratch, and they load unchanged into this implementation.
 - **CLIP-based detector (GRIP)**: Cozzolino et al., *Raising the Bar of AI-generated Image Detection with CLIP*, CVPR-W 2024 ([paper](https://arxiv.org/abs/2312.00195), [code](https://github.com/grip-unina/ClipBased-SyntheticImageDetection)). A linear classifier on L2-normalized, pre-projection OpenCLIP ViT-L/14 features, using the CommonPool.XL checkpoint (MIT). It is the released `clipdet_latent10k_plus`, the paper's "10k+" variant. Its output is a log-likelihood ratio (positive means synthetic), and `fake_prob` is its sigmoid. It follows upstream in a bicubic resize of the short side to 224 before center-cropping. The backbone is run with `open_clip` (MIT), exactly as upstream does, and loaded at a pinned revision.
+- **DFDC winner**: Selim Seferbekov's 1st-place solution to the [Deepfake Detection Challenge](https://ai.meta.com/blog/deepfake-detection-challenge-results-an-open-initiative-to-advance-ai/) ([code](https://github.com/selimsef/dfdc_deepfake_challenge)).
+  - **Pipeline:** 32 evenly spaced frames. MTCNN finds faces on half-resolution frames, and each face is cropped with a ⅓ margin, resized to 380 and padded. Seven EfficientNet-B7 classifiers score every face. Each model's face scores go through upstream's "confident strategy", and the seven results are averaged.
+  - **No face:** a video with no detectable face scores 0.5.
+  - **Differences from upstream:** it runs in fp32 (upstream: fp16 on GPU). Videos with fewer than 32 frames use each frame once, where upstream drops every frame after the first repeated index and then errors to 0.5.
+  - **MTCNN:** vendored from facenet-pytorch (MIT) because that package pins old torch versions. Its weights descend from the original MTCNN release (MIT).
+  - **Speed:** about 2 minutes per video on CPU, so use a GPU.
 
 ## Evaluation
 
@@ -140,6 +160,7 @@ Every model is checked against its upstream implementation before it's added.
 | `commfor`, `commfor-224` | same images + upstream's 5 DALL-E 2 samples, upstream HF inference path (`CommForImageProcessor` + `ViTClassifier.from_pretrained`) | identical (diff 0) |
 | `safe` | ForensiX reimplementation vs upstream `models/resnet.py` + eval transform; DWT step vs `pytorch_wavelets` and PyWavelets `dwt2` | max fake_prob diff 2.6e-8; DWT diff ≤ 1.2e-7 (fp32), 1e-12 (fp64) |
 | `clipdet` | same images, upstream `create_architecture` + `load_weights` + `main.py` transform | max fake_prob diff 1.8e-7 |
+| `dfdc-selim` | upstream `kernel_utils.py` + `DeepFakeClassifier` (CUDA/fp16 swapped for CPU/fp32 only) on test clips made from a public-domain NASA portrait | face clip: diff 1.4e-8 over 32 faces; no-face clip: both 0.5 |
 
 ## Structure
 
@@ -158,15 +179,20 @@ forensix/
 │   ├── nes2net_x/     # Nes2Net-X (2021, In-the-Wild)
 │   ├── rawgat_st/     # RawGAT-ST
 │   └── xlsr_aasist/   # XLS-R + AASIST (LA, DF)
-└── image/
-    ├── io.py          # image loading (RGB, no resizing)
-    ├── detector.py    # ImageDetector base (batching)
-    ├── clip.py        # shared OpenAI CLIP ViT-L/14 backbone (HF)
-    ├── clipdet/       # GRIP CLIP-based detector (OpenCLIP)
-    ├── commfor/       # Community Forensics (384, 224)
-    ├── rine/          # RINE (ProGAN 4-class, LDM)
-    ├── safe/          # SAFE (reimplemented network + wavelet front end)
-    └── univfd/        # UnivFD
+├── image/
+│   ├── io.py          # image loading (RGB, no resizing)
+│   ├── detector.py    # ImageDetector base (batching)
+│   ├── clip.py        # shared OpenAI CLIP ViT-L/14 backbone (HF)
+│   ├── clipdet/       # GRIP CLIP-based detector (OpenCLIP)
+│   ├── commfor/       # Community Forensics (384, 224)
+│   ├── rine/          # RINE (ProGAN 4-class, LDM)
+│   ├── safe/          # SAFE (reimplemented network + wavelet front end)
+│   └── univfd/        # UnivFD
+└── video/
+    ├── io.py          # evenly spaced frame reading (OpenCV)
+    ├── detector.py    # VideoDetector base
+    ├── mtcnn/         # MTCNN face detector (vendored, MIT)
+    └── dfdc_selim/    # DFDC winner (7 x EfficientNet-B7)
 scripts/
 ├── download_weights.py
 ├── eval_asvspoof2019_la.py
