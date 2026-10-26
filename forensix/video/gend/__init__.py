@@ -79,6 +79,27 @@ class GenD(nn.Module):
         return lambda faces: torch.stack([transform(Image.fromarray(f)) for f in faces])
 
 
+def face_landmarks(frame: np.ndarray, face_detector) -> np.ndarray | None:
+    """5 landmarks of the largest face, detected on the frame downscaled to DETECT_MAX_SIDE."""
+    import cv2
+
+    factor = min(1.0, DETECT_MAX_SIDE / max(frame.shape[:2]))
+    small = frame if factor == 1.0 else cv2.resize(
+        frame, None, fx=factor, fy=factor, interpolation=cv2.INTER_AREA)
+    landmarks = largest_face_landmarks(small, face_detector)
+    return None if landmarks is None else landmarks / factor
+
+
+def aligned_faces(frames: np.ndarray, face_detector) -> list[np.ndarray]:
+    """Aligned 256x256 crops of the largest face in each frame that has one."""
+    faces = []
+    for frame in frames:
+        landmarks = face_landmarks(frame, face_detector)
+        if landmarks is not None:
+            faces.append(align_face(frame, landmarks))
+    return faces
+
+
 class GenDDetector(VideoDetector):
     def __init__(self, name: str, network: GenD, device: str = "cpu"):
         super().__init__(name)
@@ -90,13 +111,7 @@ class GenDDetector(VideoDetector):
         self.face_detector = MTCNN(device=self.device)
 
     def _landmarks(self, frame: np.ndarray) -> np.ndarray | None:
-        import cv2
-
-        factor = min(1.0, DETECT_MAX_SIDE / max(frame.shape[:2]))
-        small = frame if factor == 1.0 else cv2.resize(
-            frame, None, fx=factor, fy=factor, interpolation=cv2.INTER_AREA)
-        landmarks = largest_face_landmarks(small, self.face_detector)
-        return None if landmarks is None else landmarks / factor
+        return face_landmarks(frame, self.face_detector)
 
     @torch.inference_mode()
     def face_fake_probs(self, faces: list[np.ndarray]) -> np.ndarray:
@@ -106,11 +121,7 @@ class GenDDetector(VideoDetector):
 
     def _score(self, video: VideoInput) -> tuple[float, list[float]]:
         frames, _ = read_frames(video, FRAMES_PER_VIDEO)
-        faces = []
-        for frame in frames:
-            landmarks = self._landmarks(frame)
-            if landmarks is not None:
-                faces.append(align_face(frame, landmarks))
+        faces = aligned_faces(frames, self.face_detector)
         if not faces:
             return 0.5, []
         probs = np.concatenate([self.face_fake_probs(faces[i : i + 8]) for i in range(0, len(faces), 8)])

@@ -1,0 +1,170 @@
+{
+ "format": "forensix-physics-priors/1",
+ "created": "2026-10-26",
+ "alpha": 0.01,
+ "sources": [
+  "asvspoof2019-la-train-dev"
+ ],
+ "detectors": {
+  "phys-voice": {
+   "f0_jump_rate_per_s": {
+    "start": 2.70114,
+    "full": 6.0,
+    "n": 1827,
+    "quantile": 0.998333,
+    "median": 0.0,
+    "provisional": [
+     2.0,
+     6.0
+    ]
+   },
+   "jitter_percent": {
+    "start": 0.920642,
+    "full": 0.1,
+    "n": 1827,
+    "quantile": 0.998333,
+    "median": 2.0563,
+    "provisional": [
+     0.25,
+     0.1
+    ]
+   },
+   "hnr_db": {
+    "start": 16.998393,
+    "full": 31.66618,
+    "n": 1827,
+    "quantile": 0.998333,
+    "median": 9.6645,
+    "provisional": [
+     35.0,
+     45.0
+    ]
+   },
+   "vtl_out_of_range_cm": {
+    "start": 0.0,
+    "full": 1.0,
+    "n": 1827,
+    "quantile": 0.998333,
+    "median": 0.0,
+    "provisional": [
+     0.0,
+     4.0
+    ]
+   },
+   "vtl_variation": {
+    "start": 0.201122,
+    "full": 0.3,
+    "n": 1260,
+    "quantile": 0.998333,
+    "median": 0.04155,
+    "provisional": [
+     0.12,
+     0.3
+    ]
+   },
+   "longest_pause_free_s": {
+    "start": 4.22,
+    "full": 7.86,
+    "n": 1827,
+    "quantile": 0.998333,
+    "median": 2.4,
+    "provisional": [
+     12.0,
+     25.0
+    ]
+   }
+  },
+  "phys-room": {
+   "digital_silence_fraction": {
+    "start": 0.0,
+    "full": 0.15,
+    "n": 106,
+    "quantile": 0.998,
+    "median": 0.0,
+    "provisional": [
+     0.2,
+     0.8
+    ]
+   }
+  }
+ },
+ "kept_provisional": {
+  "phys-bloodflow": [
+   "mean_coherence",
+   "hr_spread_bpm",
+   "median_snr_db"
+  ],
+  "phys-motion": [
+   "rotation_hf_energy_ratio",
+   "p99_angular_velocity_deg_s",
+   "p99_angular_acceleration_deg_s2",
+   "rigid_deformation",
+   "jaw_lip_coupling"
+  ],
+  "phys-lighting": [
+   "light_direction_jitter_deg",
+   "shading_residual",
+   "face_scene_coupling"
+  ],
+  "phys-room": [
+   "rt60_variation",
+   "noise_floor_jump_db",
+   "channel_variation_db",
+   "noise_spectrum_change_db"
+  ]
+ },
+ "holdout_false_alarms": {
+  "phys-bloodflow": {
+   "learned": {
+    "n": 0
+   },
+   "provisional": {
+    "n": 0
+   }
+  },
+  "phys-motion": {
+   "learned": {
+    "n": 0
+   },
+   "provisional": {
+    "n": 0
+   }
+  },
+  "phys-lighting": {
+   "learned": {
+    "n": 0
+   },
+   "provisional": {
+    "n": 0
+   }
+  },
+  "phys-voice": {
+   "learned": {
+    "n": 236,
+    "any_violation": 0.0424,
+    "score_ge_0.5": 0.0085,
+    "mean_score": 0.0094
+   },
+   "provisional": {
+    "n": 236,
+    "any_violation": 0.0508,
+    "score_ge_0.5": 0.0169,
+    "mean_score": 0.0136
+   }
+  },
+  "phys-room": {
+   "learned": {
+    "n": 6,
+    "any_violation": 0.1667,
+    "score_ge_0.5": 0.0,
+    "mean_score": 0.0318
+   },
+   "provisional": {
+    "n": 6,
+    "any_violation": 0.1667,
+    "score_ge_0.5": 0.0,
+    "mean_score": 0.0318
+   }
+  }
+ }
+}

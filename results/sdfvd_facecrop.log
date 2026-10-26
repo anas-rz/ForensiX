@@ -1,0 +1,24 @@
+### SDFVD, image detectors on face crops (--face-crop), 3 parallel workers on one L4, merged
+--- worker 1
+106 videos (53 fake, 53 real)
+  univfd: AUC 0.818  AP 0.819  EER 0.189  bal.acc 0.547  (failed 0)
+  rine: AUC 0.844  AP 0.855  EER 0.189  bal.acc 0.509  (failed 0)
+  safe: AUC 0.722  AP 0.760  EER 0.358  bal.acc 0.500  (failed 0)
+--- worker 2
+106 videos (53 fake, 53 real)
+  rine-ldm: AUC 0.694  AP 0.712  EER 0.396  bal.acc 0.585  (failed 0)
+  commfor-224: AUC 0.848  AP 0.848  EER 0.226  bal.acc 0.632  (failed 0)
+--- worker 3
+106 videos (53 fake, 53 real)
+  commfor: AUC 0.877  AP 0.900  EER 0.226  bal.acc 0.679  (failed 0)
+  clipdet: AUC 0.678  AP 0.629  EER 0.377  bal.acc 0.632  (failed 0)
+
+### original command with all models done -> writes results/sdfvd_facecrop_scores.csv
+106 videos (53 fake, 53 real)
+  univfd: already done, skipping
+  rine: already done, skipping
+  rine-ldm: already done, skipping
+  commfor: already done, skipping
+  commfor-224: already done, skipping
+  safe: already done, skipping
+  clipdet: already done, skipping

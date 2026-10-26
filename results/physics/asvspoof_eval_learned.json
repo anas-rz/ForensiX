@@ -1,0 +1,93 @@
+{
+ "priors": "results/physics/learned_priors_asvspoof.json",
+ "detectors": {
+  "phys-voice": {
+   "auc": 0.6237,
+   "ap": 0.6643,
+   "n_fake": 369,
+   "n_real": 294,
+   "real_false_alarms": {
+    "n": 294,
+    "any_violation": 0.0136,
+    "score_ge_0.5": 0.0034,
+    "mean_score": 0.0029
+   },
+   "fake_flagged": 0.2602
+  },
+  "phys-room": {
+   "auc": 0.4923,
+   "ap": 0.6989,
+   "n_fake": 50,
+   "n_real": 26,
+   "real_false_alarms": {
+    "n": 26,
+    "any_violation": 0.1538,
+    "score_ge_0.5": 0.0,
+    "mean_score": 0.0089
+   },
+   "fake_flagged": 0.12
+  }
+ },
+ "constraints": {
+  "phys-voice/f0_jump_rate_per_s": {
+   "auc": 0.4596,
+   "ap": 0.5346,
+   "n_fake": 369,
+   "n_real": 294
+  },
+  "phys-voice/jitter_percent": {
+   "auc": 0.6098,
+   "ap": 0.6647,
+   "n_fake": 369,
+   "n_real": 294
+  },
+  "phys-voice/hnr_db": {
+   "auc": 0.6946,
+   "ap": 0.7414,
+   "n_fake": 369,
+   "n_real": 294
+  },
+  "phys-voice/vtl_out_of_range_cm": {
+   "auc": 0.5,
+   "ap": 0.5566,
+   "n_fake": 369,
+   "n_real": 294
+  },
+  "phys-voice/vtl_variation": {
+   "auc": 0.4461,
+   "ap": 0.52,
+   "n_fake": 276,
+   "n_real": 205
+  },
+  "phys-voice/longest_pause_free_s": {
+   "auc": 0.789,
+   "ap": 0.8445,
+   "n_fake": 369,
+   "n_real": 294
+  },
+  "phys-room/rt60_variation": {
+   "auc": 0.26,
+   "ap": 0.5314,
+   "n_fake": 50,
+   "n_real": 25
+  },
+  "phys-room/noise_floor_jump_db": {
+   "auc": 0.8333,
+   "ap": 0.3333,
+   "n_fake": 1,
+   "n_real": 12
+  },
+  "phys-room/digital_silence_fraction": {
+   "auc": 0.5698,
+   "ap": 0.6758,
+   "n_fake": 43,
+   "n_real": 26
+  }
+ },
+ "physics_max": {
+  "auc": 0.6192,
+  "ap": 0.6626,
+  "n_fake": 370,
+  "n_real": 296
+ }
+}

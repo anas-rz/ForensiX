@@ -397,6 +397,15 @@ def test_room_detector_synthetic(room_cases):
     assert r["constraints"]["noise_spectrum_change_db"]["violation"] > 0.1
 
 
+def test_room_detector_chunk_at_end_of_file():
+    # a 3 s chunk ending exactly at the end of the file has fewer frame levels than samples
+    from forensix.audio.io import load_audio
+
+    x = load_audio(SPEECH, SR)
+    for seconds in (6.0, 6.00325, 9.0):
+        RoomDetector().analyze(x[: int(seconds * SR)], SR)
+
+
 def test_room_detector_no_false_alarm_on_real_speech():
     pred = forensix.load("phys-room").predict(SPEECH)
     assert pred.score_type == "anomaly" and pred.fake_prob == 0.0

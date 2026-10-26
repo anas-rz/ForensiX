@@ -45,11 +45,21 @@ def download(name: str, force: bool = False) -> Path | None:
     return fetch(spec.weights, force=force) if spec.weights else None
 
 
-def load(name: str, device: str = "cpu", weights_path: str | Path | None = None):
+def load(name: str, device: str = "cpu", weights_path: str | Path | None = None,
+         calibration: str | Path | None = None):
     """Build a detector with pretrained weights, downloading them if needed.
 
-    Pass ``weights_path`` to use a local checkpoint (e.g. one you trained).
+    Pass ``weights_path`` to use a local checkpoint (e.g. one you trained), and
+    ``calibration`` to apply a calibration table (see ``forensix.calibration``).
     """
     spec = get_spec(name)
     path = Path(weights_path) if weights_path else download(name)
-    return spec.builder(path, device=device)
+    detector = spec.builder(path, device=device)
+    if calibration is None:
+        return detector
+    from forensix.calibration import Calibration, CalibratedDetector
+
+    table = Calibration.load(calibration)
+    if table.model != name:
+        raise ValueError(f"Calibration {calibration} is for {table.model!r}, not {name!r}")
+    return CalibratedDetector(detector, table)

@@ -1,0 +1,342 @@
+{
+ "real/3": {
+  "noise_log_ratio": 0.3342985254438804,
+  "sharpness_log_ratio": -0.28654101490974426,
+  "noise_ratio_spread": 0.24515528091150518,
+  "flicker_log_ratio": -0.735296905040741,
+  "n_frames": 120
+ },
+ "fake/3": {
+  "noise_log_ratio": -0.08482575402440337,
+  "sharpness_log_ratio": -0.4887089729309082,
+  "noise_ratio_spread": 0.07369249210167163,
+  "flicker_log_ratio": -0.4496653079986572,
+  "n_frames": 120
+ },
+ "real/7": {
+  "noise_log_ratio": -0.39716401686254665,
+  "sharpness_log_ratio": -0.48503273725509644,
+  "noise_ratio_spread": 0.04750132991055445,
+  "flicker_log_ratio": -0.8354514241218567,
+  "n_frames": 94
+ },
+ "fake/7": {
+  "noise_log_ratio": 0.09888026340063198,
+  "sharpness_log_ratio": -0.3757733106613159,
+  "noise_ratio_spread": 0.08478168378860132,
+  "flicker_log_ratio": -0.7118538618087769,
+  "n_frames": 94
+ },
+ "real/9": {
+  "noise_log_ratio": -2.3905083561223437,
+  "sharpness_log_ratio": -2.460216999053955,
+  "noise_ratio_spread": 0.22145103325458865,
+  "flicker_log_ratio": -0.5792479515075684,
+  "n_frames": 115
+ },
+ "fake/9": {
+  "noise_log_ratio": -0.8290458183730398,
+  "sharpness_log_ratio": -2.6710991859436035,
+  "noise_ratio_spread": 0.1996967094388061,
+  "flicker_log_ratio": -0.9194356203079224,
+  "n_frames": 115
+ },
+ "real/10": {
+  "noise_log_ratio": -0.9517551013304576,
+  "sharpness_log_ratio": -1.017580270767212,
+  "noise_ratio_spread": 0.0900917199462169,
+  "flicker_log_ratio": 0.679416835308075,
+  "n_frames": 109
+ },
+ "fake/10": {
+  "noise_log_ratio": -0.33456426989481547,
+  "sharpness_log_ratio": -0.8603373169898987,
+  "noise_ratio_spread": 0.08120626046821024,
+  "flicker_log_ratio": 0.5012008547782898,
+  "n_frames": 110
+ },
+ "real/14": null,
+ "fake/14": null,
+ "real/17": {
+  "noise_log_ratio": -0.9531092002855859,
+  "sharpness_log_ratio": -1.6694767475128174,
+  "noise_ratio_spread": 0.11693818932589536,
+  "flicker_log_ratio": -0.6997950673103333,
+  "n_frames": 100
+ },
+ "fake/17": {
+  "noise_log_ratio": -0.5356214091915121,
+  "sharpness_log_ratio": -1.6023573875427246,
+  "noise_ratio_spread": 0.09257842216511075,
+  "flicker_log_ratio": -0.6495304703712463,
+  "n_frames": 100
+ },
+ "real/19": {
+  "noise_log_ratio": -0.11965781456515605,
+  "sharpness_log_ratio": -0.68272864818573,
+  "noise_ratio_spread": 0.16384045046850862,
+  "flicker_log_ratio": -1.0204044580459595,
+  "n_frames": 24
+ },
+ "fake/19": {
+  "noise_log_ratio": 0.07747185543364206,
+  "sharpness_log_ratio": 0.5414703488349915,
+  "noise_ratio_spread": 0.14432498761069404,
+  "flicker_log_ratio": -1.354705572128296,
+  "n_frames": 73
+ },
+ "real/20": {
+  "noise_log_ratio": -0.4329354238625136,
+  "sharpness_log_ratio": -1.1066488027572632,
+  "noise_ratio_spread": 0.19996544711605174,
+  "flicker_log_ratio": -0.4086458384990692,
+  "n_frames": 12
+ },
+ "fake/20": {
+  "noise_log_ratio": -0.5722804273175035,
+  "sharpness_log_ratio": -1.2012579441070557,
+  "noise_ratio_spread": 0.11057052844517012,
+  "flicker_log_ratio": -0.7012193202972412,
+  "n_frames": 11
+ },
+ "real/23": {
+  "noise_log_ratio": 1.4320394297704429,
+  "sharpness_log_ratio": 1.1406135559082031,
+  "noise_ratio_spread": 0.10344440976911051,
+  "flicker_log_ratio": -1.5904103517532349,
+  "n_frames": 100
+ },
+ "fake/23": {
+  "noise_log_ratio": 0.6571532067003969,
+  "sharpness_log_ratio": 0.7799364328384399,
+  "noise_ratio_spread": 0.08550650642235849,
+  "flicker_log_ratio": -1.1979146003723145,
+  "n_frames": 100
+ },
+ "real/24": {
+  "noise_log_ratio": -0.6099321651344174,
+  "sharpness_log_ratio": -1.8132597208023071,
+  "noise_ratio_spread": 0.13241349171444713,
+  "flicker_log_ratio": -1.920517921447754,
+  "n_frames": 98
+ },
+ "fake/24": {
+  "noise_log_ratio": -0.21255379206354094,
+  "sharpness_log_ratio": -1.1133358478546143,
+  "noise_ratio_spread": 0.06823657277690137,
+  "flicker_log_ratio": -1.9648078680038452,
+  "n_frames": 98
+ },
+ "real/25": {
+  "noise_log_ratio": 0.7757691806172949,
+  "sharpness_log_ratio": 1.1892024278640747,
+  "noise_ratio_spread": 0.11209330886093238,
+  "flicker_log_ratio": -0.1824866682291031,
+  "n_frames": 101
+ },
+ "fake/25": {
+  "noise_log_ratio": 0.5434764532812906,
+  "sharpness_log_ratio": 0.965205729007721,
+  "noise_ratio_spread": 0.1350768983731491,
+  "flicker_log_ratio": -0.940786600112915,
+  "n_frames": 102
+ },
+ "real/26": {
+  "noise_log_ratio": 0.09948236719720238,
+  "sharpness_log_ratio": -0.33353540301322937,
+  "noise_ratio_spread": 0.07273671644362245,
+  "flicker_log_ratio": -0.44081300497055054,
+  "n_frames": 118
+ },
+ "fake/26": {
+  "noise_log_ratio": -0.1259534276345258,
+  "sharpness_log_ratio": -0.41174277663230896,
+  "noise_ratio_spread": 0.07376003777530198,
+  "flicker_log_ratio": -0.6077593564987183,
+  "n_frames": 119
+ },
+ "real/27": {
+  "noise_log_ratio": 0.9192381983556125,
+  "sharpness_log_ratio": 1.0595264434814453,
+  "noise_ratio_spread": 0.18028956741873778,
+  "flicker_log_ratio": 0.28511929512023926,
+  "n_frames": 101
+ },
+ "fake/27": {
+  "noise_log_ratio": 0.5185684715883282,
+  "sharpness_log_ratio": 0.6504150032997131,
+  "noise_ratio_spread": 0.09544888572409209,
+  "flicker_log_ratio": 0.37831130623817444,
+  "n_frames": 102
+ },
+ "real/28": {
+  "noise_log_ratio": 0.7486278252266207,
+  "sharpness_log_ratio": -0.013234773650765419,
+  "noise_ratio_spread": 0.14833025074007916,
+  "flicker_log_ratio": -0.14046433568000793,
+  "n_frames": 84
+ },
+ "fake/28": {
+  "noise_log_ratio": 0.2930917898461329,
+  "sharpness_log_ratio": 0.08214437961578369,
+  "noise_ratio_spread": 0.11552763088347842,
+  "flicker_log_ratio": -0.22707302868366241,
+  "n_frames": 85
+ },
+ "real/29": {
+  "noise_log_ratio": 1.8124491337836997,
+  "sharpness_log_ratio": 1.008385181427002,
+  "noise_ratio_spread": 0.3926027430787845,
+  "flicker_log_ratio": -0.4918747842311859,
+  "n_frames": 125
+ },
+ "fake/29": {
+  "noise_log_ratio": 0.38791097689534854,
+  "sharpness_log_ratio": 0.15734823048114777,
+  "noise_ratio_spread": 0.12553847971911192,
+  "flicker_log_ratio": -0.6952639222145081,
+  "n_frames": 127
+ },
+ "real/31": {
+  "noise_log_ratio": 0.5027401206566693,
+  "sharpness_log_ratio": -0.18081744015216827,
+  "noise_ratio_spread": 0.08379549259040588,
+  "flicker_log_ratio": -0.19207985699176788,
+  "n_frames": 171
+ },
+ "fake/31": {
+  "noise_log_ratio": 0.08700677256342663,
+  "sharpness_log_ratio": -0.3693462908267975,
+  "noise_ratio_spread": 0.08379119353543205,
+  "flicker_log_ratio": -0.3845610022544861,
+  "n_frames": 171
+ },
+ "real/32": {
+  "noise_log_ratio": -0.13627293839040333,
+  "sharpness_log_ratio": -0.14706899225711823,
+  "noise_ratio_spread": 0.13494667098398463,
+  "flicker_log_ratio": -1.0957213640213013,
+  "n_frames": 114
+ },
+ "fake/32": {
+  "noise_log_ratio": -0.14464746775767323,
+  "sharpness_log_ratio": -0.6128394603729248,
+  "noise_ratio_spread": 0.06519682217205125,
+  "flicker_log_ratio": -0.18480142951011658,
+  "n_frames": 114
+ },
+ "real/33": {
+  "noise_log_ratio": -0.0750353246339283,
+  "sharpness_log_ratio": -1.2508333921432495,
+  "noise_ratio_spread": 0.20046971626147156,
+  "flicker_log_ratio": -0.7185797095298767,
+  "n_frames": 118
+ },
+ "fake/33": {
+  "noise_log_ratio": -0.9080711852528709,
+  "sharpness_log_ratio": -2.3505797386169434,
+  "noise_ratio_spread": 0.20155293652828335,
+  "flicker_log_ratio": -0.7468448877334595,
+  "n_frames": 118
+ },
+ "real/36": {
+  "noise_log_ratio": 0.32704508768743934,
+  "sharpness_log_ratio": -0.26434433460235596,
+  "noise_ratio_spread": 0.14175721682071613,
+  "flicker_log_ratio": -1.4347425699234009,
+  "n_frames": 92
+ },
+ "fake/36": {
+  "noise_log_ratio": 0.03881461373818356,
+  "sharpness_log_ratio": -0.5780072808265686,
+  "noise_ratio_spread": 0.11857410847821644,
+  "flicker_log_ratio": -1.4806771278381348,
+  "n_frames": 92
+ },
+ "real/38": {
+  "noise_log_ratio": 0.45881427817300857,
+  "sharpness_log_ratio": 0.5266339778900146,
+  "noise_ratio_spread": 0.2242577351869386,
+  "flicker_log_ratio": -1.4244284629821777,
+  "n_frames": 150
+ },
+ "fake/38": {
+  "noise_log_ratio": 0.27079351770375365,
+  "sharpness_log_ratio": 0.28744789958000183,
+  "noise_ratio_spread": 0.19738854496125513,
+  "flicker_log_ratio": -1.3370524644851685,
+  "n_frames": 150
+ },
+ "real/39": {
+  "noise_log_ratio": -0.18088341754795614,
+  "sharpness_log_ratio": -0.41752901673316956,
+  "noise_ratio_spread": 0.13143646973951648,
+  "flicker_log_ratio": -1.3442778587341309,
+  "n_frames": 90
+ },
+ "fake/39": {
+  "noise_log_ratio": -0.1667233292747718,
+  "sharpness_log_ratio": -0.470986008644104,
+  "noise_ratio_spread": 0.06403630486599929,
+  "flicker_log_ratio": -1.3108997344970703,
+  "n_frames": 90
+ },
+ "real/45": {
+  "noise_log_ratio": 0.8658932688258479,
+  "sharpness_log_ratio": 1.8205673694610596,
+  "noise_ratio_spread": 0.15710827481788608,
+  "flicker_log_ratio": 0.027550339698791504,
+  "n_frames": 101
+ },
+ "fake/45": {
+  "noise_log_ratio": 0.4805920833805842,
+  "sharpness_log_ratio": 1.4667327404022217,
+  "noise_ratio_spread": 0.18598796698012401,
+  "flicker_log_ratio": 0.18501369655132294,
+  "n_frames": 102
+ },
+ "real/48": {
+  "noise_log_ratio": -0.28928261608311306,
+  "sharpness_log_ratio": -1.4742984771728516,
+  "noise_ratio_spread": 0.06207428856364467,
+  "flicker_log_ratio": -0.6714637875556946,
+  "n_frames": 96
+ },
+ "fake/48": {
+  "noise_log_ratio": -0.31513561231821297,
+  "sharpness_log_ratio": -1.423638105392456,
+  "noise_ratio_spread": 0.06318710811925957,
+  "flicker_log_ratio": -1.0764260292053223,
+  "n_frames": 96
+ },
+ "real/49": {
+  "noise_log_ratio": -0.13790835822530664,
+  "sharpness_log_ratio": -0.006536881439387798,
+  "noise_ratio_spread": 0.06632895131351285,
+  "flicker_log_ratio": -0.6865296363830566,
+  "n_frames": 77
+ },
+ "fake/49": {
+  "noise_log_ratio": -0.07652391902177447,
+  "sharpness_log_ratio": -0.39979544281959534,
+  "noise_ratio_spread": 0.049469241704564425,
+  "flicker_log_ratio": -0.10488494485616684,
+  "n_frames": 79
+ },
+ "real/50": null,
+ "fake/50": null,
+ "real/52": {
+  "noise_log_ratio": -0.42318765643696604,
+  "sharpness_log_ratio": -1.0867960453033447,
+  "noise_ratio_spread": 0.08469587100244877,
+  "flicker_log_ratio": -0.5579301714897156,
+  "n_frames": 103
+ },
+ "fake/52": {
+  "noise_log_ratio": -0.1607148387544507,
+  "sharpness_log_ratio": -0.6509718298912048,
+  "noise_ratio_spread": 0.08708230850675713,
+  "flicker_log_ratio": -0.31534871459007263,
+  "n_frames": 104
+ }
+}

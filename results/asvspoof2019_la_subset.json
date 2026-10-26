@@ -1,0 +1,173 @@
+{
+  "dataset": "ASVspoof 2019 LA eval (ODC-By 1.0)",
+  "subset": {
+    "n_bonafide": 1000,
+    "n_per_attack": 77,
+    "seed": 0,
+    "counts": {
+      "A07": 77,
+      "A08": 77,
+      "A09": 77,
+      "A10": 77,
+      "A11": 77,
+      "A12": 77,
+      "A13": 77,
+      "A14": 77,
+      "A15": 77,
+      "A16": 77,
+      "A17": 77,
+      "A18": 77,
+      "A19": 77,
+      "bonafide": 1000
+    }
+  },
+  "models": {
+    "aasist": {
+      "eer_percent": 1.6,
+      "eer_threshold": 0.0686771348118782,
+      "accuracy_at_default_threshold": 0.968,
+      "per_attack_eer_percent": {
+        "A07": 1.1,
+        "A08": 0.0,
+        "A09": 0.0,
+        "A10": 1.35,
+        "A11": 0.1,
+        "A12": 1.55,
+        "A13": 0.0,
+        "A14": 0.1,
+        "A15": 1.1,
+        "A16": 2.6,
+        "A17": 2.6,
+        "A18": 3.9,
+        "A19": 1.1
+      },
+      "seconds": 34.2
+    },
+    "aasist-l": {
+      "eer_percent": 1.4,
+      "eer_threshold": 0.12228839844465256,
+      "accuracy_at_default_threshold": 0.9745,
+      "per_attack_eer_percent": {
+        "A07": 1.1,
+        "A08": 0.0,
+        "A09": 0.0,
+        "A10": 2.3,
+        "A11": 0.05,
+        "A12": 1.05,
+        "A13": 0.05,
+        "A14": 0.0,
+        "A15": 1.05,
+        "A16": 1.6,
+        "A17": 2.6,
+        "A18": 3.6,
+        "A19": 0.15
+      },
+      "seconds": 26.7
+    },
+    "rawgat-st": {
+      "eer_percent": 3.1,
+      "eer_threshold": 0.4739679992198944,
+      "accuracy_at_default_threshold": 0.9795,
+      "per_attack_eer_percent": {
+        "A07": 0.1,
+        "A08": 0.0,
+        "A09": 0.0,
+        "A10": 0.0,
+        "A11": 0.0,
+        "A12": 0.0,
+        "A13": 0.0,
+        "A14": 0.0,
+        "A15": 0.0,
+        "A16": 3.9,
+        "A17": 4.9,
+        "A18": 6.2,
+        "A19": 2.6
+      },
+      "seconds": 49.2
+    },
+    "xlsr-aasist": {
+      "eer_percent": 0.4,
+      "eer_threshold": 0.46481427550315857,
+      "accuracy_at_default_threshold": 0.998,
+      "per_attack_eer_percent": {
+        "A07": 0.0,
+        "A08": 0.0,
+        "A09": 0.0,
+        "A10": 0.0,
+        "A11": 1.3,
+        "A12": 0.0,
+        "A13": 0.0,
+        "A14": 0.0,
+        "A15": 0.0,
+        "A16": 0.0,
+        "A17": 0.0,
+        "A18": 1.3,
+        "A19": 0.0
+      },
+      "seconds": 58.0
+    },
+    "xlsr-aasist-df": {
+      "eer_percent": 0.0,
+      "eer_threshold": 0.8219704627990723,
+      "accuracy_at_default_threshold": 1.0,
+      "per_attack_eer_percent": {
+        "A07": 0.0,
+        "A08": 0.0,
+        "A09": 0.0,
+        "A10": 0.0,
+        "A11": 0.0,
+        "A12": 0.0,
+        "A13": 0.0,
+        "A14": 0.0,
+        "A15": 0.0,
+        "A16": 0.0,
+        "A17": 0.0,
+        "A18": 0.0,
+        "A19": 0.0
+      },
+      "seconds": 58.5
+    },
+    "nes2net-x": {
+      "eer_percent": 0.2,
+      "eer_threshold": 0.06305555254220963,
+      "accuracy_at_default_threshold": 0.998,
+      "per_attack_eer_percent": {
+        "A07": 0.0,
+        "A08": 0.0,
+        "A09": 0.0,
+        "A10": 0.1,
+        "A11": 0.0,
+        "A12": 0.0,
+        "A13": 0.0,
+        "A14": 0.0,
+        "A15": 0.0,
+        "A16": 0.0,
+        "A17": 0.0,
+        "A18": 0.0,
+        "A19": 0.0
+      },
+      "seconds": 58.1
+    },
+    "nes2net-x-itw": {
+      "eer_percent": 0.1,
+      "eer_threshold": 0.0005619929870590568,
+      "accuracy_at_default_threshold": 0.96,
+      "per_attack_eer_percent": {
+        "A07": 0.0,
+        "A08": 0.0,
+        "A09": 0.0,
+        "A10": 0.05,
+        "A11": 0.0,
+        "A12": 0.0,
+        "A13": 0.0,
+        "A14": 0.0,
+        "A15": 0.0,
+        "A16": 0.0,
+        "A17": 0.0,
+        "A18": 0.0,
+        "A19": 0.0
+      },
+      "seconds": 83.5
+    }
+  }
+}

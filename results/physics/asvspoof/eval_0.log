@@ -1,0 +1,19 @@
+labels: file column 'file', label column 'label'
+334 files (0 already measured), detectors: phys-voice, phys-room
+  20/334  0.1 s/file
+  40/334  0.1 s/file
+  60/334  0.1 s/file
+  80/334  0.1 s/file
+  100/334  0.1 s/file
+  120/334  0.1 s/file
+  140/334  0.1 s/file
+  160/334  0.1 s/file
+  180/334  0.1 s/file
+  200/334  0.1 s/file
+  220/334  0.1 s/file
+  240/334  0.1 s/file
+  260/334  0.1 s/file
+  280/334  0.1 s/file
+  300/334  0.1 s/file
+  320/334  0.1 s/file
+measured 334 new files in 31 s -> /content/drive/MyDrive/ForensiX/results/physics/asvspoof/eval_0.jsonl

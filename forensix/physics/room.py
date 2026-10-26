@@ -71,6 +71,7 @@ class RoomDetector(PhysicsAudioDetector):
         for start in range(0, len(x) - chunk + 1, chunk):
             f0, f1 = start // hop, (start + chunk) // hop
             mask = np.repeat(speech[f0:f1], hop)[:chunk]
+            mask = np.pad(mask, (0, chunk - len(mask)))  # the file's last samples have no frame level
             seg = x[start : start + chunk][mask] if mask.any() else np.array([])
             if len(seg) > sr // 2:
                 speech_spectra.append(R.band_spectrum_db(seg, sr))

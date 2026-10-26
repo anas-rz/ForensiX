@@ -1,0 +1,87 @@
+{
+ "priors": "default",
+ "detectors": {
+  "phys-motion": {
+   "auc": 0.4455,
+   "ap": 0.4787,
+   "n_fake": 47,
+   "n_real": 47,
+   "real_false_alarms": {
+    "n": 47,
+    "any_violation": 0.4255,
+    "score_ge_0.5": 0.1064,
+    "mean_score": 0.1545
+   },
+   "fake_flagged": 0.3191
+  },
+  "phys-lighting": {
+   "auc": 0.4808,
+   "ap": 0.4888,
+   "n_fake": 47,
+   "n_real": 47,
+   "real_false_alarms": {
+    "n": 47,
+    "any_violation": 1.0,
+    "score_ge_0.5": 0.7021,
+    "mean_score": 0.726
+   },
+   "fake_flagged": 0.9787
+  }
+ },
+ "constraints": {
+  "phys-motion/rotation_hf_energy_ratio": {
+   "auc": 0.6197,
+   "ap": 0.6072,
+   "n_fake": 47,
+   "n_real": 47
+  },
+  "phys-motion/p99_angular_velocity_deg_s": {
+   "auc": 0.5143,
+   "ap": 0.5213,
+   "n_fake": 47,
+   "n_real": 47
+  },
+  "phys-motion/p99_angular_acceleration_deg_s2": {
+   "auc": 0.5559,
+   "ap": 0.5466,
+   "n_fake": 47,
+   "n_real": 47
+  },
+  "phys-motion/rigid_deformation": {
+   "auc": 0.4224,
+   "ap": 0.4559,
+   "n_fake": 47,
+   "n_real": 47
+  },
+  "phys-motion/jaw_lip_coupling": {
+   "auc": 0.4375,
+   "ap": 0.525,
+   "n_fake": 4,
+   "n_real": 4
+  },
+  "phys-lighting/light_direction_jitter_deg": {
+   "auc": 0.5102,
+   "ap": 0.533,
+   "n_fake": 47,
+   "n_real": 47
+  },
+  "phys-lighting/shading_residual": {
+   "auc": 0.5081,
+   "ap": 0.538,
+   "n_fake": 47,
+   "n_real": 47
+  },
+  "phys-lighting/face_scene_coupling": {
+   "auc": 0.5606,
+   "ap": 0.577,
+   "n_fake": 17,
+   "n_real": 17
+  }
+ },
+ "physics_max": {
+  "auc": 0.4866,
+  "ap": 0.4946,
+  "n_fake": 47,
+  "n_real": 47
+ }
+}

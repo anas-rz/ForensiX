@@ -24,7 +24,7 @@ and `results/sdfvd.log`.
 
 - **Hardware:** NVIDIA L4 (23 GB, driver 580.82.07) on Google Colab Pro.
 - **Date:** 2026-10-26.
-- **Code:** ForensiX commit `fa0381d85d9a272697d89e4ca03f609d6a377d89`. Scored with
+- **Code:** ForensiX commit `16649a37fd31585fa49641c9f2a3ede17fbbe135`. Scored with
   `scripts/eval_video_folder.py` as it is at that commit; no code changes were needed.
 - **Software:** Python 3.13.16, torch 2.11.0+cu130, OpenCV 5.0.0, numpy 2.1.3, timm 1.0.30,
   transformers 5.20.2.
@@ -113,6 +113,92 @@ Sorted by AUC. Fakes are the positive class.
     0.45 and 0.62, and `rine-ldm`'s includes 0.5. They should not be used as face-swap detectors
     based on this run.
 
+## Follow-up 1: image detectors on face crops
+
+The main run fed whole frames to the image detectors. As a follow-up, the same 8 frames per video were
+cropped around the largest face before scoring.
+
+- **Option:** `--face-crop`, added to `scripts/eval_video_folder.py` for this.
+- **Crop:** MTCNN, 1.3x the face box, at least 256 px a side, never resized, so each model's own
+  preprocessing still applies.
+- **Frames without a face:** dropped. Every video kept at least one.
+- **Results:** `results/sdfvd_facecrop.json`, `results/sdfvd_facecrop_scores.csv`, `results/sdfvd_facecrop.log`.
+- **Gain:** the change in AUC from full frames to face crops on the same videos. Its 95% CI comes
+  from 5,000 bootstrap resamples (reals and fakes drawn separately, seed 0), applied to both inputs.
+
+| Model | AUC, full frame | AUC, face crop [95% CI] | Gain [95% CI] | EER, face crop | Bal. acc @0.5, face crop |
+|---|---|---|---|---|---|
+| `commfor` | 0.697 | 0.878 [0.810, 0.936] | +0.181 [+0.077, +0.289] | 0.226 | 0.679 |
+| `commfor-224` | 0.642 | 0.848 [0.768, 0.915] | +0.206 [+0.111, +0.302] | 0.226 | 0.632 |
+| `rine` | 0.745 | 0.844 [0.761, 0.916] | +0.100 [+0.010, +0.194] | 0.189 | 0.509 |
+| `univfd` | 0.719 | 0.818 [0.729, 0.897] | +0.099 [+0.012, +0.192] | 0.189 | 0.547 |
+| `safe` | 0.693 | 0.722 [0.622, 0.811] | +0.028 [−0.055, +0.110] | 0.358 | 0.500 |
+| `rine-ldm` | 0.561 | 0.694 [0.585, 0.787] | +0.133 [+0.019, +0.244] | 0.396 | 0.585 |
+| `clipdet` | 0.712 | 0.678 [0.571, 0.777] | −0.033 [−0.134, +0.065] | 0.377 | 0.632 |
+
+- **Five of the seven models improve significantly** on face crops; `safe` and `clipdet` don't
+  change significantly. This supports the earlier explanation: on full frames, the center crop
+  often missed the swapped face.
+- **The best image detectors on crops (`commfor`, `commfor-224`, `rine`) are still below the
+  face-based video detectors** (`gend-pe` 0.956, `gend` 0.919, `dfdet-clip` 0.916).
+- **The miscalibration remains.** At 0.5, `rine`, `univfd` and `safe` still call almost every video
+  real.
+- **The `rine` row uses unrounded scores.** The results files store per-video scores rounded to 6
+  decimals, and many of `rine`'s scores round to 0 (36 of 106 full-frame scores, 20 of 106
+  face-crop scores). Recomputing its AUC from the stored scores therefore gives 0.719 instead of
+  0.745 for full frames. The AUCs in the JSON `models` entries were computed before rounding and are
+  correct. The `rine` gain was computed from a rerun that kept full precision; it matched the stored
+  scores after rounding.
+
+## Follow-up 2: calibration
+
+`forensix/calibration.py` and `scripts/recalibrate.py` (see the README's Calibration section) fit,
+per model:
+
+- a Platt scaling of the score;
+- a split-conformal threshold on real videos only, so the false-alarm rate is at most α;
+- conformal prediction sets.
+
+**Out-of-fold results.** To estimate how calibration behaves on unseen videos, the scores in
+`results/sdfvd_scores.csv` were cross-validated:
+
+- 5 folds, seed 0, α = 5%.
+- Each real/fake pair (`vN`, `vsN`) is kept in the same fold, so a model is never calibrated on one
+  half of a pair and tested on the other.
+- Results are in `results/calibration_sdfvd.json`.
+- The tables in `calibrations/sdfvd/` are then fitted on all 106 videos.
+
+| Model | AUC | Bal. acc @0.5, raw | Bal. acc, Platt | ECE, raw | ECE, Platt | False alarms, conformal (α = 5%) | Detection, conformal | Single-label sets |
+|---|---|---|---|---|---|---|---|---|
+| `gend-pe` | 0.956 | 0.859 | 0.887 | 0.116 | 0.081 | 5.7% | 67.9% | 72.6% |
+| `gend` | 0.919 | 0.811 | 0.821 | 0.125 | 0.049 | 5.7% | 54.7% | 67.9% |
+| `dfdet-clip` | 0.916 | 0.821 | 0.849 | 0.126 | 0.091 | 5.7% | 49.1% | 59.4% |
+| `dfdc-selim` | 0.761 | 0.566 | 0.698 | 0.342 | 0.071 | 3.8% | 18.9% | 30.2% |
+| `rine` | 0.719* | 0.500 | 0.641 | 0.488 | 0.122 | 7.5% | 28.3% | 17.9% |
+| `univfd` | 0.719 | 0.509 | 0.660 | 0.442 | 0.062 | 3.8% | 22.6% | 22.6% |
+| `clipdet` | 0.712 | 0.641 | 0.689 | 0.052 | 0.114 | 3.8% | 11.3% | 13.2% |
+| `dfdc-wm` | 0.699 | 0.594 | 0.641 | 0.305 | 0.093 | 3.8% | 15.1% | 22.6% |
+| `commfor` | 0.697 | 0.557 | 0.660 | 0.399 | 0.096 | 3.8% | 24.5% | 21.7% |
+| `safe` | 0.693 | 0.500 | 0.632 | 0.451 | 0.033 | 3.8% | 20.8% | 18.9% |
+| `commfor-224` | 0.642 | 0.509 | 0.632 | 0.470 | 0.077 | 3.8% | 3.8% | 14.1% |
+| `rine-ldm` | 0.561 | 0.528 | 0.528 | 0.106 | 0.006 | 3.8% | 3.8% | 7.5% |
+
+\* Computed from the rounded scores in the CSV (see Follow-up 1); 0.745 at full precision.
+
+- **Calibration changes the threshold, not the ranking.** AUC is unchanged by construction.
+- **Platt scaling fixes the "everything is real" problem.** Models whose balanced accuracy at 0.5
+  was about 0.50 reach 0.63–0.70. ECE drops for every model except `clipdet` (0.052 → 0.114), which
+  was already the best calibrated.
+- **The conformal threshold held its false-alarm target out of fold.** Observed rates were 3.8–7.5%
+  at α = 5%. With about 10 reals per fold, each rate has wide error.
+- **It catches few fakes for the weak models.** The cost of a guaranteed false-alarm rate is low
+  detection: 49–68% for the three GenD models, and at most 28% for the others.
+- **Prediction sets are often {real, fake}.** That means "this score doesn't support a decision at
+  95% confidence". The single-label column shows how often a model commits.
+- **The tables were fitted on SDFVD.** They encode Remaker AI swaps on Pexels clips. Refit them on
+  data like yours before using them; `scripts/recalibrate.py check` tests whether a table still
+  fits new labelled data.
+
 ## Caveats
 
 - **Small sample.** With 53 real and 53 fake videos, the 95% CI on AUC is about ±0.03–0.05 for
@@ -125,8 +211,8 @@ Sorted by AUC. Fakes are the positive class.
 - **Face detector substitution.** Upstream GenD uses the SCRFD face detector. ForensiX uses MTCNN
   for `gend`, `gend-pe` and `dfdet-clip` (see `forensix/video/gend/__init__.py`), so their face
   crops can differ slightly from upstream.
-- **Image detectors on video.** Image detectors were applied to whole frames as described above.
-  A face-crop protocol could give different numbers; this run does not test that.
+- **Image detectors on video.** The main table uses whole frames. Face crops change the numbers
+  substantially; see Follow-up 1.
 - **Timing.** Times other than `univfd` and `rine` were measured with other models sharing the
   GPU (see the Results notes).
 - **Run history.** The run was split across processes to use the whole GPU:
@@ -153,6 +239,19 @@ python scripts/eval_video_folder.py --device cuda \
   --dataset SDFVD \
   --models univfd rine rine-ldm commfor commfor-224 safe clipdet gend gend-pe dfdet-clip dfdc-wm dfdc-selim \
   --out results/sdfvd.json --scores-out results/sdfvd_scores.csv
+```
+
+Follow-ups (same downloads):
+
+```bash
+# 1. image detectors on face crops
+python scripts/eval_video_folder.py --device cuda --face-crop \
+  --real /content/sdfvd/SDFVD/videos_real --fake /content/sdfvd/SDFVD/videos_fake --dataset SDFVD \
+  --models univfd rine rine-ldm commfor commfor-224 safe clipdet \
+  --out results/sdfvd_facecrop.json --scores-out results/sdfvd_facecrop_scores.csv
+# 2. calibration: cross-validated report and one table per model, from the stored scores
+python scripts/recalibrate.py fit --scores results/sdfvd_scores.csv --group-regex '(\d+)' \
+  --alpha 0.05 --out-dir calibrations/sdfvd --report results/calibration_sdfvd.json
 ```
 
 The script resumes: models already in `--out` are skipped. To use more of a large GPU, run

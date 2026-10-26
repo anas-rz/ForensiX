@@ -64,13 +64,17 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 
 | Family | Name | License | Params | Trained on | Published EER | Subset EER, upstream scores | Subset EER, ForensiX |
 |---|---|---|---|---|---|---|---|
-| audio | `aasist` | MIT | 297K | ASVspoof 2019 LA | 0.83% (2019 LA eval) | n/a | pending |
-| audio | `aasist-l` | MIT | 85K | ASVspoof 2019 LA | 0.99% (2019 LA eval) | n/a | pending |
-| audio | `rawgat-st` | MIT | 441K | ASVspoof 2019 LA | 1.06% (2019 LA eval) | 1.30% | pending |
-| audio | `xlsr-aasist` | MIT* | 316M | ASVspoof 2019 LA | 0.82% (2021 LA eval) | n/a | pending |
-| audio | `xlsr-aasist-df` | MIT* | 316M | ASVspoof 2019 LA | 2.85% (2021 DF eval) | n/a | pending |
-| audio | `nes2net-x` | Apache-2.0 | 316M (512K back end) | ASVspoof 2019 LA | 1.49% (2021 DF), 1.88% (2021 LA) | n/a | pending |
-| audio | `nes2net-x-itw` | Apache-2.0 | 316M (512K back end) | ASVspoof 2019 LA | 5.15% (In-the-Wild) | n/a | pending |
+| audio | `aasist` | MIT | 297K | ASVspoof 2019 LA | 0.83% (2019 LA eval) | n/a | 1.6% |
+| audio | `aasist-l` | MIT | 85K | ASVspoof 2019 LA | 0.99% (2019 LA eval) | n/a | 1.4% |
+| audio | `rawgat-st` | MIT | 441K | ASVspoof 2019 LA | 1.06% (2019 LA eval) | 1.30% | 3.1%¶ |
+| audio | `xlsr-aasist` | MIT* | 316M | ASVspoof 2019 LA | 0.82% (2021 LA eval) | n/a | 0.4% |
+| audio | `xlsr-aasist-df` | MIT* | 316M | ASVspoof 2019 LA | 2.85% (2021 DF eval) | n/a | 0.0% |
+| audio | `nes2net-x` | Apache-2.0 | 316M (512K back end) | ASVspoof 2019 LA | 1.49% (2021 DF), 1.88% (2021 LA) | n/a | 0.2% |
+| audio | `nes2net-x-itw` | Apache-2.0 | 316M (512K back end) | ASVspoof 2019 LA | 5.15% (In-the-Wild) | n/a | 0.1% |
+
+Subset: 1,000 bona fide + 77 trials per attack from the 2019 LA eval set (seed 0, 2,001 trials; `scripts/eval_asvspoof2019_la.py`, results in [results/asvspoof2019_la_subset.json](results/asvspoof2019_la_subset.json)).
+
+¶ Upstream scores only the first 4.04 s of each clip; ForensiX averages over all 4.04 s windows. 415 of the 2,001 subset clips are longer. Scoring `rawgat-st` the upstream way in ForensiX gives 1.30%, the same as upstream's released scores, so the network and scoring match and the gap is the window averaging. The other audio models use the same averaging.
 
 **Image**
 
@@ -235,6 +239,8 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 Most detectors learn the fingerprints of particular generators. physdf instead measures physically meaningful quantities in the media, compares them with how real faces and voices behave, and reports which physical constraint was broken. Each constraint family is its own detector, and `physdf` will fuse them. Everything is built from permissively licensed parts:
 - **Face geometry:** MediaPipe FaceLandmarker (Apache-2.0) and the ICT-FaceKit morphable model (MIT). FLAME is research-only, so it isn't used.
 - **Signal processing:** written from the papers, instead of GPL or unlicensed toolkits.
+
+**Measured accuracy so far:** near chance. On SDFVD face swaps, `phys-motion` and `phys-lighting` reach AUC 0.45–0.48. On ASVspoof 2019 LA, `phys-voice` reaches 0.49 with the default priors and 0.62 with priors fitted on that corpus' real speech. Details, coverage and the reasons fitted priors aren't the default: [physics_benchmark.md](physics_benchmark.md). Use these detectors as interpretable side evidence, not as a primary detector.
 
 | Detector | Physical constraint | Status |
 |---|---|---|
@@ -514,6 +520,13 @@ python scripts/eval_image.py --data /content/forensix_image_eval --models univfd
 
 The eval script reports ROC-AUC, AP and balanced accuracy at the default threshold, pooled and per generator, for both conditions. On GPUs with less than 24 GB (e.g. a Colab T4), pipelines run with CPU offload. FLUX.1-schnell is the slowest there, and a T4 has no bfloat16, which FLUX may need. Use `--generators` to build the set in parts, or build FLUX on a larger GPU.
 
+**Video: any folder of real and fake videos**, e.g. SDFVD (CC BY 4.0, 53 face swaps and their 53 source clips). Results and analysis: [benchmark.md](benchmark.md) for the learned detectors, [physics_benchmark.md](physics_benchmark.md) for the physics ones. Image detectors score 8 frames per video, either whole frames or, with `--face-crop`, a crop around the largest face (MTCNN, 1.3x the box). On SDFVD, face crops raise the AUC of five of the seven image detectors by 0.10–0.21.
+
+```bash
+python scripts/eval_video_folder.py --real videos_real --fake videos_fake --dataset SDFVD --device cuda \
+    --out results/sdfvd.json --scores-out results/sdfvd_scores.csv     # add --face-crop for image detectors on faces
+```
+
 **Real-world data: Deepfake-Eval-2024** ([dataset](https://huggingface.co/datasets/nuriachandra/Deepfake-Eval-2024), [paper](https://arxiv.org/abs/2503.02857)). It holds 2024 in-the-wild deepfakes and real media collected from social media and fact-checking reports: 44 h of video, 56.5 h of audio and 1,975 images. It is CC BY-SA 4.0, for evaluation only, and gated, so you request access on Hugging Face. This is the benchmark for video models, and a real-world check for the audio and image models alongside the benchmarks above.
 
 ```bash
@@ -524,6 +537,85 @@ python scripts/eval_deepfake_eval_2024.py --data /content/de2024 --modality vide
 ```
 
 The script finds the metadata CSV's file and label columns by itself and prints them; `--file-col` and `--label-col` override that. Media a model can't decode is skipped and counted. Audio formats libsndfile can't read (e.g. m4a) are decoded with ffmpeg.
+
+## Calibration
+
+A detector's `fake_prob` and default threshold come from its training data, and they often don't hold on other media: on SDFVD, most detectors call almost every face swap real at 0.5 ([benchmark.md](benchmark.md)). `forensix.calibration` fits a small JSON table on labelled scores of your own media and applies it on top of any detector. Weights and preprocessing are unchanged. Three tools are fitted together:
+
+- **Platt scaling:** a logistic map from the raw score to a calibrated probability. `fake_prior` moves the probability to the base rate you expect in deployment.
+- **Conformal threshold:** fitted on real media only. A new real input is flagged with probability at most `alpha`, as long as it's like the calibration reals (exchangeable). It needs no fakes, so the guarantee holds against new generators.
+- **Conformal p-values and prediction sets:** `{"fake"}`, `{"real"}`, both (uncertain) or neither (unlike either class). Each class is covered with probability at least 1 − `alpha`.
+
+```python
+det = forensix.load("gend", device="cuda", calibration="calibrations/sdfvd/gend.json")
+pred = det.predict("clip.mp4")
+pred.fake_prob, pred.is_fake               # calibrated probability; conformal decision (rule="probability" for >= 0.5)
+pred.details["prediction_set"], pred.details["p_real"], pred.details["raw_score"]
+```
+
+**Pipeline.** `scripts/recalibrate.py` works on per-file score CSVs, such as the `--scores-out` of `eval_video_folder.py`, so models are never re-run:
+
+```bash
+# 1. fit: cross-validated before/after report, then one table per model
+python scripts/recalibrate.py fit --scores results/sdfvd_scores.csv --group-regex '(\d+)' \
+    --alpha 0.05 --out-dir calibrations/sdfvd --report results/calibration_sdfvd.json
+# 2. check new labelled media for drift (exit status 3 if any model needs recalibrating)
+python scripts/recalibrate.py check --calibration-dir calibrations/sdfvd --scores new_scores.csv
+# 3. refit on stored + new scores, newest first, at most --window per class; old tables go to history/
+python scripts/recalibrate.py update --calibration-dir calibrations/sdfvd --scores new_scores.csv \
+    --window 2000 --only-if-drift
+```
+
+To recalibrate as fakes change, score each new batch of labelled media (e.g. weekly) with `eval_video_folder.py` and run `update --only-if-drift` on it. Do this from a scheduler, CI job or notebook. The drift check tests the false-alarm rate on new reals against `alpha` (binomial), the detection rate on new fakes against the calibration fakes (Fisher exact) and both score distributions (KS). `--group-regex` keeps related files, such as a real clip and its face swap, in the same fold.
+
+**Limits.** Calibration can't fix ranking: AUC is unchanged by any monotone map. When a new generator's fakes score like reals, `check` reports the drop in detection rate, but `update` can only trade false alarms for detections. That needs a retrained or different detector. Small calibration sets give noisy tables: the conformal threshold needs at least 1/`alpha` − 1 real scores (19 for `alpha` = 0.05), and more for a stable one.
+
+## Batch inference
+
+`detector.predict` scores one input at a time and is fine for interactive use. For large volumes, `forensix.batch.BatchRunner` and `scripts/batch_infer.py` keep the GPU busy. They change neither weights nor preprocessing.
+
+**How it works:**
+- **CPU workers** decode and preprocess inputs ahead of the GPU.
+- **Cross-input batching:** frames, audio windows and faces from many inputs are packed into large GPU batches. Each input's score is then reassembled the way the detector does it (mean over frames, windows or faces).
+- **Pinned, asynchronous host-to-GPU copies.**
+- **Fused normalize kernel:** crop-and-normalize image models (`univfd`, `rine`, `commfor`, ...) send uint8 crops to the GPU, and a Triton kernel (`forensix/kernels.py`) normalizes them there. That moves 4x fewer bytes, and the output is bit-identical to torchvision (tested).
+- **Optional bf16/fp16 autocast.**
+- **Coverage:**
+  - Adapters exist for image detectors (on images, or videos as the mean of 8 frames), audio detectors, and the GenD face pipeline (`gend`, `gend-pe`, `dfdet-clip`).
+  - Other detectors fall back to `predict`. CPU (physics) detectors run in a process pool.
+
+```bash
+python scripts/batch_infer.py --model gend --inputs /data/videos --device cuda --precision bf16 \
+    --batch-size 64 --workers 8 --out scores/gend.jsonl            # resumable: rerun to continue
+python scripts/batch_infer.py --model univfd --inputs list.txt --gpus 0,1,2,3 --out scores/univfd.jsonl   # one process per GPU
+python scripts/batch_infer.py --model univfd --inputs /data/videos --precision bf16 --compare-fp32 200 --out /dev/null  # check bf16 drift first
+python scripts/batch_infer.py --model gend --inputs /data/videos --calibration calibrations/sdfvd/gend.json --out scores/gend.jsonl
+```
+
+Output is one JSON line per input: score, label, per-segment scores, and with `--calibration` also the calibrated probability, decision and prediction set. Errors are recorded per input and don't stop the run.
+
+**Throughput on one NVIDIA L4**
+
+- Measured with `scripts/bench_throughput.py`; raw results in [results/throughput_l4.jsonl](results/throughput_l4.jsonl).
+- Inputs per second, including decoding.
+- **Inputs:** SDFVD videos, with image models scoring 8 frames per video; ASVspoof clips for audio.
+- **Baseline:** the per-input path the eval scripts use.
+- **Max |Δ score|:** the largest per-input score difference from the baseline.
+
+| Model | Inputs | Baseline | Batched fp32 (max \|Δ score\|) | Batched bf16 (max \|Δ score\|) |
+|---|---|---|---|---|
+| `univfd` | 106 videos | 4.3/s | 5.3/s, 1.2x (8e-7) | 16.2/s, 3.8x (0.019) |
+| `commfor` | 106 videos | 6.6/s | 13.2/s, 2.0x (2e-8) | 18.9/s, 2.9x (0.060) |
+| `aasist` | 400 clips | 67/s | 68/s, 1.0x (7e-5) | 78/s, 1.2x (0.040) |
+| `xlsr-aasist` | 400 clips | 34/s | 34/s, 1.0x (7e-4) | 83/s, 2.4x (0.008) |
+| `gend` | 40 videos | 0.58/s | 0.55/s, 0.95x (9e-5) | 0.77/s, 1.3x (0.011); with `--fast-faces` 1.39/s, 2.4x (0.017) |
+
+- **fp32 batching** helps where CPU preprocessing was the bottleneck (`commfor`). It doesn't help where the GPU already was (audio, `gend`).
+- **bf16 helps the large transformers most.** On these sets it didn't change AUC, except `commfor` (0.696 → 0.700) and `gend` (0.910 → 0.913). Its per-input score drift is up to 0.06, so check it on your data with `--compare-fp32` before relying on fixed thresholds.
+- **`gend` is limited by per-frame MTCNN face detection**, which takes about 60% of its time.
+  - `--fast-faces` batches MTCNN over a video's frames. This moves landmarks by up to ~3 px and scores by up to ~0.02, so it's off by default.
+  - Several processes on one GPU don't help, because the GPU time-slices them.
+  - To scale out, use more GPUs with `--gpus`.
 
 ## Verification
 
@@ -561,6 +653,9 @@ forensix/
 ├── registry.py        # ModelSpec + registry
 ├── hub.py             # weight download, cache, checksum
 ├── metrics.py         # EER (ASVspoof-compatible), ROC-AUC, AP
+├── calibration.py     # Platt scaling, conformal thresholds and prediction sets, drift checks
+├── batch.py           # BatchRunner: batched, multi-worker GPU inference (image, audio, GenD; others via predict)
+├── kernels.py         # fused uint8 -> normalized CHW kernel (Triton, bit-exact to torchvision)
 ├── types.py           # Prediction
 ├── audio/
 │   ├── io.py          # loading, mono, resampling
@@ -617,6 +712,10 @@ forensix/
 scripts/
 ├── download_weights.py
 ├── eval_asvspoof2019_la.py
+├── eval_video_folder.py
+├── recalibrate.py
+├── batch_infer.py
+├── bench_throughput.py
 ├── eval_deepfake_eval_2024.py
 ├── calibrate_physics.py
 ├── train_physdf.py

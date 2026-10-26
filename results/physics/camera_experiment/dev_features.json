@@ -1,0 +1,368 @@
+{
+ "real/1": {
+  "noise_log_ratio": -0.11441508210494382,
+  "sharpness_log_ratio": -0.6129435896873474,
+  "noise_ratio_spread": 0.10497760895927576,
+  "flicker_log_ratio": -0.04180808737874031,
+  "n_frames": 81
+ },
+ "fake/1": {
+  "noise_log_ratio": -0.42111209430283625,
+  "sharpness_log_ratio": -1.0422961711883545,
+  "noise_ratio_spread": 0.05912613066745975,
+  "flicker_log_ratio": -0.030402647331357002,
+  "n_frames": 82
+ },
+ "real/2": {
+  "noise_log_ratio": -0.4758225467970745,
+  "sharpness_log_ratio": -1.8559281826019287,
+  "noise_ratio_spread": 0.43702853354010446,
+  "flicker_log_ratio": -1.1263847351074219,
+  "n_frames": 100
+ },
+ "fake/2": {
+  "noise_log_ratio": -0.20629419457343268,
+  "sharpness_log_ratio": -1.0201692581176758,
+  "noise_ratio_spread": 0.2696926834079014,
+  "flicker_log_ratio": -1.1731560230255127,
+  "n_frames": 100
+ },
+ "real/4": {
+  "noise_log_ratio": 1.1944561260030064,
+  "sharpness_log_ratio": 1.3538906574249268,
+  "noise_ratio_spread": 0.09187094019855163,
+  "flicker_log_ratio": 0.36942556500434875,
+  "n_frames": 94
+ },
+ "fake/4": {
+  "noise_log_ratio": 0.29013305921480836,
+  "sharpness_log_ratio": 0.6213768124580383,
+  "noise_ratio_spread": 0.0719801682955678,
+  "flicker_log_ratio": 0.21200019121170044,
+  "n_frames": 94
+ },
+ "real/5": {
+  "noise_log_ratio": 0.5023586429482558,
+  "sharpness_log_ratio": 0.11654093861579895,
+  "noise_ratio_spread": 0.132094277537966,
+  "flicker_log_ratio": -1.0413752794265747,
+  "n_frames": 116
+ },
+ "fake/5": {
+  "noise_log_ratio": -0.2172767431995744,
+  "sharpness_log_ratio": -0.45794010162353516,
+  "noise_ratio_spread": 0.06366715610557193,
+  "flicker_log_ratio": -1.1546308994293213,
+  "n_frames": 116
+ },
+ "real/6": {
+  "noise_log_ratio": -0.004510098439795774,
+  "sharpness_log_ratio": -1.1884655952453613,
+  "noise_ratio_spread": 0.33665861826100596,
+  "flicker_log_ratio": -0.8459460735321045,
+  "n_frames": 80
+ },
+ "fake/6": {
+  "noise_log_ratio": -0.24290975962395397,
+  "sharpness_log_ratio": -1.0910310745239258,
+  "noise_ratio_spread": 0.14236879624416116,
+  "flicker_log_ratio": -0.7896136045455933,
+  "n_frames": 81
+ },
+ "real/8": {
+  "noise_log_ratio": -0.7409813431772482,
+  "sharpness_log_ratio": -1.7560480833053589,
+  "noise_ratio_spread": 0.08575524561164188,
+  "flicker_log_ratio": -1.146011233329773,
+  "n_frames": 78
+ },
+ "fake/8": {
+  "noise_log_ratio": -0.3799512034465525,
+  "sharpness_log_ratio": -1.3509749174118042,
+  "noise_ratio_spread": 0.07092984961075614,
+  "flicker_log_ratio": -1.166656255722046,
+  "n_frames": 79
+ },
+ "real/11": {
+  "noise_log_ratio": -0.24041530994137103,
+  "sharpness_log_ratio": -0.7961933016777039,
+  "noise_ratio_spread": 0.18360574961418025,
+  "flicker_log_ratio": -0.2569102346897125,
+  "n_frames": 81
+ },
+ "fake/11": {
+  "noise_log_ratio": -0.17796960617053648,
+  "sharpness_log_ratio": -0.5886764526367188,
+  "noise_ratio_spread": 0.1339439929113126,
+  "flicker_log_ratio": -0.33167779445648193,
+  "n_frames": 82
+ },
+ "real/12": {
+  "noise_log_ratio": -0.2608396068556045,
+  "sharpness_log_ratio": -1.4330782890319824,
+  "noise_ratio_spread": 0.1472863169029026,
+  "flicker_log_ratio": -1.151780128479004,
+  "n_frames": 101
+ },
+ "fake/12": {
+  "noise_log_ratio": -0.2138698956388236,
+  "sharpness_log_ratio": -1.088407039642334,
+  "noise_ratio_spread": 0.1294062361370944,
+  "flicker_log_ratio": -1.6040763854980469,
+  "n_frames": 101
+ },
+ "real/13": {
+  "noise_log_ratio": 0.4259410706294528,
+  "sharpness_log_ratio": 0.18153196573257446,
+  "noise_ratio_spread": 0.06128769077972345,
+  "flicker_log_ratio": -0.6093900203704834,
+  "n_frames": 80
+ },
+ "fake/13": {
+  "noise_log_ratio": 0.5554258119422713,
+  "sharpness_log_ratio": 0.3158123791217804,
+  "noise_ratio_spread": 0.06700906408608583,
+  "flicker_log_ratio": -0.2792016267776489,
+  "n_frames": 81
+ },
+ "real/15": null,
+ "fake/15": null,
+ "real/16": {
+  "noise_log_ratio": -0.5215955865702451,
+  "sharpness_log_ratio": -2.1353964805603027,
+  "noise_ratio_spread": 0.11490394527611221,
+  "flicker_log_ratio": -0.7666484713554382,
+  "n_frames": 78
+ },
+ "fake/16": {
+  "noise_log_ratio": -0.3101227201259552,
+  "sharpness_log_ratio": -1.51350998878479,
+  "noise_ratio_spread": 0.11749267848288807,
+  "flicker_log_ratio": -0.7792627811431885,
+  "n_frames": 79
+ },
+ "real/18": {
+  "noise_log_ratio": 0.18528886100489167,
+  "sharpness_log_ratio": 0.25374874472618103,
+  "noise_ratio_spread": 0.1141644423151886,
+  "flicker_log_ratio": -0.3001750409603119,
+  "n_frames": 101
+ },
+ "fake/18": {
+  "noise_log_ratio": 0.3074812625096073,
+  "sharpness_log_ratio": 0.7139195799827576,
+  "noise_ratio_spread": 0.14508804223842242,
+  "flicker_log_ratio": -0.43827491998672485,
+  "n_frames": 102
+ },
+ "real/21": {
+  "noise_log_ratio": 0.4424145931905738,
+  "sharpness_log_ratio": 0.22355258464813232,
+  "noise_ratio_spread": 0.19869094148205377,
+  "flicker_log_ratio": 0.15176641941070557,
+  "n_frames": 77
+ },
+ "fake/21": {
+  "noise_log_ratio": 0.3287952155735597,
+  "sharpness_log_ratio": 0.24013975262641907,
+  "noise_ratio_spread": 0.12537312641870083,
+  "flicker_log_ratio": -0.12258416414260864,
+  "n_frames": 78
+ },
+ "real/22": {
+  "noise_log_ratio": 0.8924439417657142,
+  "sharpness_log_ratio": 0.5737622976303101,
+  "noise_ratio_spread": 0.19992239319816685,
+  "flicker_log_ratio": -1.7395596504211426,
+  "n_frames": 174
+ },
+ "fake/22": {
+  "noise_log_ratio": 0.4402304816406795,
+  "sharpness_log_ratio": 0.28975537419319153,
+  "noise_ratio_spread": 0.17970086268855948,
+  "flicker_log_ratio": -1.7378427982330322,
+  "n_frames": 175
+ },
+ "real/30": {
+  "noise_log_ratio": -0.9919456759936728,
+  "sharpness_log_ratio": -1.143446922302246,
+  "noise_ratio_spread": 0.250827188577484,
+  "flicker_log_ratio": -1.046766757965088,
+  "n_frames": 74
+ },
+ "fake/30": {
+  "noise_log_ratio": -0.5320303062815965,
+  "sharpness_log_ratio": -1.5520998239517212,
+  "noise_ratio_spread": 0.11398610529962824,
+  "flicker_log_ratio": -0.5852857232093811,
+  "n_frames": 74
+ },
+ "real/34": {
+  "noise_log_ratio": -0.5346873744174176,
+  "sharpness_log_ratio": -1.3557143211364746,
+  "noise_ratio_spread": 0.3096159458840231,
+  "flicker_log_ratio": -0.20871107280254364,
+  "n_frames": 92
+ },
+ "fake/34": {
+  "noise_log_ratio": -0.4166833923449331,
+  "sharpness_log_ratio": -1.572396993637085,
+  "noise_ratio_spread": 0.09517303212797795,
+  "flicker_log_ratio": -0.35669904947280884,
+  "n_frames": 92
+ },
+ "real/35": {
+  "noise_log_ratio": 0.29954337716488755,
+  "sharpness_log_ratio": -0.30328381061553955,
+  "noise_ratio_spread": 0.19637043934725237,
+  "flicker_log_ratio": -0.963810384273529,
+  "n_frames": 100
+ },
+ "fake/35": {
+  "noise_log_ratio": -0.31934756255946484,
+  "sharpness_log_ratio": -1.447442889213562,
+  "noise_ratio_spread": 0.1633629074978354,
+  "flicker_log_ratio": -0.698084831237793,
+  "n_frames": 100
+ },
+ "real/37": {
+  "noise_log_ratio": -1.1245543646820355,
+  "sharpness_log_ratio": -2.343069553375244,
+  "noise_ratio_spread": 0.18785612197788876,
+  "flicker_log_ratio": -0.8174127340316772,
+  "n_frames": 96
+ },
+ "fake/37": {
+  "noise_log_ratio": -0.6842171735751139,
+  "sharpness_log_ratio": -1.7916998863220215,
+  "noise_ratio_spread": 0.1494341037050826,
+  "flicker_log_ratio": -0.9893099665641785,
+  "n_frames": 97
+ },
+ "real/40": {
+  "noise_log_ratio": -0.026322708429030974,
+  "sharpness_log_ratio": -0.6676101088523865,
+  "noise_ratio_spread": 0.05341045428426013,
+  "flicker_log_ratio": -1.3175355195999146,
+  "n_frames": 98
+ },
+ "fake/40": {
+  "noise_log_ratio": 0.00513650217856928,
+  "sharpness_log_ratio": 0.050874803215265274,
+  "noise_ratio_spread": 0.06393642736963052,
+  "flicker_log_ratio": -1.3592170476913452,
+  "n_frames": 98
+ },
+ "real/41": {
+  "noise_log_ratio": -0.30822511384420553,
+  "sharpness_log_ratio": -0.7327494025230408,
+  "noise_ratio_spread": 0.13558046823180475,
+  "flicker_log_ratio": -0.9305725693702698,
+  "n_frames": 103
+ },
+ "fake/41": {
+  "noise_log_ratio": -0.1690156056119811,
+  "sharpness_log_ratio": -0.715069055557251,
+  "noise_ratio_spread": 0.10231506812682913,
+  "flicker_log_ratio": -1.0352622270584106,
+  "n_frames": 104
+ },
+ "real/42": {
+  "noise_log_ratio": -0.19149255620149236,
+  "sharpness_log_ratio": -1.2351572513580322,
+  "noise_ratio_spread": 0.10387888015071263,
+  "flicker_log_ratio": -0.6910390257835388,
+  "n_frames": 101
+ },
+ "fake/42": {
+  "noise_log_ratio": -0.21813108814903043,
+  "sharpness_log_ratio": -1.0397194623947144,
+  "noise_ratio_spread": 0.1269225562205703,
+  "flicker_log_ratio": -0.4790324568748474,
+  "n_frames": 102
+ },
+ "real/43": {
+  "noise_log_ratio": -1.0165274397101827,
+  "sharpness_log_ratio": -3.4874303340911865,
+  "noise_ratio_spread": 0.15561040212253732,
+  "flicker_log_ratio": -1.6337461471557617,
+  "n_frames": 101
+ },
+ "fake/43": {
+  "noise_log_ratio": -0.7748124675440793,
+  "sharpness_log_ratio": -3.295957088470459,
+  "noise_ratio_spread": 0.12951993828585426,
+  "flicker_log_ratio": -1.5597920417785645,
+  "n_frames": 102
+ },
+ "real/44": {
+  "noise_log_ratio": -0.1292024080867712,
+  "sharpness_log_ratio": -1.13542640209198,
+  "noise_ratio_spread": 0.39481635589309433,
+  "flicker_log_ratio": 0.4167633056640625,
+  "n_frames": 40
+ },
+ "fake/44": {
+  "noise_log_ratio": 0.05994245677433833,
+  "sharpness_log_ratio": -0.721002995967865,
+  "noise_ratio_spread": 0.6140471737820514,
+  "flicker_log_ratio": 0.3416987955570221,
+  "n_frames": 44
+ },
+ "real/46": {
+  "noise_log_ratio": -0.4976596033186047,
+  "sharpness_log_ratio": -1.4071998596191406,
+  "noise_ratio_spread": 0.0935874154930426,
+  "flicker_log_ratio": -1.0277351140975952,
+  "n_frames": 100
+ },
+ "fake/46": {
+  "noise_log_ratio": -0.37312720108054576,
+  "sharpness_log_ratio": -1.2270865440368652,
+  "noise_ratio_spread": 0.10609962329188599,
+  "flicker_log_ratio": -1.155803918838501,
+  "n_frames": 100
+ },
+ "real/47": {
+  "noise_log_ratio": -0.26787237442705597,
+  "sharpness_log_ratio": -1.0807502269744873,
+  "noise_ratio_spread": 0.14261729728894595,
+  "flicker_log_ratio": -0.5808213949203491,
+  "n_frames": 89
+ },
+ "fake/47": {
+  "noise_log_ratio": -0.33922472411723414,
+  "sharpness_log_ratio": -1.0538699626922607,
+  "noise_ratio_spread": 0.12900619791082016,
+  "flicker_log_ratio": -0.8546352982521057,
+  "n_frames": 90
+ },
+ "real/51": {
+  "noise_log_ratio": -0.13398811651791226,
+  "sharpness_log_ratio": -1.6634126901626587,
+  "noise_ratio_spread": 0.08772583543987138,
+  "flicker_log_ratio": -0.3073122203350067,
+  "n_frames": 116
+ },
+ "fake/51": {
+  "noise_log_ratio": -0.09909136320246657,
+  "sharpness_log_ratio": -1.3478331565856934,
+  "noise_ratio_spread": 0.07481141682912461,
+  "flicker_log_ratio": -0.550058126449585,
+  "n_frames": 116
+ },
+ "real/53": {
+  "noise_log_ratio": -0.2231310882262889,
+  "sharpness_log_ratio": -0.38486582040786743,
+  "noise_ratio_spread": 0.2276587114775101,
+  "flicker_log_ratio": -1.5097951889038086,
+  "n_frames": 109
+ },
+ "fake/53": {
+  "noise_log_ratio": -0.13725995913388234,
+  "sharpness_log_ratio": -0.47011393308639526,
+  "noise_ratio_spread": 0.05938343407152805,
+  "flicker_log_ratio": -0.9037238359451294,
+  "n_frames": 110
+ }
+}
