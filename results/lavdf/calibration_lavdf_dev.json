@@ -1,0 +1,213 @@
+{
+ "scores": [
+  "results/lavdf/lavdf_dev_scores.csv"
+ ],
+ "alpha": 0.05,
+ "folds": 5,
+ "seed": 0,
+ "group_regex": null,
+ "models": {
+  "syncnet": {
+   "n_real": 200,
+   "n_fake": 600,
+   "auc": 0.7596,
+   "ap": 0.8956,
+   "score_type": "raw",
+   "cv": {
+    "raw": {
+     "threshold": null
+    },
+    "platt": {
+     "balanced_acc": 0.6075,
+     "false_alarm_rate": 0.735,
+     "detection_rate": 0.95,
+     "brier": 0.1555,
+     "log_loss": 0.478,
+     "ece": 0.0325
+    },
+    "conformal": {
+     "alpha": 0.05,
+     "balanced_acc": 0.6108,
+     "false_alarm_rate": 0.05,
+     "detection_rate": 0.2717
+    },
+    "prediction_sets": {
+     "coverage_real": 0.95,
+     "coverage_fake": 0.9517,
+     "single_label": 0.3187,
+     "both_labels": 0.6813,
+     "empty": 0.0
+    }
+   },
+   "platt": [
+    0.828044288464008,
+    6.578467147020449
+   ],
+   "conformal_threshold": -5.2434
+  },
+  "syncnet-max-window": {
+   "n_real": 200,
+   "n_fake": 600,
+   "auc": 0.8703,
+   "ap": 0.9517,
+   "score_type": "raw",
+   "cv": {
+    "raw": {
+     "threshold": null
+    },
+    "platt": {
+     "balanced_acc": 0.7167,
+     "false_alarm_rate": 0.49,
+     "detection_rate": 0.9233,
+     "brier": 0.1239,
+     "log_loss": 0.3784,
+     "ece": 0.0185
+    },
+    "conformal": {
+     "alpha": 0.05,
+     "balanced_acc": 0.8025,
+     "false_alarm_rate": 0.035,
+     "detection_rate": 0.64
+    },
+    "prediction_sets": {
+     "coverage_real": 0.965,
+     "coverage_fake": 0.9483,
+     "single_label": 0.63,
+     "both_labels": 0.37,
+     "empty": 0.0
+    }
+   },
+   "platt": [
+    0.8844033163067477,
+    1.4277298472619104
+   ],
+   "conformal_threshold": -0.0
+  },
+  "stablesyncnet": {
+   "n_real": 180,
+   "n_fake": 556,
+   "auc": 0.8105,
+   "ap": 0.9098,
+   "score_type": "probability",
+   "cv": {
+    "raw": {
+     "threshold": 0.5,
+     "balanced_acc": 0.5267,
+     "false_alarm_rate": 0.0222,
+     "detection_rate": 0.0755,
+     "brier": 0.3463,
+     "log_loss": 0.8995,
+     "ece": 0.4349
+    },
+    "platt": {
+     "balanced_acc": 0.6775,
+     "false_alarm_rate": 0.6,
+     "detection_rate": 0.955,
+     "brier": 0.1343,
+     "log_loss": 0.4391,
+     "ece": 0.0396
+    },
+    "conformal": {
+     "alpha": 0.05,
+     "balanced_acc": 0.608,
+     "false_alarm_rate": 0.0556,
+     "detection_rate": 0.2716
+    },
+    "prediction_sets": {
+     "coverage_real": 0.9444,
+     "coverage_fake": 0.955,
+     "single_label": 0.3505,
+     "both_labels": 0.6495,
+     "empty": 0.0
+    }
+   },
+   "platt": [
+    3.078211874761532,
+    3.9667320892471816
+   ],
+   "conformal_threshold": 0.38939999999999997
+  },
+  "stablesyncnet-max-window": {
+   "n_real": 180,
+   "n_fake": 556,
+   "auc": 0.8508,
+   "ap": 0.9391,
+   "score_type": "probability",
+   "cv": {
+    "raw": {
+     "threshold": 0.5,
+     "balanced_acc": 0.7049,
+     "false_alarm_rate": 0.5111,
+     "detection_rate": 0.9209,
+     "brier": 0.1303,
+     "log_loss": 0.4131,
+     "ece": 0.0652
+    },
+    "platt": {
+     "balanced_acc": 0.7066,
+     "false_alarm_rate": 0.5167,
+     "detection_rate": 0.9299,
+     "brier": 0.1253,
+     "log_loss": 0.4009,
+     "ece": 0.033
+    },
+    "conformal": {
+     "alpha": 0.05,
+     "balanced_acc": 0.6764,
+     "false_alarm_rate": 0.0556,
+     "detection_rate": 0.4083
+    },
+    "prediction_sets": {
+     "coverage_real": 0.9444,
+     "coverage_fake": 0.9514,
+     "single_label": 0.4688,
+     "both_labels": 0.5312,
+     "empty": 0.0
+    }
+   },
+   "platt": [
+    1.4261956019680433,
+    0.03926725770727491
+   ],
+   "conformal_threshold": 0.8589
+  },
+  "avad": {
+   "n_real": 200,
+   "n_fake": 600,
+   "auc": 0.5408,
+   "ap": 0.7614,
+   "score_type": "raw",
+   "cv": {
+    "raw": {
+     "threshold": null
+    },
+    "platt": {
+     "balanced_acc": 0.5,
+     "false_alarm_rate": 1.0,
+     "detection_rate": 1.0,
+     "brier": 0.1888,
+     "log_loss": 0.5664,
+     "ece": 0.0177
+    },
+    "conformal": {
+     "alpha": 0.05,
+     "balanced_acc": 0.4925,
+     "false_alarm_rate": 0.065,
+     "detection_rate": 0.05
+    },
+    "prediction_sets": {
+     "coverage_real": 0.935,
+     "coverage_fake": 0.9533,
+     "single_label": 0.1138,
+     "both_labels": 0.8862,
+     "empty": 0.0
+    }
+   },
+   "platt": [
+    0.336662179848375,
+    0.7495161066577274
+   ],
+   "conformal_threshold": 1.6849052906036377
+  }
+ }
+}

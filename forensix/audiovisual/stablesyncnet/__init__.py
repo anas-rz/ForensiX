@@ -160,6 +160,13 @@ def align_faces(frames: np.ndarray, landmarks_xy: np.ndarray) -> np.ndarray:
 # ---- detector -------------------------------------------------------------------
 
 
+def window_starts(n_frames: int, n_mel: int, offsets) -> list[int]:
+    """First frame of each non-overlapping 16-frame window whose audio fits at every offset."""
+    return [s for s in range(0, n_frames - NUM_FRAMES + 1, NUM_FRAMES)
+            if all(0 <= int(80.0 * (s + o) / FPS) and int(80.0 * (s + o) / FPS) + MEL_WINDOW <= n_mel
+                   for o in offsets)]
+
+
 class StableSyncNetDetector:
     """Probability that a talking face's audio doesn't belong to it (lip-sync)."""
 
@@ -178,9 +185,7 @@ class StableSyncNetDetector:
         offsets = list(range(-self.max_offset, self.max_offset + 1)) if offsets is None else list(offsets)
         mel = torch.from_numpy(melspectrogram(wav))
         x = torch.from_numpy(faces).float().div(255).sub(0.5).div(0.5).permute(0, 3, 1, 2)  # T, C, H, W
-        starts = [s for s in range(0, len(faces) - NUM_FRAMES + 1, NUM_FRAMES)
-                  if all(0 <= int(80.0 * (s + o) / FPS) and int(80.0 * (s + o) / FPS) + MEL_WINDOW <= mel.shape[1]
-                         for o in offsets)]
+        starts = window_starts(len(faces), mel.shape[1], offsets)
         if not starts:
             raise ValueError(f"Need at least {NUM_FRAMES + 2 * self.max_offset} frames of face and audio")
         sims = np.zeros((len(starts), len(offsets)))
@@ -218,6 +223,7 @@ class StableSyncNetDetector:
             "sync_by_offset": {o: round(float(v), 4) for o, v in zip(offsets, mean)},
             "window_sync_probability": np.round(sims[:, best], 4).tolist(),
             "window_s": NUM_FRAMES / FPS,
+            "window_start_s": [s / FPS for s in window_starts(len(faces), melspectrogram(wav).shape[1], offsets)],
             "n_windows": int(len(sims)),
         }
 

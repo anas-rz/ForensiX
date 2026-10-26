@@ -12,7 +12,10 @@ See ``forensix.calibration`` for the methods.
            --report results/calibration_sdfvd.json
 
    ``--group-regex`` keeps related files in the same fold (SDFVD: ``v12.mp4``
-   and its face swap ``vs12.mp4`` are both group "12").
+   and its face swap ``vs12.mp4`` are both group "12"). Scores that aren't
+   probabilities (anomaly scores, sync confidences) are calibrated as raw
+   scores: automatically when a model has scores outside [0, 1], or forced with
+   ``--raw-scores MODEL ...``.
 
 2. check: does new labelled data still match the calibrations? Exits with
    status 3 if any model needs recalibrating (for schedulers and CI).
@@ -94,7 +97,7 @@ def _prob_metrics(probs, is_fake) -> dict:
             "ece": round(expected_calibration_error(p, is_fake), 4)}
 
 
-def cross_validate(scores, is_fake, groups, alpha, folds, seed, raw_threshold) -> dict:
+def cross_validate(scores, is_fake, groups, alpha, folds, seed, raw_threshold, score_type="probability") -> dict:
     """Out-of-fold raw vs calibrated metrics (each fold calibrated on the others)."""
     fold = group_folds(groups, folds, seed)
     prob, flagged, p_real, p_fake = (np.zeros(len(scores)) for _ in range(4))
@@ -102,7 +105,8 @@ def cross_validate(scores, is_fake, groups, alpha, folds, seed, raw_threshold) -
         test, train = fold == k, fold != k
         if not test.any():
             continue
-        cal = fit_calibration("cv", scores[train & is_fake], scores[train & ~is_fake], alpha)
+        cal = fit_calibration("cv", scores[train & is_fake], scores[train & ~is_fake], alpha,
+                              score_type=score_type)
         prob[test] = cal.prob(scores[test])
         flagged[test] = scores[test] > cal.threshold
         p_real[test], p_fake[test] = cal.p_values(scores[test])
@@ -110,9 +114,12 @@ def cross_validate(scores, is_fake, groups, alpha, folds, seed, raw_threshold) -
     in_real, in_fake = p_real > alpha, p_fake > alpha
     covered = np.where(is_fake, in_fake, in_real)
     size = in_real.astype(int) + in_fake.astype(int)
+    raw = {"threshold": None}  # a raw score has no default threshold or probability
+    if score_type == "probability":
+        raw = {"threshold": raw_threshold, **_decisions(scores, is_fake, scores >= raw_threshold),
+               **_prob_metrics(scores, is_fake)}
     return {
-        "raw": {"threshold": raw_threshold, **_decisions(scores, is_fake, scores >= raw_threshold),
-                **_prob_metrics(scores, is_fake)},
+        "raw": raw,
         "platt": {**_decisions(scores, is_fake, prob >= 0.5), **_prob_metrics(prob, is_fake)},
         "conformal": {"alpha": alpha, **_decisions(scores, is_fake, flagged)},
         "prediction_sets": {"coverage_real": round(float(covered[~is_fake].mean()), 4),
@@ -136,10 +143,12 @@ def cmd_fit(args) -> None:
         entry = {"n_real": int((~is_fake).sum()), "n_fake": int(is_fake.sum()),
                  **{k: v for k, v in binary_summary(scores[is_fake], scores[~is_fake], None).items()
                     if k in ("auc", "ap")}}
+        raw = model in (args.raw_scores or []) or bool(np.any((scores < 0) | (scores > 1)))
+        entry["score_type"] = score_type = "raw" if raw else "probability"
         try:
             entry["cv"] = cross_validate(scores, is_fake, groups, args.alpha, args.folds, args.seed,
-                                         args.raw_threshold)
-            cal = fit_calibration(model, scores[is_fake], scores[~is_fake], args.alpha, args.source)
+                                         args.raw_threshold, score_type)
+            cal = fit_calibration(model, scores[is_fake], scores[~is_fake], args.alpha, args.source, score_type)
         except ValueError as e:
             entry["error"] = str(e)
             print(f"{model}: {e}")
@@ -149,10 +158,13 @@ def cmd_fit(args) -> None:
         entry.update(platt=list(cal.platt), conformal_threshold=cal.threshold)
         report["models"][model] = entry
         cv = entry["cv"]
-        print(f"{model:12} AUC {entry['auc']:.3f} | bal.acc raw {cv['raw']['balanced_acc']:.3f} -> "
+        before = (f"bal.acc raw {cv['raw']['balanced_acc']:.3f} -> " if "balanced_acc" in cv["raw"]
+                  else "raw scores, bal.acc ")
+        ece = f"ECE {cv['raw']['ece']:.3f} -> " if "ece" in cv["raw"] else "ECE "
+        print(f"{model:12} AUC {entry['auc']:.3f} | {before}"
               f"platt {cv['platt']['balanced_acc']:.3f}, conformal {cv['conformal']['balanced_acc']:.3f} "
               f"(false alarms {cv['conformal']['false_alarm_rate']:.1%}, alpha {args.alpha:.0%}) | "
-              f"ECE {cv['raw']['ece']:.3f} -> {cv['platt']['ece']:.3f}")
+              f"{ece}{cv['platt']['ece']:.3f}")
     if args.report:
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(json.dumps(report, indent=1) + "\n")
@@ -213,7 +225,7 @@ def cmd_update(args) -> None:
         real = _window(scores[~is_fake], cal.real_scores, args.window, rng)
         source = ", ".join(s for s in (cal.source, args.source) if s)
         try:
-            new = fit_calibration(model, fake, real, args.alpha or cal.alpha, source)
+            new = fit_calibration(model, fake, real, args.alpha or cal.alpha, source, cal.score_type)
         except ValueError as e:
             print(f"{model}: not updated: {e}")
             continue
@@ -241,6 +253,8 @@ def main(argv=None) -> None:
     f.add_argument("--folds", type=int, default=5)
     f.add_argument("--seed", type=int, default=0)
     f.add_argument("--raw-threshold", type=float, default=0.5, help="the detectors' default threshold")
+    f.add_argument("--raw-scores", nargs="+", metavar="MODEL",
+                   help="models whose scores aren't probabilities (automatic if outside [0, 1])")
     f.add_argument("--source", default="", help="dataset tag stored in the calibrations")
     f.add_argument("--out-dir", type=Path, required=True)
     f.add_argument("--report", type=Path)

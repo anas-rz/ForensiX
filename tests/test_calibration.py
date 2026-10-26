@@ -68,6 +68,21 @@ def test_platt_fixes_overconfident_scores():
     assert np.all(cal.prob(test, fake_prior=0.01) < cal.prob(test))
 
 
+def test_raw_scores_are_calibrated_without_logit(tmp_path):
+    rng = np.random.default_rng(9)
+    fake, real = rng.normal(-2.0, 1.0, 500), rng.normal(-5.0, 1.0, 500)  # e.g. negated sync confidence
+    cal = fit_calibration("m", fake, real, score_type="raw")
+    probs = cal.prob(np.concatenate([fake, real]))
+    labels = np.r_[np.ones(500), np.zeros(500)]
+    assert expected_calibration_error(probs, labels) < 0.05
+    assert cal.prob(-2.0) > 0.5 > cal.prob(-5.0)
+    assert np.sum(real > cal.threshold) <= 0.05 * 501  # conformal threshold on the raw scale
+    cal.save(tmp_path / "m.json")
+    assert Calibration.load(tmp_path / "m.json").score_type == "raw"
+    with pytest.raises(ValueError, match="score_type"):
+        fit_calibration("m", fake, real, score_type="logit")
+
+
 def test_fit_rejects_inverted_detector():
     rng = np.random.default_rng(3)
     with pytest.raises(ValueError, match="rank real above fake"):

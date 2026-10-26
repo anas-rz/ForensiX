@@ -6,7 +6,9 @@ scores of labelled media.
 Three tools, fitted together by ``fit_calibration``:
 
 - **Platt scaling** (Platt, 1999): ``p = sigmoid(a * logit(score) + b)``, fitted
-  by logistic regression with Platt's smoothed targets. Gives probabilities
+  by logistic regression with Platt's smoothed targets. For detectors whose
+  score isn't a probability (anomaly scores, sync confidences), fit with
+  ``score_type="raw"``: ``p = sigmoid(a * score + b)``. Gives probabilities
   that match the fake rate of the calibration set, and can be moved to another
   base rate with ``fake_prior``.
 - **Split-conformal threshold** (Vovk et al., 2005; Angelopoulos & Bates,
@@ -53,15 +55,24 @@ def _sigmoid(z) -> np.ndarray:
     return 1.0 / (1.0 + np.exp(-np.asarray(z, dtype=np.float64)))
 
 
-def fit_platt(fake_scores, real_scores) -> tuple[float, float]:
-    """``(a, b)`` of ``sigmoid(a * logit(score) + b)``, by logistic regression on
-    Platt's smoothed targets ``(n_fake + 1) / (n_fake + 2)`` and ``1 / (n_real + 2)``."""
+def _platt_input(scores, score_type: str) -> np.ndarray:
+    if score_type == "probability":
+        return _logit(scores)
+    if score_type == "raw":
+        return np.asarray(scores, dtype=np.float64)
+    raise ValueError(f"Unknown score_type {score_type!r}")
+
+
+def fit_platt(fake_scores, real_scores, score_type: str = "probability") -> tuple[float, float]:
+    """``(a, b)`` of ``sigmoid(a * x + b)`` with ``x = logit(score)`` (or the raw
+    score for ``score_type="raw"``), by logistic regression on Platt's smoothed
+    targets ``(n_fake + 1) / (n_fake + 2)`` and ``1 / (n_real + 2)``."""
     from scipy.optimize import minimize
 
     fake, real = np.asarray(fake_scores, np.float64), np.asarray(real_scores, np.float64)
     if fake.size == 0 or real.size == 0:
         raise ValueError("Need at least one fake and one real score")
-    x = _logit(np.concatenate([fake, real]))
+    x = _platt_input(np.concatenate([fake, real]), score_type)
     t = np.concatenate([np.full(fake.size, (fake.size + 1) / (fake.size + 2)),
                         np.full(real.size, 1 / (real.size + 2))])
 
@@ -124,6 +135,7 @@ class Calibration:
     source: str = ""
     created: str = field(default_factory=lambda: date.today().isoformat())
     format: str = FORMAT
+    score_type: str = "probability"  # "raw": Platt on the score itself, not its logit
 
     @property
     def calibration_prior(self) -> float:
@@ -133,7 +145,7 @@ class Calibration:
     def prob(self, scores, fake_prior: float | None = None) -> np.ndarray:
         """Calibrated fake probability; ``fake_prior`` moves it to another base rate."""
         a, b = self.platt
-        z = a * _logit(scores) + b
+        z = a * _platt_input(scores, self.score_type) + b
         if fake_prior is not None:
             z += _logit(fake_prior) - _logit(self.calibration_prior)
         return _sigmoid(z)
@@ -172,19 +184,21 @@ class Calibration:
 
 
 def fit_calibration(model: str, fake_scores, real_scores, alpha: float = 0.05,
-                    source: str = "") -> Calibration:
-    """Fit Platt scaling and the conformal threshold on labelled raw scores."""
+                    source: str = "", score_type: str = "probability") -> Calibration:
+    """Fit Platt scaling and the conformal threshold on labelled raw scores.
+    ``score_type="raw"`` for scores that aren't probabilities."""
     fake = np.asarray(fake_scores, np.float64)
     real = np.asarray(real_scores, np.float64)
     fake, real = fake[np.isfinite(fake)], real[np.isfinite(real)]
-    a, b = fit_platt(fake, real)
+    a, b = fit_platt(fake, real, score_type)
     if a <= 0:
         raise ValueError(f"{model}: scores rank real above fake on the calibration data; "
                          "recalibration can't fix that")
     return Calibration(model=model, platt=(a, b), alpha=alpha,
                        threshold=conformal_threshold(real, alpha),
                        real_scores=[round(float(s), 6) for s in np.sort(real)],
-                       fake_scores=[round(float(s), 6) for s in np.sort(fake)], source=source)
+                       fake_scores=[round(float(s), 6) for s in np.sort(fake)], source=source,
+                       score_type=score_type)
 
 
 def drift_check(calibration: Calibration, fake_scores=(), real_scores=(), level: float = 0.01) -> dict:

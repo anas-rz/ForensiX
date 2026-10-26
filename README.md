@@ -102,9 +102,9 @@ Subset: 1,000 bona fide + 77 trials per attack from the 2019 LA eval set (seed 0
 
 | Family | Name | License | Params | Trained on | Published result | ForensiX eval |
 |---|---|---|---|---|---|---|
-| audiovisual | `avad` | MIT*‡ | 41.6M + RetinaFace | real videos only (LRS2), self-supervised | FakeAVCeleb: 94.5 AUC averaged over the 4 fake-video categories; 71.6 AUC on fake audio with real video | pending |
-| audiovisual | `syncnet` | MIT*‡ | 13.6M + RetinaFace | real BBC television, self-supervised (sync vs. shifted audio) | no deepfake result in the paper (it reports AV offset and active-speaker accuracy) | pending |
-| audiovisual | `stablesyncnet` | OpenRAIL++-M§ (weights), Apache-2.0 (code)‡ | 401M + MediaPipe | real talking faces (VoxCeleb2, HDTF): synced vs. unsynced pairs | 94% sync accuracy on VoxCeleb2 and HDTF (LatentSync); no deepfake result | pending |
+| audiovisual | `avad` | MIT*‡ | 41.6M + RetinaFace | real videos only (LRS2), self-supervised | FakeAVCeleb: 94.5 AUC averaged over the 4 fake-video categories; 71.6 AUC on fake audio with real video | LAV-DF test: AUC 0.563 ([av_benchmark.md](av_benchmark.md)) |
+| audiovisual | `syncnet` | MIT*‡ | 13.6M + RetinaFace | real BBC television, self-supervised (sync vs. shifted audio) | no deepfake result in the paper (it reports AV offset and active-speaker accuracy) | LAV-DF test: AUC 0.722; 0.833 scoring the worst window ([av_benchmark.md](av_benchmark.md)) |
+| audiovisual | `stablesyncnet` | OpenRAIL++-M§ (weights), Apache-2.0 (code)‡ | 401M + MediaPipe | real talking faces (VoxCeleb2, HDTF): synced vs. unsynced pairs | 94% sync accuracy on VoxCeleb2 and HDTF (LatentSync); no deepfake result | LAV-DF test: AUC 0.785; 0.853 scoring the worst window ([av_benchmark.md](av_benchmark.md)) |
 | audiovisual | `avcons` | ForensiX (you train it) + SyncNet features (MIT*) | 4.0M + SyncNet + RetinaFace | real videos only (e.g. VoxCeleb2, CC BY 4.0), negatives made from them | ForensiX model; verified on synthetic embeddings | train on Colab |
 | audiovisual | `avid` | ForensiX (you train it) + ECAPA-TDNN (Apache-2.0) + DINOv2 ViT-S/14 (Apache-2.0) | 0.4M heads + 20.8M ECAPA + 22M DINOv2 + RetinaFace | real videos only (e.g. VoxCeleb2, CC BY 4.0); ECAPA trained on VoxCeleb | ForensiX model; verified on synthetic identities | train on Colab |
 
@@ -527,6 +527,13 @@ python scripts/eval_video_folder.py --real videos_real --fake videos_fake --data
     --out results/sdfvd.json --scores-out results/sdfvd_scores.csv     # add --face-crop for image detectors on faces
 ```
 
+**Audio-visual: LAV-DF** ([dataset](https://huggingface.co/datasets/ControlNet/LAV-DF), CC BY-NC 4.0, gated; built from VoxCeleb2). Fakes replace a word or two in the audio, the video or both. The script samples equal numbers of each class, scores clips and windows, and reports clip AUC, AUC per edited modality, localization, and calibration fitted on another split. Results: [av_benchmark.md](av_benchmark.md). `avad` scores only the first ~2.2 s of a face track (upstream's `max_len=50`), so it misses later edits.
+
+```bash
+python scripts/eval_lavdf.py score --data /content/lavdf/LAV-DF --split test --per-class 300 --device cuda --out-dir results/lavdf
+python scripts/eval_lavdf.py report --data /content/lavdf/LAV-DF --split test --out-dir results/lavdf
+```
+
 **Real-world data: Deepfake-Eval-2024** ([dataset](https://huggingface.co/datasets/nuriachandra/Deepfake-Eval-2024), [paper](https://arxiv.org/abs/2503.02857)). It holds 2024 in-the-wild deepfakes and real media collected from social media and fact-checking reports: 44 h of video, 56.5 h of audio and 1,975 images. It is CC BY-SA 4.0, for evaluation only, and gated, so you request access on Hugging Face. This is the benchmark for video models, and a real-world check for the audio and image models alongside the benchmarks above.
 
 ```bash
@@ -542,7 +549,7 @@ The script finds the metadata CSV's file and label columns by itself and prints 
 
 A detector's `fake_prob` and default threshold come from its training data, and they often don't hold on other media: on SDFVD, most detectors call almost every face swap real at 0.5 ([benchmark.md](benchmark.md)). `forensix.calibration` fits a small JSON table on labelled scores of your own media and applies it on top of any detector. Weights and preprocessing are unchanged. Three tools are fitted together:
 
-- **Platt scaling:** a logistic map from the raw score to a calibrated probability. `fake_prior` moves the probability to the base rate you expect in deployment.
+- **Platt scaling:** a logistic map from the raw score to a calibrated probability. `fake_prior` moves the probability to the base rate you expect in deployment. Scores that aren't probabilities (`avad`, `syncnet`) are fitted on the raw score (`score_type="raw"`); `recalibrate.py` detects them.
 - **Conformal threshold:** fitted on real media only. A new real input is flagged with probability at most `alpha`, as long as it's like the calibration reals (exchangeable). It needs no fakes, so the guarantee holds against new generators.
 - **Conformal p-values and prediction sets:** `{"fake"}`, `{"real"}`, both (uncertain) or neither (unlike either class). Each class is covered with probability at least 1 − `alpha`.
 
@@ -713,6 +720,7 @@ scripts/
 ├── download_weights.py
 ├── eval_asvspoof2019_la.py
 ├── eval_video_folder.py
+├── eval_lavdf.py
 ├── recalibrate.py
 ├── batch_infer.py
 ├── bench_throughput.py
