@@ -1,0 +1,47 @@
+### Run 1: sequential, all 12 models; stopped during rine-ldm to switch to parallel workers (univfd and rine results kept)
+106 videos (53 fake, 53 real)
+  univfd: AUC 0.719  AP 0.751  EER 0.302  bal.acc 0.509  (failed 0)
+  rine: AUC 0.745  AP 0.774  EER 0.340  bal.acc 0.500  (failed 0)
+
+### Run 2: parallel workers on the same L4, each with its own --models subset and results JSON, merged into results/sdfvd.json
+### (worker 1 stopped after dfdc-selim; safe ran on worker 5; worker 4's duplicate rine dropped - its scores were identical to run 1's)
+--- worker 1
+106 videos (53 fake, 53 real)
+  dfdc-selim: AUC 0.761  AP 0.756  EER 0.321  bal.acc 0.566  (failed 0)
+--- worker 2
+106 videos (53 fake, 53 real)
+  dfdc-wm: AUC 0.699  AP 0.718  EER 0.396  bal.acc 0.594  (failed 0)
+  gend-pe: AUC 0.956  AP 0.959  EER 0.132  bal.acc 0.859  (failed 0)
+--- worker 3
+106 videos (53 fake, 53 real)
+  gend: AUC 0.919  AP 0.916  EER 0.170  bal.acc 0.811  (failed 0)
+  dfdet-clip: AUC 0.916  AP 0.913  EER 0.151  bal.acc 0.821  (failed 0)
+--- worker 4
+106 videos (53 fake, 53 real)
+  rine: AUC 0.745  AP 0.774  EER 0.340  bal.acc 0.500  (failed 0)
+  rine-ldm: AUC 0.561  AP 0.566  EER 0.472  bal.acc 0.528  (failed 0)
+  commfor: AUC 0.696  AP 0.722  EER 0.340  bal.acc 0.557  (failed 0)
+  commfor-224: AUC 0.642  AP 0.630  EER 0.396  bal.acc 0.509  (failed 0)
+  clipdet: AUC 0.712  AP 0.697  EER 0.321  bal.acc 0.641  (failed 0)
+--- worker 5
+106 videos (53 fake, 53 real)
+  safe: AUC 0.693  AP 0.723  EER 0.377  bal.acc 0.500  (failed 0)
+
+### Extra: an accidental sequential rerun (alone on the GPU) rescored rine-ldm, commfor, commfor-224 and safe, then was
+### stopped during clipdet. Per-video scores were identical to run 2; times alone: rine-ldm 200.4 s, commfor 16.5 s,
+### commfor-224 11.5 s, safe 6.5 s. Its results were discarded (run 2's are in results/sdfvd.json).
+
+### Run 3: original command with all models done -> writes results/sdfvd_scores.csv
+106 videos (53 fake, 53 real)
+  univfd: already done, skipping
+  rine: already done, skipping
+  rine-ldm: already done, skipping
+  commfor: already done, skipping
+  commfor-224: already done, skipping
+  safe: already done, skipping
+  clipdet: already done, skipping
+  gend: already done, skipping
+  gend-pe: already done, skipping
+  dfdet-clip: already done, skipping
+  dfdc-wm: already done, skipping
+  dfdc-selim: already done, skipping
