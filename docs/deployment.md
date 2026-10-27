@@ -1,8 +1,11 @@
 # Deployment at scale
 
-ForensiX is a Python library, not a service. This guide shows how to build a service around it
-that scores large volumes of media reliably, cheaply and auditably. It is written for the
-engineers who will design and run that service.
+ForensiX is a Python library with an optional HTTP server ([HTTP server](server.md)). The server
+suits synchronous calls at moderate volume: one process per GPU, models kept in memory. This
+guide covers the next step: a service that scores large volumes of media reliably, cheaply and
+auditably, with queues and worker pools. It is written for the engineers who will design and run
+that service. A pool of `forensix.server` instances behind a load balancer is one way to build
+the worker pools below.
 
 The worker code below was run end to end with real models. The Dockerfile, queue, Kubernetes and
 autoscaling sections are patterns to adapt. They have not been built or run as part of ForensiX's
@@ -204,8 +207,8 @@ download the media to local disk, call `worker.run`, write the record, acknowled
 
 **Rules for workers:**
 
-- **Load once.** `forensix.load` hashes every weight file, which takes seconds for 1.6 GB
-  files. Never load per request.
+- **Load once.** Building a model takes seconds: library imports, initialization, and hash
+  checks of weight files that have no `.verified` stamp yet. Never load per request.
 - **Processes, not threads.** Detectors keep state (networks, face detectors) and aren't
   designed for concurrent calls. Run one detector instance per process, and scale with
   processes.
@@ -300,7 +303,8 @@ tracking), so one process leaves the GPU idle.
 - **Scale each pool on its own queue depth** (or age of the oldest job), not on CPU or GPU
   utilization. On Kubernetes, KEDA does this for most queue systems.
 - **Keep a minimum of one warm worker per pool.** Cold starts include pulling a multi-GB image
-  and hashing the weights, which can take minutes.
+  and loading the models, which can take minutes. Images built by loading each model already
+  contain the `.verified` stamps, so weights aren't rehashed at startup.
 - **Use separate queues per priority.** User-facing checks shouldn't wait behind a bulk
   backfill.
 - **Route by content.** Use `probe` to send audio-only files only to the audio pool.

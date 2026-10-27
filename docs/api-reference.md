@@ -193,6 +193,14 @@ Fakes are the positive class, and higher scores mean more likely fake.
 | `forensix.hub.fetch(weights, force=False)` | Local path to a verified file, downloading it if needed |
 | `forensix.hub.torch_load(path)` | `torch.load(weights_only=True)` that also allows the numpy types some upstream checkpoints contain |
 
+## HTTP server: `forensix.server`
+
+| Name | Description |
+|---|---|
+| `python -m forensix.server [--config F] [--device D] [--preload M ...] [--port P] [--api-key K]` | Run the server ([HTTP server](server.md)) |
+| `forensix.server.ServerConfig` | Settings dataclass; `ServerConfig.load(path, **overrides)` layers JSON file, `FORENSIX_SERVER_*` environment variables and overrides |
+| `forensix.server.create_app(config)` | The FastAPI app, e.g. to mount in your own ASGI server |
+
 ## Command-line scripts
 
 All scripts are in `scripts/` and print `--help`.

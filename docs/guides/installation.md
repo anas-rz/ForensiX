@@ -49,8 +49,9 @@ and tests that need ffmpeg are skipped without it.
 ## The weights cache
 
 Weights download on first use into `~/.cache/forensix/weights/`, and their SHA-256 hashes are
-checked every time a model loads. To put the cache somewhere else (a bigger disk, a shared
-volume, Google Drive):
+checked. A `.verified` stamp next to each file lets later loads skip rehashing it while the file
+is unchanged (`FORENSIX_VERIFY_HASH=always` forces a full check). To put the cache somewhere else
+(a bigger disk, a shared volume, Google Drive):
 
 ```bash
 export FORENSIX_CACHE=/data/forensix_cache

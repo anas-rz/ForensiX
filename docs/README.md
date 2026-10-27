@@ -16,6 +16,7 @@ preprocessing details and parity checks against upstream code.
 | Understand the building blocks (registry, `Prediction`, score types, families) | [Concepts](concepts.md) |
 | Look up a function, class or field | [API reference](api-reference.md) |
 | Copy working code for a common task | [Recipes](recipes.md) |
+| Call the detectors over HTTP | [HTTP server](server.md) |
 | Run ForensiX as a service over large volumes of media | [Deployment at scale](deployment.md) |
 
 ## Guides

@@ -26,7 +26,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest", "httpx"]
+# HTTP server (python -m forensix.server)
+server = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "python-multipart>=0.0.9"]
 # building the image evaluation set (scripts/build_image_eval_set.py)
 eval = ["diffusers", "accelerate", "sentencepiece", "protobuf"]
 

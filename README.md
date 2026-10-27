@@ -15,7 +15,17 @@ Weights are cached in `~/.cache/forensix` (override with `FORENSIX_CACHE`) and c
 
 ## Documentation
 
-[docs/](docs/README.md) has the [concepts](docs/concepts.md), the [API reference](docs/api-reference.md), [recipes](docs/recipes.md) for common tasks, [guides](docs/README.md#guides) (choosing detectors, interpreting scores, evaluation, identity, physics, training, Colab, extending, licensing), and [deployment at scale](docs/deployment.md). Benchmark results are in [benchmark.md](benchmark.md).
+[docs/](docs/README.md) has the [concepts](docs/concepts.md), the [API reference](docs/api-reference.md), [recipes](docs/recipes.md) for common tasks, [guides](docs/README.md#guides) (choosing detectors, interpreting scores, evaluation, identity, physics, training, Colab, extending, licensing), the [HTTP server](docs/server.md), and [deployment at scale](docs/deployment.md).
+
+## HTTP server
+
+```bash
+pip install -e ".[server]"
+python -m forensix.server --device cuda --preload dfdet-clip commfor nes2net-x-itw syncnet
+curl -F file=@clip.mp4 -F models=dfdet-clip,syncnet http://localhost:8000/v1/detect
+```
+
+Models stay loaded between requests, concurrent image and audio requests are batched, and results are cached by file hash. See [docs/server.md](docs/server.md). Benchmark results are in [benchmark.md](benchmark.md).
 
 ## Usage
 

@@ -46,8 +46,12 @@ again, and a download whose hash doesn't match raises an error. Nothing unverifi
 - **Size:** about 18 GB for every model. The large ones are the CLIP/PE-based models
   (1.2–1.6 GB each), the XLS-R audio models (1.2 GB each), `stablesyncnet` (1.5 GB) and
   `dfdc-selim` (1.8 GB).
-- **Hashing cost:** the hash is recomputed every time a model is loaded, so loading a 1.6 GB
-  file costs a few seconds of disk reads. Load once per process and reuse the detector.
+- **Hashing cost:** hashing a 1.6 GB file takes a few seconds. After a successful check,
+  `<file>.verified` records the hash, size and modification time, and later loads trust an
+  unchanged file without rehashing it. A changed size or mtime triggers a full check. Set
+  `FORENSIX_VERIFY_HASH=always` to rehash on every load.
+- **Load once:** building a model still takes seconds (library imports, initialization), so
+  load once per process and reuse the detector.
 - **Your own checkpoints:** `forensix.load(name, weights_path="my.safetensors")` skips the
   download and hash check for the model's own weights. Shared backbones are still fetched.
 
