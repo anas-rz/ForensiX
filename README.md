@@ -13,6 +13,10 @@ python scripts/download_weights.py          # optional: pre-fetch all weights
 
 Weights are cached in `~/.cache/forensix` (override with `FORENSIX_CACHE`) and checked against a SHA-256 hash. `forensix.load()` downloads them automatically on first use.
 
+## Documentation
+
+[docs/](docs/README.md) has the [concepts](docs/concepts.md), the [API reference](docs/api-reference.md), [recipes](docs/recipes.md) for common tasks, [guides](docs/README.md#guides) (choosing detectors, interpreting scores, evaluation, identity, physics, training, Colab, extending, licensing), and [deployment at scale](docs/deployment.md). Benchmark results are in [benchmark.md](benchmark.md).
+
 ## Usage
 
 ```python
