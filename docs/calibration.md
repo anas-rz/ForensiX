@@ -106,6 +106,20 @@ already computed (e.g. `scripts/eval_video_folder.py --scores-out`), use
 `forensix.calibration.calibrate_scores(model, scores, is_fake, groups)` or
 `scripts/recalibrate.py`.
 
+To build on an existing calibration with newly labelled scores of the same model:
+
+```python
+from forensix.calibration import Calibration, update_calibration
+
+base = Calibration.load("calibrations/dfdet-clip.json")
+new, report = update_calibration(base, new_fake_scores, new_real_scores, window=2000)
+new.save("calibrations/dfdet-clip.json")    # report: n_new_*, n_carried_*, AUC, CV, warnings
+```
+
+`window` caps the scores kept per class: all new scores stay, and older ones are subsampled.
+Without it, every old score is kept. The HTTP API below does the same with item-level
+bookkeeping: deduplication by file and lineage.
+
 ## HTTP API
 
 All calibration data lives under the server's `calibration_dir`. Set it, or datasets and
@@ -127,22 +141,37 @@ curl -H "X-API-Key: $ADMIN" -F file=@my_dataset.zip -F name=platform-x-oct \
 
 ```bash
 curl -H "X-API-Key: $ADMIN" -H "content-type: application/json" \
-     -d '{"dataset": "9249deec143c", "models": ["dfdc-wm", "dfdet-clip"], "alpha": 0.05}' \
+     -d '{"mode": "full", "datasets": ["9249deec143c"], "models": ["dfdc-wm", "dfdet-clip"], "alpha": 0.05}' \
      http://localhost:8000/v1/calibrations
 ```
 
+There are three modes ([Calibration modes](#calibration-modes) has the details):
+
+| `mode` | Fits on | Use it for |
+|---|---|---|
+| `full` (default) | The given datasets, from scratch | A first calibration; a clean rebuild on everything you have |
+| `incremental` | The base version's items plus the given datasets | Adding newly labelled data on top of previous calibrations |
+| `refit` | The base version's items only; nothing is scored | Changing `alpha` or `folds` |
+
 | Field | Default | Meaning |
 |---|---|---|
-| `dataset` | required | Dataset id |
+| `mode` | `"full"` | `full`, `incremental` or `refit` |
+| `datasets` | required for `full` and `incremental` | Dataset ids (`dataset` takes one id) |
 | `models` | required | Models to calibrate (fusion names work too) |
-| `alpha` | `0.05` | Target false-alarm rate on real media |
+| `base_version` | the active version, else the latest | `incremental`/`refit`: the version to build on |
+| `window` | none (keep everything) | `incremental`: max items per class. All new items stay; older ones are randomly subsampled |
+| `only_if_drift` | `false` | `incremental`: refit only if the new data fails the drift check against the base version |
+| `level` | `0.01` | Significance level of that drift check |
+| `alpha` | the base's, else `0.05` | Target false-alarm rate on real media |
 | `folds` | `5` | Cross-validation folds for the report |
+| `seed` | `0` | Seed for folds and window subsampling |
 | `activate` | `true` | Use the new version for predictions as soon as it's fitted |
 | `score_types` | auto | `{"model": "raw"}` for scores that aren't probabilities |
 
 The job scores every item with each model's raw (uncalibrated) output. Image and audio models
-batch the items, and videos are bounded like uploads. The job then fits, saves a new version and
-(by default) activates it. It returns `202` with a job id.
+batch the items, and videos are bounded like uploads. Scores are cached per dataset and model
+configuration, so a dataset is scored once per model however many calibrations use it. The job
+then fits, saves a new version and (by default) activates it. It returns `202` with a job id.
 
 **3. Poll the job:**
 
@@ -182,6 +211,8 @@ How to read it:
 | Report field | Meaning |
 |---|---|
 | `version`, `activated` | The saved version and whether it's now in use |
+| `mode`, `parent`, `lineage` | How it was built: the mode, the version it built on, and every dataset in its history |
+| `n_new`, `n_carried`, `n_dropped_old` | Items from this job's datasets, items carried over from the base version, and old items left out by `window` or replaced by a newer copy of the same file |
 | `n_real`, `n_fake`, `n_skipped`, `skipped` | Items scored, and items the model couldn't score (wrong media type, no face, unreadable) |
 | `auc`, `ap` | How well the model separates your data. Calibration doesn't change these |
 | `cv.raw` | Out-of-fold results at the model's default threshold |
@@ -217,6 +248,57 @@ The job scores the new data and tests it against each active calibration: false 
 `alpha`, shifted real or fake scores, a dropped detection rate. `recalibrate: true` means at least
 one test failed. Then calibrate on data that includes the new media. If the new data's AUC has
 dropped, the model itself no longer works on it, and recalibrating won't help.
+
+## Calibration modes
+
+Every job creates a new version. Each version stores the exact items it was fitted on (file
+hash, label, group, raw score, source dataset), so later versions can build on it.
+
+**Full.** Fits from scratch on the given datasets: one, or several at once (`"datasets": [a, b]`).
+A file that appears in two datasets is used once; a file labelled both real and fake is left out,
+with a warning. Use it for the first calibration of a model, and periodically to rebuild on
+exactly the data you trust.
+
+**Incremental.** Starts from a base version: `base_version`, else the active version, else the
+latest. It combines the base's items with the new datasets' items:
+
+- **Duplicates:** a file the base already had (same SHA-256) takes its new label and score, so
+  re-uploading corrected labels fixes them rather than doubling the file.
+- **`window`:** keeps at most that many items per class: all new items, plus a random subset of
+  the old. The calibration then follows changing traffic instead of being dominated by old data.
+  Without `window`, the calibration set only grows.
+- **`only_if_drift`:** checks the new data against the base version first. If none of the drift
+  tests fail, no version is created and the result is `"status": "skipped"`, with the drift
+  report. Use this for scheduled updates: upload each week's labelled media and recalibrate only
+  when it's needed.
+- **Settings:** `alpha` and the score type default to the base version's.
+
+```bash
+# weekly: add the newest labelled media, keep the 2,000 most recent items per class,
+# and only create a new version if the old one no longer fits
+curl -H "X-API-Key: $ADMIN" -H "content-type: application/json" \
+     -d '{"mode": "incremental", "datasets": ["<this week>"], "models": ["dfdet-clip"],
+          "window": 2000, "only_if_drift": true}' \
+     http://localhost:8000/v1/calibrations
+```
+
+**Refit.** Re-fits the base version's items with new settings, such as a stricter `alpha`
+(`{"mode": "refit", "models": ["dfdet-clip"], "alpha": 0.01}`). Nothing is scored, so it takes
+seconds.
+
+**Lineage.** `GET /v1/calibrations/{model}` lists every version with its `mode`, `parent` and
+datasets. For example (illustrative values):
+
+```json
+{"version": 7, "mode": "incremental", "parent": 6, "datasets": ["oct", "nov", "dec"],
+ "n_real": 1840, "n_fake": 1020, "n_new": 412, "n_carried": 2448, "auc": 0.93, "alpha": 0.05}
+```
+
+**Same model only.** Raw scores are only combined when they come from the same model
+configuration: the same registered weights or checkpoint file, and the same load options. Each
+version records this as `fingerprint`. If you change a model's checkpoint or options, an
+incremental or refit job on an older version fails with a clear error. Run a `full` calibration
+instead; the datasets are rescored with the new configuration.
 
 ## Predictions with confidence
 

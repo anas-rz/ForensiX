@@ -18,6 +18,8 @@ from pathlib import Path
 import numpy as np
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 import forensix
@@ -40,20 +42,39 @@ def confidence(pred, calibration: str) -> dict:
 
 
 class CalibrateRequest(BaseModel):
-    dataset: str = Field(description="Dataset id from POST /v1/datasets")
+    mode: Literal["full", "incremental", "refit"] = Field(
+        "full", description="full: from scratch on the datasets; incremental: the base version's items plus the "
+        "datasets; refit: the base version's items with new settings, nothing scored")
+    datasets: list[str] = Field(default_factory=list, description="Dataset ids from POST /v1/datasets")
+    dataset: str | None = Field(None, description="One dataset id (same as datasets=[id])")
     models: list[str] = Field(min_length=1)
-    alpha: float = Field(0.05, gt=0, lt=1, description="Target false-alarm rate on real media")
+    base_version: int | None = Field(None, description="incremental/refit: version to build on "
+                                     "(default: the active one, else the latest)")
+    window: int | None = Field(None, ge=2, description="incremental: max items kept per class; all new items "
+                               "stay and older ones are subsampled, so the calibration follows changing data")
+    only_if_drift: bool = Field(False, description="incremental: refit only if the new data fails the drift "
+                                "check against the base version")
+    level: float = Field(0.01, gt=0, lt=1, description="Significance level of the drift tests (only_if_drift)")
+    alpha: float | None = Field(None, gt=0, lt=1, description="Target false-alarm rate on real media "
+                                "(default: the base version's, else 0.05)")
     folds: int = Field(5, ge=2, le=20)
     seed: int = 0
     activate: bool = Field(True, description="Use the new calibration for predictions right away")
-    score_types: dict[str, str] = Field(default_factory=dict,
-                                        description='"raw" for models whose score is not a probability (auto-detected)')
+    score_types: dict[str, Literal["raw", "probability"]] = Field(
+        default_factory=dict, description='"raw" for models whose score is not a probability (auto-detected)')
+
+    def dataset_ids(self) -> list[str]:
+        return list(dict.fromkeys(self.datasets + ([self.dataset] if self.dataset else [])))
 
 
 class CheckRequest(BaseModel):
-    dataset: str
+    datasets: list[str] = Field(default_factory=list)
+    dataset: str | None = None
     models: list[str] | None = Field(None, description="Default: every model with an active calibration")
     level: float = Field(0.01, gt=0, lt=1, description="Significance level of the drift tests")
+
+    def dataset_ids(self) -> list[str]:
+        return list(dict.fromkeys(self.datasets + ([self.dataset] if self.dataset else [])))
 
 
 class ActiveRequest(BaseModel):
@@ -391,17 +412,33 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             raise HTTPException(404, f"Unknown dataset {dataset_id!r}")
         return {"id": dataset_id, "deleted": True}
 
-    def check_job_inputs(dataset: str, models: list[str]) -> None:
-        if manager.store.dataset_info(dataset) is None:
-            raise HTTPException(404, f"Unknown dataset {dataset!r}")
+    def check_job_inputs(datasets: list[str], models: list[str]) -> None:
+        for d in datasets:
+            if manager.store.dataset_info(d) is None:
+                raise HTTPException(404, f"Unknown dataset {d!r}")
         for m in models:
             model_or_404(m)
 
     @app.post("/v1/calibrations", tags=["calibration"], status_code=202, dependencies=[Depends(admin)])
     async def start_calibration(req: CalibrateRequest):
-        """Calibrate models on a dataset, in the background. Poll GET /v1/jobs/{id}."""
-        check_job_inputs(req.dataset, req.models)
-        return jobs.submit("calibrate", req.model_dump())
+        """Calibrate models in the background (full, incremental or refit). Poll GET /v1/jobs/{id}."""
+        datasets = req.dataset_ids()
+        if req.mode in ("full", "incremental") and not datasets:
+            raise HTTPException(422, f"mode {req.mode!r} needs at least one dataset")
+        if req.mode == "refit" and datasets:
+            raise HTTPException(422, "mode 'refit' reuses the base version's items; use 'incremental' to add datasets")
+        if req.mode == "full" and (req.base_version is not None or req.window or req.only_if_drift):
+            raise HTTPException(422, "base_version, window and only_if_drift apply to incremental/refit, not full")
+        check_job_inputs(datasets, req.models)
+        if req.mode != "full":
+            for m in req.models:
+                if not manager.store.versions(m):
+                    raise HTTPException(409, f"{m} has no calibration version to build on; run mode 'full' first")
+                if req.base_version is not None and req.base_version not in manager.store.versions(m):
+                    raise HTTPException(404, f"{m} has no calibration version {req.base_version}")
+        params = req.model_dump(exclude={"dataset"})
+        params["datasets"] = datasets
+        return jobs.submit("calibrate", params)
 
     @app.post("/v1/calibrations/check", tags=["calibration"], status_code=202, dependencies=[Depends(admin)])
     async def start_check(req: CheckRequest):
@@ -409,8 +446,11 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         models = req.models or [m for m in manager.store.models() if manager.store.active(m)]
         if not models:
             raise HTTPException(409, "No model has an active calibration")
-        check_job_inputs(req.dataset, models)
-        return jobs.submit("check", {**req.model_dump(), "models": models})
+        datasets = req.dataset_ids()
+        if not datasets:
+            raise HTTPException(422, "Give at least one dataset")
+        check_job_inputs(datasets, models)
+        return jobs.submit("check", {**req.model_dump(exclude={"dataset"}), "models": models, "datasets": datasets})
 
     @app.get("/v1/jobs", tags=["calibration"], dependencies=[Depends(user)])
     async def list_jobs():
@@ -428,9 +468,12 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         for n in store.versions(model):
             cal, report = store.version(model, n)
             versions.append({"version": n, "created": report.get("created", cal.created),
-                             "dataset": report.get("dataset_name"), "n_real": len(cal.real_scores),
-                             "n_fake": len(cal.fake_scores), "auc": report.get("auc"), "alpha": cal.alpha,
-                             "score_type": cal.score_type, "warnings": report.get("warnings", [])})
+                             "mode": report.get("mode", "full"), "parent": report.get("parent"),
+                             "datasets": [x.get("name") or x.get("dataset") for x in report.get("lineage", [])],
+                             "n_real": len(cal.real_scores), "n_fake": len(cal.fake_scores),
+                             "n_new": report.get("n_new"), "n_carried": report.get("n_carried"),
+                             "auc": report.get("auc"), "alpha": cal.alpha, "score_type": cal.score_type,
+                             "warnings": report.get("warnings", [])})
         in_use = manager.calibration(model)
         return {"model": model, "active_version": active[0] if active else None,
                 "in_use": in_use[0] if in_use else None, "versions": versions}

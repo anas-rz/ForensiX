@@ -1,5 +1,6 @@
 """Loaded models: kept in memory, warmed up, shared safely between requests."""
 
+import hashlib
 import logging
 import queue
 import threading
@@ -150,6 +151,23 @@ class ModelManager:
             for old in evicted:
                 self._release(old)
             return entry
+
+    def fingerprint(self, name: str) -> str:
+        """Identifies the model configuration whose raw scores a calibration is built on:
+        registered weights (by hash) or your checkpoint (path, size, mtime), and load
+        options; for a fusion, the table's content. Scores are only combined across
+        calibration versions when this matches."""
+        from forensix.server.calibration import fingerprint_of
+
+        if name in self.config.fusions:
+            return fingerprint_of({"fusion": hashlib.sha256(Path(self.config.fusions[name]).read_bytes()).hexdigest()})
+        spec = forensix.get_spec(name)
+        parts = {"model": name, "options": self.config.options.get(name, {}),
+                 "weights": spec.weights.sha256 if spec.weights else None}
+        if path := self.config.weights.get(name):
+            st = Path(path).stat()
+            parts["checkpoint"] = [str(Path(path).resolve()), st.st_size, st.st_mtime_ns]
+        return fingerprint_of(parts)
 
     def family(self, name: str) -> str:
         """The model's family; ``"fusion"`` for the configured fusion tables."""

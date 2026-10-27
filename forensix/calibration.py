@@ -343,6 +343,39 @@ def calibrate_scores(model: str, scores, is_fake, groups=None, alpha: float = 0.
     return cal, report
 
 
+def keep_window(new: np.ndarray, old: np.ndarray, window: int | None, seed: int = 0) -> np.ndarray:
+    """Indices into ``old`` to keep next to all of ``new``: everything when ``window``
+    is None, else a seeded random subset so that new + kept old <= ``window``."""
+    if window is None or len(new) + len(old) <= window:
+        return np.arange(len(old))
+    keep = max(window - len(new), 0)
+    return np.sort(np.random.default_rng(seed).choice(len(old), size=min(keep, len(old)), replace=False))
+
+
+def update_calibration(base: "Calibration", fake_scores=(), real_scores=(), window: int | None = None,
+                       alpha: float | None = None, seed: int = 0, source: str = "") -> tuple["Calibration", dict]:
+    """Build on an existing calibration: refit on its stored scores plus new labelled
+    scores of the same model. ``window`` caps the scores kept per class, keeping all
+    new ones and a random subset of the old, so the calibration follows changing
+    data. ``alpha`` defaults to the base's. Returns ``(calibration, report)``.
+
+        new, report = update_calibration(Calibration.load("cal.json"), new_fake, new_real, window=2000)
+    """
+    fake_new, real_new = np.asarray(fake_scores, np.float64), np.asarray(real_scores, np.float64)
+    fake_old, real_old = np.asarray(base.fake_scores), np.asarray(base.real_scores)
+    fake_old = fake_old[keep_window(fake_new, fake_old, window, seed)]
+    real_old = real_old[keep_window(real_new, real_old, window, seed + 1)]
+    fake, real = np.concatenate([fake_new, fake_old]), np.concatenate([real_new, real_old])
+    cal, report = calibrate_scores(base.model, np.concatenate([fake, real]),
+                                   np.r_[np.ones(len(fake), bool), np.zeros(len(real), bool)],
+                                   alpha=base.alpha if alpha is None else alpha,
+                                   source=", ".join(x for x in (base.source, source) if x),
+                                   score_type=base.score_type)
+    report.update(n_new_real=int(len(real_new)), n_new_fake=int(len(fake_new)),
+                  n_carried_real=int(len(real_old)), n_carried_fake=int(len(fake_old)))
+    return cal, report
+
+
 def calibrate(model, real_media=None, fake_media=None, dataset=None, alpha: float = 0.05, folds: int = 5,
               seed: int = 0, source: str = "", score_type: str | None = None, device: str = "cpu",
               **load_options) -> tuple["Calibration", dict]:

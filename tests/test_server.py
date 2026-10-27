@@ -246,12 +246,13 @@ def test_fusion_table_is_served_as_a_model(tmp_path):
 
 # -- calibration from labelled datasets ------------------------------------------------
 
-def make_dataset(root, n=30, layout="manifest"):
-    """Toy-image data: reals dark, fakes bright, some overlap; pairs share a group."""
+def make_dataset(root, n=30, layout="manifest", offset=0, fake_offset=0):
+    """Toy-image data: reals dark, fakes bright, some overlap; pairs share a group.
+    ``offset`` makes different files; ``fake_offset`` shifts the fakes (drift)."""
     root.mkdir(parents=True, exist_ok=True)
     rows = ["file,label,group"]
     for i in range(n):
-        for label, value in (("real", 10 + 4 * i), ("fake", 120 + 4 * i)):
+        for label, value in (("real", 10 + 4 * i + offset), ("fake", 120 + 4 * i + offset + fake_offset)):
             rel = f"{label}/{i}.png" if layout == "folders" else f"media/{label}_{i}.png"
             (root / rel).parent.mkdir(parents=True, exist_ok=True)
             (root / rel).write_bytes(png(value))
@@ -365,3 +366,88 @@ def test_dataset_upload_errors(tmp_path):
             r = c.post("/v1/datasets", files={"file": ("e.zip", f)})
         assert r.status_code == 422 and "no usable items" in r.json()["detail"]
         assert c.post("/v1/calibrations", json={"dataset": "nope", "models": ["toy-image"]}).status_code == 404
+
+
+def test_update_calibration_builds_on_previous_scores():
+    from forensix.calibration import fit_calibration, update_calibration
+
+    rng = np.random.default_rng(0)
+    base = fit_calibration("m", rng.uniform(0.5, 1, 40), rng.uniform(0, 0.5, 40))
+    new, report = update_calibration(base, rng.uniform(0.5, 1, 10), rng.uniform(0, 0.5, 10), window=30)
+    assert (report["n_new_fake"], report["n_carried_fake"]) == (10, 20)
+    assert len(new.fake_scores) == len(new.real_scores) == 30 and new.alpha == base.alpha
+    full, report = update_calibration(base, [0.9], [0.1])
+    assert len(full.fake_scores) == 41 and report["n_carried_real"] == 40
+
+
+def upload(c, folder, tmp_path, name):
+    with open(zip_folder(folder, tmp_path / name), "rb") as f:
+        return c.post("/v1/datasets", files={"file": (f"{name}.zip", f)}, data={"name": name}).json()["id"]
+
+
+def calibrate(c, **body):
+    r = c.post("/v1/calibrations", json={"models": ["toy-image"], **body})
+    assert r.status_code == 202, r.text
+    job = wait_for(c, r.json()["id"])
+    assert job["status"] == "done", job
+    return job["results"]["toy-image"]
+
+
+def test_full_incremental_and_refit_calibration(tmp_path):
+    with client(calibration_dir=str(tmp_path / "cal")) as c:
+        a = upload(c, make_dataset(tmp_path / "a"), tmp_path, "a")
+        b = upload(c, make_dataset(tmp_path / "b", offset=1), tmp_path, "b")
+        drifted = upload(c, make_dataset(tmp_path / "d", offset=2, fake_offset=-90), tmp_path, "d")
+
+        v1 = calibrate(c, mode="full", dataset=a)
+        assert (v1["version"], v1["mode"], v1["parent"], v1["n_new"], v1["n_carried"]) == (1, "full", None, 60, 0)
+
+        v2 = calibrate(c, mode="incremental", datasets=[b])           # builds on the active v1
+        assert (v2["version"], v2["parent"], v2["n_new"], v2["n_carried"]) == (2, 1, 60, 60)
+        assert [x["name"] for x in v2["lineage"]] == ["a", "b"]
+
+        v3 = calibrate(c, mode="incremental", datasets=[a])           # a's files again: replaced, not doubled
+        assert (v3["n_new"], v3["n_carried"], v3["n_real"] + v3["n_fake"]) == (60, 60, 120)
+
+        v4 = calibrate(c, mode="incremental", datasets=[b], base_version=1, window=40, activate=False)
+        assert (v4["parent"], v4["n_new"], v4["n_carried"], v4["n_dropped_old"]) == (1, 60, 20, 40)
+        assert c.get("/v1/calibrations/toy-image").json()["active_version"] == 3
+
+        calls = c.get("/v1/stats").json()["models"]["toy-image"]["calls"]
+        v5 = calibrate(c, mode="refit", alpha=0.2)                     # base: active v3; nothing scored
+        assert (v5["parent"], v5["n_new"], v5["n_carried"], v5["alpha"]) == (3, 0, 120, 0.2)
+        v6 = calibrate(c, mode="full", datasets=[a, b])                # cached scores: nothing scored either
+        assert v6["n_new"] == 120
+        assert c.get("/v1/stats").json()["models"]["toy-image"]["calls"] == calls
+
+        same = calibrate(c, mode="incremental", datasets=[b], only_if_drift=True)
+        assert same["status"] == "skipped" and same["drift"]["recalibrate"] is False
+        moved = calibrate(c, mode="incremental", datasets=[drifted], only_if_drift=True)
+        assert moved["status"] == "done" and moved["version"] == 7
+
+        listed = c.get("/v1/calibrations/toy-image").json()["versions"]
+        assert [v["mode"] for v in listed] == ["full", "incremental", "incremental", "incremental", "refit",
+                                                "full", "incremental"]
+        assert listed[6]["parent"] == 6 and listed[6]["datasets"] == ["a", "b", "d"]
+
+
+def test_incremental_refuses_scores_from_another_model_configuration(tmp_path):
+    with client(calibration_dir=str(tmp_path / "cal")) as c:
+        a = upload(c, make_dataset(tmp_path / "a"), tmp_path, "a")
+        calibrate(c, mode="full", dataset=a)
+        report = tmp_path / "cal" / "models" / "toy-image" / "v1.report.json"
+        report.write_text(json.dumps({**json.loads(report.read_text()), "fingerprint": "something-else"}))
+        job = wait_for(c, c.post("/v1/calibrations", json={"models": ["toy-image"], "mode": "refit"}).json()["id"])
+        assert job["results"]["toy-image"]["status"] == "failed"
+        assert "different model configuration" in job["results"]["toy-image"]["error"]
+
+
+def test_calibration_request_validation(tmp_path):
+    with client(calibration_dir=str(tmp_path / "cal")) as c:
+        a = upload(c, make_dataset(tmp_path / "a", n=3), tmp_path, "a")
+        post = lambda **b: c.post("/v1/calibrations", json={"models": ["toy-image"], **b}).status_code  # noqa: E731
+        assert post(mode="full") == 422                               # no dataset
+        assert post(mode="full", dataset=a, window=10) == 422          # window is for incremental
+        assert post(mode="incremental", dataset=a) == 409              # nothing to build on yet
+        assert post(mode="refit", dataset=a) == 422                    # refit takes no datasets
+        assert post(mode="sideways", dataset=a) == 422

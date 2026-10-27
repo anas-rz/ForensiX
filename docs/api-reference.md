@@ -168,6 +168,7 @@ Report helpers in `forensix.physics.report`:
 | `forensix.calibrate(model, real_media=None, fake_media=None, dataset=None, alpha=0.05, folds=5, seed=0, source="", score_type=None, device="cpu", **load_options)` | Scores labelled media (a dataset folder or ZIP, or real/fake lists) and fits a calibration. Returns `(Calibration, report)` ([Calibration](calibration.md)) |
 | `forensix.load(name, calibration=path)` | Loads a detector with a calibration applied: calibrated `fake_prob`, conformal `threshold`, and `details` with `raw_score`, `p_real`, `p_fake`, `prediction_set` |
 | `calibration.calibrate_scores(model, scores, is_fake, groups=None, ...)` | The same fit from scores you already have |
+| `calibration.update_calibration(base, fake_scores, real_scores, window=None, alpha=None, seed=0)` | Builds on an existing calibration: its stored scores plus new ones, optionally capped per class ([modes](calibration.md#calibration-modes)) |
 | `calibration.fit_calibration`, `cross_validate`, `drift_check` | Building blocks: fitting, out-of-fold report, drift tests |
 | `calibration.Calibration.save(path)` / `.load(path)` | The calibration table (JSON, `forensix-calibration/1`) |
 | `dataset.read_dataset(folder)` | Reads the [standard dataset format](calibration.md#the-dataset-format): `Dataset(items, layout, problems)` |
