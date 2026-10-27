@@ -26,6 +26,12 @@ class ServerConfig:
     weights: dict[str, str] = field(default_factory=dict)
     # decision thresholds that replace a model's default, e.g. {"dfdet-clip": 0.71}
     thresholds: dict[str, float] = field(default_factory=dict)
+    # calibration tables (forensix.calibration), e.g. {"syncnet": "/cal/syncnet.json"}
+    calibrations: dict[str, str] = field(default_factory=dict)
+    # model options passed to forensix.load, e.g. {"aasist": {"clip_score": "first"}}
+    options: dict[str, dict] = field(default_factory=dict)
+    # fusion tables (forensix.fusion) served as models under these names, e.g. {"av-fusion": "/f/av.json"}
+    fusions: dict[str, str] = field(default_factory=dict)
     default_models: dict[str, list[str]] = field(default_factory=lambda: {k: list(v) for k, v in DEFAULT_MODELS.items()})
     # dynamic batching of concurrent requests for image and audio models
     max_batch: int = 16

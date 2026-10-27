@@ -203,3 +203,42 @@ def test_fetch_stamp_skips_rehash_until_file_changes(tmp_path, monkeypatch):
 
 def test_toy_models_are_registered():
     assert "toy-image" in forensix.list_models("image")
+
+
+def test_id_voice_takes_audio():
+    from forensix.server.app import applicable
+    from forensix.server.media import MediaInfo
+
+    assert applicable("id-voice", "identity", MediaInfo("audio")) is None
+    assert applicable("id-voice", "identity", MediaInfo("video", has_audio=True)) is None
+    assert applicable("id-voice", "identity", MediaInfo("image")) is not None
+    assert applicable("id-face", "identity", MediaInfo("audio")) is not None
+
+
+def test_calibration_and_options_reach_the_model(tmp_path):
+    from forensix.calibration import fit_calibration
+
+    rng = np.random.default_rng(0)
+    cal = fit_calibration("toy-image", rng.uniform(0.6, 1.0, 50), rng.uniform(0.0, 0.4, 50))
+    cal.save(tmp_path / "cal.json")
+    with client(calibrations={"toy-image": str(tmp_path / "cal.json")}) as c:
+        res = detect(c, png(255), details="true").json()["results"]["toy-image"]
+        assert res["status"] == "ok" and res["label"] == "fake"
+        assert res["details"]["raw_score"] == pytest.approx(1.0) and "p_real" in res["details"]
+    with client(options={"toy-image": {"bogus": 1}}) as c:
+        assert detect(c, png(0)).json()["results"]["toy-image"]["status"] == "error"
+
+
+def test_fusion_table_is_served_as_a_model(tmp_path):
+    from forensix.fusion import Member, fit_fusion
+
+    rng = np.random.default_rng(0)
+    scores = np.concatenate([rng.uniform(0.6, 1, (30, 1)), rng.uniform(0, 0.4, (30, 1))])
+    labels = np.array([1] * 30 + [0] * 30)
+    fit_fusion(scores, labels, [Member("toy-image")]).save(tmp_path / "f.json")
+    with client(fusions={"img-fusion": str(tmp_path / "f.json")}) as c:
+        assert [m["name"] for m in c.get("/v1/models?family=fusion").json()["models"]] == ["img-fusion"]
+        r = detect(c, png(255), models="img-fusion").json()["results"]["img-fusion"]
+        assert r["status"] == "ok" and r["family"] == "fusion" and r["label"] == "fake"
+        r = detect(c, wav(0.1), models="img-fusion").json()["results"]["img-fusion"]
+        assert r["status"] == "not_applicable"      # its member is an image model

@@ -49,7 +49,7 @@ Interactive API docs (OpenAPI) are at `http://localhost:8000/docs`.
 | `POST /v1/models/{name}/load` | admin | Load and warm up a model now |
 | `DELETE /v1/models/{name}` | admin | Unload a model |
 | `GET /v1/identities?model=id-face` | user | Enrolled people |
-| `POST /v1/identities/{identity}?model=id-face` | admin | Enroll a person from photos and/or videos (`files`) |
+| `POST /v1/identities/{identity}?model=id-face` | admin | Enroll a person from photos, videos or (for `id-voice`) recordings (`files`) |
 | `DELETE /v1/identities/{identity}?model=id-face` | admin | Remove a person |
 | `GET /v1/stats` | user | Per-model load time, calls, errors, cache hits, latency, batch size |
 
@@ -61,7 +61,7 @@ Multipart form:
 |---|---|---|
 | `file` | required | An image, video or audio file. The type is detected from the content, not the extension. |
 | `models` | by media type | Comma-separated model names, e.g. `gend-pe,syncnet`. |
-| `identity` | none | The enrolled person to check against, for identity models (`id-face`, `id-motion`). |
+| `identity` | none | The enrolled person to check against, for identity models (`id-face` and `id-motion` on faces, `id-voice` on speech). |
 | `details` | `false` | Include each model's evidence (`Prediction.details`): sync offsets, physics constraints, reports, similarities. |
 | `segments` | `false` | Include per-segment scores: audio windows, faces, frames. |
 
@@ -157,6 +157,9 @@ environment variables, then command-line flags.
 | `max_loaded` | `8` | Models in memory at once; the least recently used one is unloaded beyond this |
 | `weights` | `{}` | Checkpoints for models you trained: `{"avcons": "/models/avcons.safetensors"}` |
 | `thresholds` | `{}` | Decision thresholds replacing model defaults: `{"dfdet-clip": 0.71, "syncnet": -2.0}` |
+| `calibrations` | `{}` | Calibration tables (`forensix.calibration`) per model: `{"syncnet": "/cal/syncnet.json"}`. Scores become calibrated probabilities, and `details` gains the raw score, conformal p-values and prediction set |
+| `options` | `{}` | Model options passed to `forensix.load`: `{"aasist": {"clip_score": "first"}}` |
+| `fusions` | `{}` | Fusion tables (`forensix.fusion`) served as models under these names: `{"av-fusion": "/f/av.json"}`. A fusion applies only to media all its members can score |
 | `default_models` | see above | Models per media type: keys `image`, `video`, `video+audio`, `audio` |
 | `max_batch` | `16` | Largest dynamic batch for image and audio models (1 disables batching) |
 | `batch_wait_ms` | `5` | How long a request waits for others to join its batch |

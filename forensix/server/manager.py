@@ -23,6 +23,13 @@ BATCHED_FAMILIES = {"image", "audio"}
 NEEDS_WEIGHTS = {"avcons", "avid", "id-motion", "person-detector"}
 
 
+def _base(detector):
+    """The detector inside a calibration wrapper (galleries live on the wrapped one)."""
+    from forensix.calibration import CalibratedDetector
+
+    return detector.detector if isinstance(detector, CalibratedDetector) else detector
+
+
 @dataclass
 class Entry:
     name: str
@@ -136,20 +143,29 @@ class ModelManager:
                 self._release(old)
             return entry
 
+    def family(self, name: str) -> str:
+        """The model's family; ``"fusion"`` for the configured fusion tables."""
+        return "fusion" if name in self.config.fusions else forensix.get_spec(name).family
+
     def _load(self, name: str) -> Entry:
-        spec = forensix.get_spec(name)
-        weights = self.config.weights.get(name)
-        if name in NEEDS_WEIGHTS and not weights:
-            raise LookupError(f"{name} has no pretrained weights; train it and set weights[{name!r}] "
-                              "in the server config")
         start = time.perf_counter()
-        detector = forensix.load(name, device=self.config.device, weights_path=weights)
-        entry = Entry(name, spec.family, detector)
-        if spec.family == "identity":
+        if name in self.config.fusions:
+            detector = forensix.load_fusion(self.config.fusions[name], device=self.config.device)
+        else:
+            weights = self.config.weights.get(name)
+            if name in NEEDS_WEIGHTS and not weights:
+                raise LookupError(f"{name} has no pretrained weights; train it and set weights[{name!r}] "
+                                  "in the server config")
+            detector = forensix.load(name, device=self.config.device, weights_path=weights,
+                                     calibration=self.config.calibrations.get(name),
+                                     **self.config.options.get(name, {}))
+        family = self.family(name)
+        entry = Entry(name, family, detector)
+        if family == "identity":
             gallery = self._gallery_path(name)
             if gallery and gallery.exists():
-                detector.load_gallery(gallery)
-        if spec.family in BATCHED_FAMILIES and self.config.max_batch > 1:
+                _base(detector).load_gallery(gallery)
+        if family in BATCHED_FAMILIES and self.config.max_batch > 1:
             entry.batcher = Batcher(entry, self.config.max_batch, self.config.batch_wait_ms)
         if self.config.warmup:
             self._warmup(entry)
@@ -248,7 +264,7 @@ class ModelManager:
         if entry.family != "identity":
             raise ValueError(f"{name} is not an identity model")
         with entry.lock:
-            result = entry.detector.enroll(identity, paths)
+            result = _base(entry.detector).enroll(identity, paths)
             entry.gallery_version += 1
             self._save_gallery(entry)
         return result
@@ -256,9 +272,9 @@ class ModelManager:
     def remove_identity(self, name: str, identity: str) -> bool:
         entry = self.get(name)
         with entry.lock:
-            if identity not in entry.detector.gallery:
+            if identity not in _base(entry.detector).gallery:
                 return False
-            entry.detector.gallery.remove(identity)
+            _base(entry.detector).gallery.remove(identity)
             entry.gallery_version += 1
             self._save_gallery(entry)
         return True
@@ -266,13 +282,13 @@ class ModelManager:
     def identities(self, name: str) -> list[str]:
         entry = self.get(name)
         with entry.lock:
-            return entry.detector.gallery.names()
+            return _base(entry.detector).gallery.names()
 
     def _save_gallery(self, entry: Entry) -> None:
         path = self._gallery_path(entry.name)
         if path:
             path.parent.mkdir(parents=True, exist_ok=True)
-            entry.detector.save_gallery(path)
+            _base(entry.detector).save_gallery(path)
 
     # -- status ------------------------------------------------------------------
 

@@ -26,6 +26,7 @@ from forensix.server.media import MediaInfo, bound_video, probe, sha256_file
 log = logging.getLogger("forensix.server")
 
 AUDIO_PHYSICS = {"phys-voice", "phys-room"}
+AUDIO_IDENTITY = {"id-voice"}
 VIDEO_PHYSICS = {"phys-bloodflow", "phys-motion", "phys-lighting"}
 
 
@@ -36,7 +37,7 @@ def applicable(name: str, family: str, info: MediaInfo) -> str | None:
         ok = kind == "image"
     elif family == "video" or name in VIDEO_PHYSICS:
         ok = kind == "video"
-    elif family == "audio" or name in AUDIO_PHYSICS:
+    elif family == "audio" or name in AUDIO_PHYSICS or name in AUDIO_IDENTITY:
         ok = sound
     elif family == "audiovisual":
         ok = kind == "video" and info.has_audio
@@ -103,11 +104,23 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     def admin(request: Request) -> None:
         check_key(request, admin=True)
 
-    def model_or_404(name: str):
+    def model_or_404(name: str) -> str:
+        """The model's family, or 404."""
         try:
-            return forensix.get_spec(name)
+            return manager.family(name)
         except KeyError:
             raise HTTPException(404, f"Unknown model {name!r}. See GET /v1/models") from None
+
+    fusion_members: dict[str, list[tuple[str, str]]] = {}
+
+    def members(name: str) -> list[tuple[str, str]]:
+        """(model, family) of each member of a configured fusion table."""
+        if name not in fusion_members:
+            from forensix.fusion import Fusion
+
+            fusion = Fusion.load(config.fusions[name])
+            fusion_members[name] = [(m.model, forensix.get_spec(m.model).family) for m in fusion.members]
+        return fusion_members[name]
 
     # -- service -----------------------------------------------------------------
 
@@ -131,6 +144,11 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     # -- models ------------------------------------------------------------------
 
     def describe(name: str) -> dict:
+        if name in config.fusions:
+            return {"name": name, "family": "fusion", "members": [m for m, _ in members(name)],
+                    "table": config.fusions[name], "loaded": name in manager.loaded(), "available": True,
+                    "threshold_override": config.thresholds.get(name),
+                    "default_for": [m for m, names in config.default_models.items() if name in names]}
         spec = forensix.get_spec(name)
         configured = name in config.weights
         return {"name": name, "family": spec.family, "license": spec.license, "paper": spec.paper,
@@ -141,7 +159,10 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
 
     @app.get("/v1/models", tags=["models"], dependencies=[Depends(user)])
     async def list_models(family: str | None = None):
-        return {"models": [describe(n) for n in forensix.list_models(family)]}
+        names = forensix.list_models(family) if family != "fusion" else []
+        if family in (None, "fusion"):
+            names += sorted(config.fusions)
+        return {"models": [describe(n) for n in names]}
 
     @app.get("/v1/models/{name}", tags=["models"], dependencies=[Depends(user)])
     async def get_model(name: str):
@@ -180,10 +201,12 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
 
     async def run_model(name: str, path: Path, sha: str, info: MediaInfo, identity: str | None,
                         details: bool, segments: bool) -> dict:
-        spec = forensix.get_spec(name)
-        if reason := applicable(name, spec.family, info):
-            return {"status": "not_applicable", "reason": reason}
-        if spec.family == "identity" and not identity:
+        family = manager.family(name)
+        checks = members(name) if family == "fusion" else [(name, family)]
+        for member, member_family in checks:
+            if reason := applicable(member, member_family, info):
+                return {"status": "not_applicable", "reason": reason}
+        if family == "identity" and not identity:
             return {"status": "not_applicable", "reason": f"{name} needs the identity form field"}
         start = time.perf_counter()
         try:
@@ -195,13 +218,13 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             return {"status": "error", "error": str(e)[:500], "seconds": round(time.perf_counter() - start, 3)}
         threshold = config.thresholds.get(name, pred.threshold)
         result = {
-            "status": "ok", "family": spec.family, "score": to_jsonable(pred.fake_prob),
-            "score_type": pred.score_type, "threshold": threshold,
+            "status": "ok", "family": family, "score": to_jsonable(pred.fake_prob),
+            "score_type": pred.score_type, "threshold": to_jsonable(threshold),
             "label": None if threshold is None else ("fake" if pred.fake_prob >= threshold else "real"),
             "n_segments": len(pred.segment_fake_probs), "cached": cached,
             "seconds": round(time.perf_counter() - start, 3),
         }
-        if spec.family == "video" and not pred.segment_fake_probs:
+        if family == "video" and not pred.segment_fake_probs:
             result.update(status="no_face", label=None)  # these models return 0.5 without a face
         if segments:
             result["segments"] = to_jsonable(pred.segment_fake_probs)
@@ -276,7 +299,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     # -- identities --------------------------------------------------------------
 
     def identity_model(name: str) -> str:
-        if model_or_404(name).family != "identity":
+        if model_or_404(name) != "identity":
             raise HTTPException(400, f"{name} is not an identity model")
         return name
 
