@@ -25,7 +25,7 @@ python -m forensix.server --device cuda --preload dfdet-clip commfor nes2net-x-i
 curl -F file=@clip.mp4 -F models=dfdet-clip,syncnet http://localhost:8000/v1/detect
 ```
 
-Models stay loaded between requests, concurrent image and audio requests are batched, and results are cached by file hash. See [docs/server.md](docs/server.md). Benchmark results are in [benchmark.md](benchmark.md).
+Models stay loaded between requests, concurrent image and audio requests are batched, and results are cached by file hash. See [docs/server.md](docs/server.md). The server also hosts a web manager at `http://localhost:8000/ui/` for testing, loading, calibrating and monitoring models ([docs/ui.md](docs/ui.md)). Benchmark results are in [benchmark.md](benchmark.md).
 
 ## Usage
 

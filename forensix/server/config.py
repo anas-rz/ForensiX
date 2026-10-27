@@ -54,6 +54,11 @@ class ServerConfig:
     # model loading, unloading and gallery changes need this key when set (else api_key)
     admin_key: str | None = None
     tmp_dir: str | None = None
+    # benchmark result JSONs shown in the UI (files with a "models" dict, e.g. from scripts/eval_*.py);
+    # None: the repo's results/ folder if present; "" disables
+    benchmarks_dir: str | None = None
+    # serve the web manager at /ui
+    ui: bool = True
 
     @classmethod
     def load(cls, path: str | Path | None = None, **overrides) -> "ServerConfig":

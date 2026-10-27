@@ -451,3 +451,26 @@ def test_calibration_request_validation(tmp_path):
         assert post(mode="incremental", dataset=a) == 409              # nothing to build on yet
         assert post(mode="refit", dataset=a) == 422                    # refit takes no datasets
         assert post(mode="sideways", dataset=a) == 422
+
+
+def test_ui_server_info_and_benchmarks(tmp_path):
+    bench = tmp_path / "results"
+    bench.mkdir()
+    (bench / "b.json").write_text(json.dumps({"dataset": "Toy set", "models": {
+        "toy-image": {"auc": 0.9, "eer": 0.1, "balanced_acc": 0.8, "n_real": 5, "n_fake": 5},
+        "other": {"auc": 0.6}, "broken": "not a dict"}}))
+    (bench / "not_results.json").write_text(json.dumps({"something": 1}))
+    with client(benchmarks_dir=str(bench), api_key="k") as c:
+        page = c.get("/ui/")
+        assert page.status_code == 200 and "ForensiX Manager" in page.text
+        assert c.get("/ui/app.js").status_code == 200 and c.get("/ui/style.css").status_code == 200
+        assert c.get("/", follow_redirects=False).headers["location"] == "/ui/"
+        assert c.get("/v1/server").status_code == 401                     # the page is public, the data isn't
+        info = c.get("/v1/server", headers={"X-API-Key": "k"}).json()
+        assert info["auth"] and info["ready"] and "api_key" not in json.dumps(info).replace('"auth"', "")
+        rows = c.get("/v1/benchmarks?model=toy-image", headers={"X-API-Key": "k"}).json()["benchmarks"]
+        assert rows == [{"source": "b.json", "dataset": "Toy set", "model": "toy-image",
+                         "metrics": {"auc": 0.9, "eer": 0.1, "balanced_acc": 0.8, "n_real": 5, "n_fake": 5}}]
+    with client(ui=False, benchmarks_dir="") as c:
+        assert c.get("/ui/").status_code == 404
+        assert c.get("/v1/benchmarks").json() == {"benchmarks": []}

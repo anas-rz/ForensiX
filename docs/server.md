@@ -34,7 +34,8 @@ curl -H "X-API-Key: $KEY" -F file=@photo.jpg http://localhost:8000/v1/detect
 }
 ```
 
-Interactive API docs (OpenAPI) are at `http://localhost:8000/docs`.
+Interactive API docs (OpenAPI) are at `http://localhost:8000/docs`, and the
+[web manager](ui.md) (test, load, calibrate and monitor models) at `http://localhost:8000/ui/`.
 
 ## Endpoints
 
@@ -52,6 +53,9 @@ Interactive API docs (OpenAPI) are at `http://localhost:8000/docs`.
 | `POST /v1/identities/{identity}?model=id-face` | admin | Enroll a person from photos, videos or (for `id-voice`) recordings (`files`) |
 | `DELETE /v1/identities/{identity}?model=id-face` | admin | Remove a person |
 | `GET /v1/stats` | user | Per-model load time, calls, errors, cache hits, latency, batch size |
+| `GET /v1/server` | user | Server settings without secrets: version, device, limits, defaults, persistence |
+| `GET /v1/benchmarks[?model=name]` | user | Benchmark results from `benchmarks_dir` |
+| `GET /ui/` | none | The [web manager](ui.md) (static page; its API calls use your keys) |
 | `POST /v1/datasets` | admin | Upload a labelled dataset (ZIP) for calibration ([Calibration](calibration.md)) |
 | `GET /v1/datasets`, `GET /v1/datasets/{id}` | user | Uploaded datasets and their validation summary |
 | `DELETE /v1/datasets/{id}` | admin | Delete a dataset |
@@ -184,6 +188,8 @@ environment variables, then command-line flags.
 | `api_key` | none | Required for user endpoints when set (`X-API-Key` header or `Authorization: Bearer`) |
 | `admin_key` | none | Required for load/unload and enrollment when set; falls back to `api_key` |
 | `tmp_dir` | system temp | Where uploads are written while being scored |
+| `benchmarks_dir` | the repo's `results/` | Benchmark result JSONs shown in the UI; `""` disables |
+| `ui` | `true` | Serve the web manager at `/ui/` |
 
 Example `server.json`:
 

@@ -5,6 +5,7 @@ startup) a request pays only for inference. See docs/server.md.
 """
 
 import asyncio
+import json
 import logging
 import math
 import secrets
@@ -18,6 +19,8 @@ from pathlib import Path
 import numpy as np
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -165,6 +168,31 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         if not state["ready"]:
             raise HTTPException(503, "Loading models")
         return {"status": "ready", "loaded": manager.loaded()}
+
+    @app.get("/v1/server", tags=["service"], dependencies=[Depends(user)])
+    async def server_info():
+        """Server settings that clients and the UI need (no secrets)."""
+        return {"version": _version(), "device": config.device, "max_loaded": config.max_loaded,
+                "preload": config.preload, "default_models": config.default_models,
+                "thresholds": config.thresholds, "fusions": sorted(config.fusions),
+                "trained_weights": sorted(config.weights), "auth": bool(config.api_key),
+                "admin_auth": bool(config.admin_key or config.api_key),
+                "calibration_persistent": bool(config.calibration_dir),
+                "gallery_persistent": bool(config.gallery_dir),
+                "limits": {"max_upload_mb": config.max_upload_mb, "max_dataset_mb": config.max_dataset_mb,
+                           "max_video_seconds": config.max_video_seconds,
+                           "max_video_height": config.max_video_height},
+                "ready": state["ready"], "uptime_s": round(time.time() - state["started"], 1)}
+
+    benchmarks_cache: dict = {}
+
+    @app.get("/v1/benchmarks", tags=["service"], dependencies=[Depends(user)])
+    async def benchmarks(model: str | None = None):
+        """Benchmark results found in ``benchmarks_dir``: one row per (result file, model)."""
+        if "rows" not in benchmarks_cache:
+            benchmarks_cache["rows"] = await run_in_threadpool(read_benchmarks, config.benchmarks_dir)
+        rows = benchmarks_cache["rows"]
+        return {"benchmarks": [r for r in rows if model is None or r["model"] == model]}
 
     @app.get("/v1/stats", tags=["service"], dependencies=[Depends(user)])
     async def stats():
@@ -505,7 +533,46 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             raise HTTPException(404, str(e)) from None
         return calibration_status(model)
 
+    if config.ui:
+        static = Path(__file__).parent / "static"
+        app.mount("/ui", StaticFiles(directory=static, html=True), name="ui")
+
+        @app.get("/", include_in_schema=False)
+        async def root():
+            return RedirectResponse("/ui/")
+
     return app
+
+
+BENCHMARK_METRICS = ("auc", "ap", "eer", "eer_percent", "balanced_acc", "real_acc", "fake_acc",
+                     "accuracy_at_default_threshold", "n_real", "n_fake", "seconds")
+
+
+def read_benchmarks(directory: str | None) -> list[dict]:
+    """Rows ``{source, dataset, model, metrics}`` from result JSONs whose ``models`` maps
+    model names to metric dicts (the format of scripts/eval_*.py)."""
+    if directory == "":
+        return []
+    root = Path(directory) if directory else Path(forensix.__file__).resolve().parents[1] / "results"
+    if not root.is_dir():
+        return []
+    rows = []
+    for path in sorted(root.rglob("*.json")):
+        try:
+            data = json.loads(path.read_text())
+        except (OSError, ValueError):
+            continue
+        models = data.get("models") if isinstance(data, dict) else None
+        if not isinstance(models, dict):
+            continue
+        for name, m in models.items():
+            if not isinstance(m, dict):
+                continue
+            metrics = {k: m[k] for k in BENCHMARK_METRICS if isinstance(m.get(k), (int, float))}
+            if "auc" in metrics or "eer" in metrics or "eer_percent" in metrics:
+                rows.append({"source": str(path.relative_to(root)), "dataset": data.get("dataset") or path.stem,
+                             "model": name, "metrics": metrics})
+    return rows
 
 
 def _version() -> str:

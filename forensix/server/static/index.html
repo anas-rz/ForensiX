@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ForensiX Manager</title>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // apply the saved theme before first paint
+    try { const t = localStorage.getItem("fx.theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+</head>
+<body>
+  <div class="app">
+    <nav class="nav" aria-label="Main">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">F</span>ForensiX</div>
+      <a href="#/overview" data-route="overview">Overview</a>
+      <a href="#/models" data-route="models">Models</a>
+      <a href="#/test" data-route="test">Test</a>
+      <a href="#/calibration" data-route="calibration">Calibration</a>
+      <a href="#/settings" data-route="settings">Settings</a>
+      <div class="grow"></div>
+      <div class="server-line" id="server-line">Connecting…</div>
+    </nav>
+    <main class="main"><div class="page" id="page"></div></main>
+  </div>
+  <div class="tooltip" id="tooltip" role="tooltip"></div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
