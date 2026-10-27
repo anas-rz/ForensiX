@@ -158,7 +158,7 @@ def main() -> None:
             writer.writerow(["file", "label", *all_scores])
             for i, (path, is_fake) in enumerate(items):
                 writer.writerow([path.name, "fake" if is_fake else "real",
-                                 *(f"{s[i]:.6f}" for s in all_scores.values())])
+                                 *(repr(float(s[i])) for s in all_scores.values())])  # full precision
 
 
 if __name__ == "__main__":

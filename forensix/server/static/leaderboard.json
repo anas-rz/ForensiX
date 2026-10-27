@@ -1,0 +1,1341 @@
+{
+ "title": "ForensiX leaderboard",
+ "policy": "Only benchmarks whose license allows commercial use. Every number is recomputed from the result files in results/ by forensix/leaderboard.py; nothing is typed in by hand.",
+ "benchmarks": [
+  {
+   "id": "sdfvd",
+   "name": "SDFVD face swaps",
+   "task": "Face-swap video (whole frames for image detectors)",
+   "modality": "video",
+   "license": "CC BY 4.0",
+   "dataset_url": "https://data.mendeley.com/datasets/bcmkfgct2s/1",
+   "dataset_sha256": "734a101fdfd89d5b20ac69f510d6a7cf3b588a145c1993ba2488322ae50d95a5",
+   "description": "53 real Pexels clips and 53 Remaker AI face swaps of them, format-matched pairs (same resolution, frame rate, codec).",
+   "hardware": "NVIDIA L4 (Google Colab Pro)",
+   "date": "2026-10-26",
+   "commit": "16649a37fd31585fa49641c9f2a3ede17fbbe135",
+   "timing": "Seconds per video on the L4. Only univfd and rine were timed alone; the other models shared the GPU with 1-3 other processes, so their times are inflated (upper bounds).",
+   "timed_alone": [
+    "univfd",
+    "rine"
+   ],
+   "reproduce": "python scripts/eval_video_folder.py --device cuda --real SDFVD/videos_real --fake SDFVD/videos_fake --dataset SDFVD --out results/sdfvd.json --scores-out results/sdfvd_scores.csv",
+   "caveats": [
+    "106 videos from one face-swap tool: differences of a few AUC points aren't meaningful (see the confidence intervals).",
+    "Image detectors score 8 whole frames per video; they were built for whole generated images, not face swaps."
+   ],
+   "status": "done",
+   "rows": [
+    {
+     "model": "gend-pe",
+     "family": "video",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.9559,
+     "auc_ci": [
+      0.9188,
+      0.9833
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.1321,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.2453,
+      "k": 13,
+      "n": 53,
+      "ci": [
+       0.1493,
+       0.3757
+      ]
+     },
+     "detection_rate": {
+      "value": 0.9623,
+      "k": 51,
+      "n": 53,
+      "ci": [
+       0.8725,
+       0.9896
+      ]
+     },
+     "seconds_per_item": 6.736,
+     "timed_alone": false,
+     "failed": 0,
+     "rank": 1,
+     "tied_with_leader": true
+    },
+    {
+     "model": "gend",
+     "family": "video",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.9188,
+     "auc_ci": [
+      0.8637,
+      0.9612
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.1698,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.3208,
+      "k": 17,
+      "n": 53,
+      "ci": [
+       0.2109,
+       0.4548
+      ]
+     },
+     "detection_rate": {
+      "value": 0.9434,
+      "k": 50,
+      "n": 53,
+      "ci": [
+       0.8463,
+       0.9806
+      ]
+     },
+     "seconds_per_item": 7.24,
+     "timed_alone": false,
+     "failed": 0,
+     "rank": 2,
+     "tied_with_leader": true
+    },
+    {
+     "model": "dfdet-clip",
+     "family": "video",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.9156,
+     "auc_ci": [
+      0.8608,
+      0.963
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.1509,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.1132,
+      "k": 6,
+      "n": 53,
+      "ci": [
+       0.0529,
+       0.2258
+      ]
+     },
+     "detection_rate": {
+      "value": 0.7547,
+      "k": 40,
+      "n": 53,
+      "ci": [
+       0.6243,
+       0.8507
+      ]
+     },
+     "seconds_per_item": 2.692,
+     "timed_alone": false,
+     "failed": 0,
+     "rank": 3,
+     "tied_with_leader": true
+    },
+    {
+     "model": "dfdc-selim",
+     "family": "video",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.7611,
+     "auc_ci": [
+      0.6664,
+      0.8444
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.3208,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.0566,
+      "k": 3,
+      "n": 53,
+      "ci": [
+       0.0194,
+       0.1537
+      ]
+     },
+     "detection_rate": {
+      "value": 0.1887,
+      "k": 10,
+      "n": 53,
+      "ci": [
+       0.1059,
+       0.3136
+      ]
+     },
+     "seconds_per_item": 7.033,
+     "timed_alone": false,
+     "failed": 0,
+     "rank": 4,
+     "tied_with_leader": false
+    },
+    {
+     "model": "rine",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.7447,
+     "auc_ci": [
+      0.6193,
+      0.8124
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": "Saved per-item scores were rounded to 6 decimals, which ties this model's tiny scores; AUC and EER are the run's full-precision values (recomputed from saved scores: AUC 0.719). The interval comes from the rounded scores, so it's approximate.",
+     "eer": 0.3396,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.0,
+      "k": 0,
+      "n": 53,
+      "ci": [
+       0.0,
+       0.0676
+      ]
+     },
+     "detection_rate": {
+      "value": 0.0,
+      "k": 0,
+      "n": 53,
+      "ci": [
+       0.0,
+       0.0676
+      ]
+     },
+     "seconds_per_item": 0.227,
+     "timed_alone": true,
+     "failed": 0,
+     "rank": 5,
+     "tied_with_leader": false
+    },
+    {
+     "model": "univfd",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.7188,
+     "auc_ci": [
+      0.6126,
+      0.8106
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.3019,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.0,
+      "k": 0,
+      "n": 53,
+      "ci": [
+       0.0,
+       0.0676
+      ]
+     },
+     "detection_rate": {
+      "value": 0.0189,
+      "k": 1,
+      "n": 53,
+      "ci": [
+       0.0033,
+       0.0994
+      ]
+     },
+     "seconds_per_item": 0.242,
+     "timed_alone": true,
+     "failed": 0,
+     "rank": 6,
+     "tied_with_leader": false
+    },
+    {
+     "model": "clipdet",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.7116,
+     "auc_ci": [
+      0.6084,
+      0.8035
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.3208,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.3962,
+      "k": 21,
+      "n": 53,
+      "ci": [
+       0.2759,
+       0.5306
+      ]
+     },
+     "detection_rate": {
+      "value": 0.6792,
+      "k": 36,
+      "n": 53,
+      "ci": [
+       0.5452,
+       0.7891
+      ]
+     },
+     "seconds_per_item": 0.458,
+     "timed_alone": false,
+     "failed": 0,
+     "rank": 7,
+     "tied_with_leader": false
+    },
+    {
+     "model": "dfdc-wm",
+     "family": "video",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.6988,
+     "auc_ci": [
+      0.5984,
+      0.7964
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.3962,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.0755,
+      "k": 4,
+      "n": 53,
+      "ci": [
+       0.0297,
+       0.1786
+      ]
+     },
+     "detection_rate": {
+      "value": 0.2642,
+      "k": 14,
+      "n": 53,
+      "ci": [
+       0.1644,
+       0.3958
+      ]
+     },
+     "seconds_per_item": 1.003,
+     "timed_alone": false,
+     "failed": 0,
+     "rank": 8,
+     "tied_with_leader": false
+    },
+    {
+     "model": "commfor",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.6965,
+     "auc_ci": [
+      0.5945,
+      0.7978
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.3396,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.0189,
+      "k": 1,
+      "n": 53,
+      "ci": [
+       0.0033,
+       0.0994
+      ]
+     },
+     "detection_rate": {
+      "value": 0.1321,
+      "k": 7,
+      "n": 53,
+      "ci": [
+       0.0655,
+       0.2484
+      ]
+     },
+     "seconds_per_item": 0.207,
+     "timed_alone": false,
+     "failed": 0,
+     "rank": 9,
+     "tied_with_leader": false
+    },
+    {
+     "model": "safe",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.6931,
+     "auc_ci": [
+      0.5934,
+      0.79
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.3774,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.0,
+      "k": 0,
+      "n": 53,
+      "ci": [
+       0.0,
+       0.0676
+      ]
+     },
+     "detection_rate": {
+      "value": 0.0,
+      "k": 0,
+      "n": 53,
+      "ci": [
+       0.0,
+       0.0676
+      ]
+     },
+     "seconds_per_item": 0.094,
+     "timed_alone": false,
+     "failed": 0,
+     "rank": 10,
+     "tied_with_leader": false
+    },
+    {
+     "model": "commfor-224",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.6422,
+     "auc_ci": [
+      0.5311,
+      0.748
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.3962,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.0189,
+      "k": 1,
+      "n": 53,
+      "ci": [
+       0.0033,
+       0.0994
+      ]
+     },
+     "detection_rate": {
+      "value": 0.0377,
+      "k": 2,
+      "n": 53,
+      "ci": [
+       0.0104,
+       0.1275
+      ]
+     },
+     "seconds_per_item": 0.131,
+     "timed_alone": false,
+     "failed": 0,
+     "rank": 11,
+     "tied_with_leader": false
+    },
+    {
+     "model": "rine-ldm",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.5611,
+     "auc_ci": [
+      0.4482,
+      0.6729
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.4717,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.1509,
+      "k": 8,
+      "n": 53,
+      "ci": [
+       0.0785,
+       0.2705
+      ]
+     },
+     "detection_rate": {
+      "value": 0.2075,
+      "k": 11,
+      "n": 53,
+      "ci": [
+       0.12,
+       0.3346
+      ]
+     },
+     "seconds_per_item": 2.732,
+     "timed_alone": false,
+     "failed": 0,
+     "rank": 12,
+     "tied_with_leader": false
+    }
+   ],
+   "files": [
+    "sdfvd.json",
+    "sdfvd_scores.csv"
+   ]
+  },
+  {
+   "id": "sdfvd-facecrop",
+   "name": "SDFVD face swaps, face crops",
+   "task": "Face-swap video, image detectors on face crops",
+   "modality": "video",
+   "license": "CC BY 4.0",
+   "dataset_url": "https://data.mendeley.com/datasets/bcmkfgct2s/1",
+   "dataset_sha256": "734a101fdfd89d5b20ac69f510d6a7cf3b588a145c1993ba2488322ae50d95a5",
+   "description": "The same 106 videos; image detectors score the largest face (MTCNN crop) in 8 frames per video.",
+   "hardware": "NVIDIA L4 (Google Colab Pro)",
+   "date": "2026-10-26",
+   "commit": null,
+   "timing": "Seconds per video with 3 processes sharing one L4 (upper bounds).",
+   "reproduce": "python scripts/eval_video_folder.py --device cuda --face-crop --real SDFVD/videos_real --fake SDFVD/videos_fake --dataset SDFVD --models univfd rine rine-ldm commfor commfor-224 safe clipdet --out results/sdfvd_facecrop.json --scores-out results/sdfvd_facecrop_scores.csv",
+   "caveats": [
+    "Same dataset caveats as SDFVD."
+   ],
+   "status": "done",
+   "rows": [
+    {
+     "model": "commfor",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.8775,
+     "auc_ci": [
+      0.8099,
+      0.9341
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.2264,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.0,
+      "k": 0,
+      "n": 53,
+      "ci": [
+       0.0,
+       0.0676
+      ]
+     },
+     "detection_rate": {
+      "value": 0.3585,
+      "k": 19,
+      "n": 53,
+      "ci": [
+       0.243,
+       0.4931
+      ]
+     },
+     "seconds_per_item": 1.43,
+     "timed_alone": null,
+     "failed": 0,
+     "rank": 1,
+     "tied_with_leader": true
+    },
+    {
+     "model": "commfor-224",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.848,
+     "auc_ci": [
+      0.7672,
+      0.9149
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.2264,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.0377,
+      "k": 2,
+      "n": 53,
+      "ci": [
+       0.0104,
+       0.1275
+      ]
+     },
+     "detection_rate": {
+      "value": 0.3019,
+      "k": 16,
+      "n": 53,
+      "ci": [
+       0.1952,
+       0.4354
+      ]
+     },
+     "seconds_per_item": 0.74,
+     "timed_alone": null,
+     "failed": 0,
+     "rank": 2,
+     "tied_with_leader": true
+    },
+    {
+     "model": "rine",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.8444,
+     "auc_ci": [
+      0.77,
+      0.9162
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": "Saved per-item scores were rounded to 6 decimals, which ties this model's tiny scores; AUC and EER are the run's full-precision values (recomputed from saved scores: AUC 0.847). The interval comes from the rounded scores, so it's approximate.",
+     "eer": 0.1887,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.0,
+      "k": 0,
+      "n": 53,
+      "ci": [
+       0.0,
+       0.0676
+      ]
+     },
+     "detection_rate": {
+      "value": 0.0189,
+      "k": 1,
+      "n": 53,
+      "ci": [
+       0.0033,
+       0.0994
+      ]
+     },
+     "seconds_per_item": 1.423,
+     "timed_alone": null,
+     "failed": 0,
+     "rank": 3,
+     "tied_with_leader": true
+    },
+    {
+     "model": "univfd",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.8181,
+     "auc_ci": [
+      0.7337,
+      0.8978
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.1887,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.0,
+      "k": 0,
+      "n": 53,
+      "ci": [
+       0.0,
+       0.0676
+      ]
+     },
+     "detection_rate": {
+      "value": 0.0943,
+      "k": 5,
+      "n": 53,
+      "ci": [
+       0.041,
+       0.2025
+      ]
+     },
+     "seconds_per_item": 2.133,
+     "timed_alone": null,
+     "failed": 0,
+     "rank": 4,
+     "tied_with_leader": true
+    },
+    {
+     "model": "safe",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.7216,
+     "auc_ci": [
+      0.6166,
+      0.8121
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.3585,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.0,
+      "k": 0,
+      "n": 53,
+      "ci": [
+       0.0,
+       0.0676
+      ]
+     },
+     "detection_rate": {
+      "value": 0.0,
+      "k": 0,
+      "n": 53,
+      "ci": [
+       0.0,
+       0.0676
+      ]
+     },
+     "seconds_per_item": 0.477,
+     "timed_alone": null,
+     "failed": 0,
+     "rank": 5,
+     "tied_with_leader": true
+    },
+    {
+     "model": "rine-ldm",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.6942,
+     "auc_ci": [
+      0.5934,
+      0.7935
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.3962,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.3962,
+      "k": 21,
+      "n": 53,
+      "ci": [
+       0.2759,
+       0.5306
+      ]
+     },
+     "detection_rate": {
+      "value": 0.566,
+      "k": 30,
+      "n": 53,
+      "ci": [
+       0.4327,
+       0.6905
+      ]
+     },
+     "seconds_per_item": 3.232,
+     "timed_alone": null,
+     "failed": 0,
+     "rank": 6,
+     "tied_with_leader": false
+    },
+    {
+     "model": "clipdet",
+     "family": "image",
+     "n_real": 53,
+     "n_fake": 53,
+     "auc": 0.6782,
+     "auc_ci": [
+      0.5778,
+      0.7757
+     ],
+     "auc_ci_method": "bootstrap",
+     "note": null,
+     "eer": 0.3774,
+     "threshold": 0.5,
+     "false_alarm_rate": {
+      "value": 0.717,
+      "k": 38,
+      "n": 53,
+      "ci": [
+       0.5843,
+       0.8203
+      ]
+     },
+     "detection_rate": {
+      "value": 0.9811,
+      "k": 52,
+      "n": 53,
+      "ci": [
+       0.9006,
+       0.9967
+      ]
+     },
+     "seconds_per_item": 2.022,
+     "timed_alone": null,
+     "failed": 0,
+     "rank": 7,
+     "tied_with_leader": false
+    }
+   ],
+   "files": [
+    "sdfvd_facecrop.json",
+    "sdfvd_facecrop_scores.csv"
+   ]
+  },
+  {
+   "id": "asvspoof2019-la",
+   "name": "ASVspoof 2019 LA (subset)",
+   "task": "Spoofed and synthetic speech",
+   "modality": "audio",
+   "license": "ODC-By 1.0",
+   "dataset_url": "https://datashare.ed.ac.uk/handle/10283/3336",
+   "description": "Fixed subset of the 2019 LA evaluation set: 1,000 bona fide trials and 77 from each of the 13 attacks A07-A19 (2,001 trials, seed 0).",
+   "n_real": 1000,
+   "n_fake": 1001,
+   "hardware": null,
+   "date": null,
+   "commit": null,
+   "timing": "Seconds per trial, hardware not recorded.",
+   "reproduce": "python scripts/eval_asvspoof2019_la.py --protocol LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt --audio-dir LA/ASVspoof2019_LA_eval/flac --device cuda --out results/asvspoof2019_la_subset.json",
+   "caveats": [
+    "Per-trial scores weren't saved, so there's no AUC or false-alarm rate here: the EER interval is a binomial approximation. Rerun with scores saved for the full set of metrics.",
+    "Older, in-domain attacks; the In-the-Wild-tuned models (nes2net-x-itw, xlsr-aasist-df) are the better choice for real-world audio."
+   ],
+   "status": "done",
+   "rows": [
+    {
+     "model": "xlsr-aasist-df",
+     "family": "audio",
+     "n_real": 1000,
+     "n_fake": 1001,
+     "auc": null,
+     "auc_ci": null,
+     "eer": 0.0,
+     "eer_ci": [
+      0.0,
+      0.0019
+     ],
+     "accuracy": 1.0,
+     "threshold": 0.5,
+     "false_alarm_rate": null,
+     "detection_rate": null,
+     "seconds_per_item": 0.0292,
+     "per_attack_eer": {
+      "A07": 0.0,
+      "A08": 0.0,
+      "A09": 0.0,
+      "A10": 0.0,
+      "A11": 0.0,
+      "A12": 0.0,
+      "A13": 0.0,
+      "A14": 0.0,
+      "A15": 0.0,
+      "A16": 0.0,
+      "A17": 0.0,
+      "A18": 0.0,
+      "A19": 0.0
+     },
+     "rank": 1,
+     "tied_with_leader": true
+    },
+    {
+     "model": "nes2net-x-itw",
+     "family": "audio",
+     "n_real": 1000,
+     "n_fake": 1001,
+     "auc": null,
+     "auc_ci": null,
+     "eer": 0.001,
+     "eer_ci": [
+      0.0,
+      0.0024
+     ],
+     "accuracy": 0.96,
+     "threshold": 0.5,
+     "false_alarm_rate": null,
+     "detection_rate": null,
+     "seconds_per_item": 0.0417,
+     "per_attack_eer": {
+      "A07": 0.0,
+      "A08": 0.0,
+      "A09": 0.0,
+      "A10": 0.05,
+      "A11": 0.0,
+      "A12": 0.0,
+      "A13": 0.0,
+      "A14": 0.0,
+      "A15": 0.0,
+      "A16": 0.0,
+      "A17": 0.0,
+      "A18": 0.0,
+      "A19": 0.0
+     },
+     "rank": 2,
+     "tied_with_leader": true
+    },
+    {
+     "model": "nes2net-x",
+     "family": "audio",
+     "n_real": 1000,
+     "n_fake": 1001,
+     "auc": null,
+     "auc_ci": null,
+     "eer": 0.002,
+     "eer_ci": [
+      0.0,
+      0.004
+     ],
+     "accuracy": 0.998,
+     "threshold": 0.5,
+     "false_alarm_rate": null,
+     "detection_rate": null,
+     "seconds_per_item": 0.029,
+     "per_attack_eer": {
+      "A07": 0.0,
+      "A08": 0.0,
+      "A09": 0.0,
+      "A10": 0.1,
+      "A11": 0.0,
+      "A12": 0.0,
+      "A13": 0.0,
+      "A14": 0.0,
+      "A15": 0.0,
+      "A16": 0.0,
+      "A17": 0.0,
+      "A18": 0.0,
+      "A19": 0.0
+     },
+     "rank": 3,
+     "tied_with_leader": true
+    },
+    {
+     "model": "xlsr-aasist",
+     "family": "audio",
+     "n_real": 1000,
+     "n_fake": 1001,
+     "auc": null,
+     "auc_ci": null,
+     "eer": 0.004,
+     "eer_ci": [
+      0.0012,
+      0.0068
+     ],
+     "accuracy": 0.998,
+     "threshold": 0.5,
+     "false_alarm_rate": null,
+     "detection_rate": null,
+     "seconds_per_item": 0.029,
+     "per_attack_eer": {
+      "A07": 0.0,
+      "A08": 0.0,
+      "A09": 0.0,
+      "A10": 0.0,
+      "A11": 1.3,
+      "A12": 0.0,
+      "A13": 0.0,
+      "A14": 0.0,
+      "A15": 0.0,
+      "A16": 0.0,
+      "A17": 0.0,
+      "A18": 1.3,
+      "A19": 0.0
+     },
+     "rank": 4,
+     "tied_with_leader": true
+    },
+    {
+     "model": "aasist-l",
+     "family": "audio",
+     "n_real": 1000,
+     "n_fake": 1001,
+     "auc": null,
+     "auc_ci": null,
+     "eer": 0.014,
+     "eer_ci": [
+      0.0089,
+      0.0191
+     ],
+     "accuracy": 0.9745,
+     "threshold": 0.5,
+     "false_alarm_rate": null,
+     "detection_rate": null,
+     "seconds_per_item": 0.0133,
+     "per_attack_eer": {
+      "A07": 1.1,
+      "A08": 0.0,
+      "A09": 0.0,
+      "A10": 2.3,
+      "A11": 0.05,
+      "A12": 1.05,
+      "A13": 0.05,
+      "A14": 0.0,
+      "A15": 1.05,
+      "A16": 1.6,
+      "A17": 2.6,
+      "A18": 3.6,
+      "A19": 0.15
+     },
+     "rank": 5,
+     "tied_with_leader": false
+    },
+    {
+     "model": "aasist",
+     "family": "audio",
+     "n_real": 1000,
+     "n_fake": 1001,
+     "auc": null,
+     "auc_ci": null,
+     "eer": 0.016,
+     "eer_ci": [
+      0.0105,
+      0.0215
+     ],
+     "accuracy": 0.968,
+     "threshold": 0.5,
+     "false_alarm_rate": null,
+     "detection_rate": null,
+     "seconds_per_item": 0.0171,
+     "per_attack_eer": {
+      "A07": 1.1,
+      "A08": 0.0,
+      "A09": 0.0,
+      "A10": 1.35,
+      "A11": 0.1,
+      "A12": 1.55,
+      "A13": 0.0,
+      "A14": 0.1,
+      "A15": 1.1,
+      "A16": 2.6,
+      "A17": 2.6,
+      "A18": 3.9,
+      "A19": 1.1
+     },
+     "rank": 6,
+     "tied_with_leader": false
+    },
+    {
+     "model": "rawgat-st",
+     "family": "audio",
+     "n_real": 1000,
+     "n_fake": 1001,
+     "auc": null,
+     "auc_ci": null,
+     "eer": 0.031,
+     "eer_ci": [
+      0.0234,
+      0.0386
+     ],
+     "accuracy": 0.9795,
+     "threshold": 0.5,
+     "false_alarm_rate": null,
+     "detection_rate": null,
+     "seconds_per_item": 0.0246,
+     "per_attack_eer": {
+      "A07": 0.1,
+      "A08": 0.0,
+      "A09": 0.0,
+      "A10": 0.0,
+      "A11": 0.0,
+      "A12": 0.0,
+      "A13": 0.0,
+      "A14": 0.0,
+      "A15": 0.0,
+      "A16": 3.9,
+      "A17": 4.9,
+      "A18": 6.2,
+      "A19": 2.6
+     },
+     "rank": 7,
+     "tied_with_leader": false
+    }
+   ],
+   "files": [
+    "asvspoof2019_la_subset.json"
+   ]
+  },
+  {
+   "id": "physics-sdfvd",
+   "name": "SDFVD, physics detectors",
+   "task": "Face-swap video, physics constraints (provisional priors)",
+   "modality": "video",
+   "license": "CC BY 4.0",
+   "dataset_url": "https://data.mendeley.com/datasets/bcmkfgct2s/1",
+   "description": "Physics detectors on the SDFVD clips they could measure (47 real, 47 fake).",
+   "hardware": null,
+   "date": null,
+   "commit": null,
+   "timing": null,
+   "reproduce": "python scripts/calibrate_physics.py eval --measurements results/physics/sdfvd_real.jsonl results/physics/sdfvd_fake.jsonl",
+   "caveats": [
+    "Provisional (hand-set) priors; physics detectors aren't calibrated for video yet."
+   ],
+   "status": "done",
+   "rows": [
+    {
+     "model": "phys-lighting",
+     "family": "physics",
+     "n_real": 47,
+     "n_fake": 47,
+     "auc": 0.4808,
+     "auc_ci": [
+      0.3636,
+      0.598
+     ],
+     "auc_ci_method": "Hanley-McNeil",
+     "eer": null,
+     "threshold": "any violation",
+     "false_alarm_rate": {
+      "value": 1.0,
+      "k": 47,
+      "n": 47,
+      "ci": [
+       0.9244,
+       1.0
+      ]
+     },
+     "detection_rate": {
+      "value": 0.9787,
+      "k": 46,
+      "n": 47,
+      "ci": [
+       0.8889,
+       0.9962
+      ]
+     },
+     "seconds_per_item": null,
+     "rank": 1,
+     "tied_with_leader": true
+    },
+    {
+     "model": "phys-motion",
+     "family": "physics",
+     "n_real": 47,
+     "n_fake": 47,
+     "auc": 0.4455,
+     "auc_ci": [
+      0.329,
+      0.562
+     ],
+     "auc_ci_method": "Hanley-McNeil",
+     "eer": null,
+     "threshold": "any violation",
+     "false_alarm_rate": {
+      "value": 0.4255,
+      "k": 20,
+      "n": 47,
+      "ci": [
+       0.2951,
+       0.5672
+      ]
+     },
+     "detection_rate": {
+      "value": 0.3191,
+      "k": 15,
+      "n": 47,
+      "ci": [
+       0.204,
+       0.4617
+      ]
+     },
+     "seconds_per_item": null,
+     "rank": 2,
+     "tied_with_leader": true
+    }
+   ],
+   "files": [
+    "physics/sdfvd_eval_provisional.json"
+   ]
+  },
+  {
+   "id": "physics-asvspoof",
+   "name": "ASVspoof 2019 LA, physics detectors",
+   "task": "Spoofed speech, voice and room physics (learned priors)",
+   "modality": "audio",
+   "license": "ODC-By 1.0",
+   "dataset_url": "https://datashare.ed.ac.uk/handle/10283/3336",
+   "description": "phys-voice and phys-room with priors learned on real ASVspoof speech.",
+   "hardware": null,
+   "date": null,
+   "commit": null,
+   "timing": null,
+   "reproduce": "python scripts/calibrate_physics.py eval --measurements <asvspoof measurements> --priors results/physics/learned_priors_asvspoof.json",
+   "caveats": [
+    "phys-room applies only to clips long enough to measure the room (76 of the clips)."
+   ],
+   "status": "done",
+   "rows": [
+    {
+     "model": "phys-voice",
+     "family": "physics",
+     "n_real": 294,
+     "n_fake": 369,
+     "auc": 0.6237,
+     "auc_ci": [
+      0.5815,
+      0.6659
+     ],
+     "auc_ci_method": "Hanley-McNeil",
+     "eer": null,
+     "threshold": "any violation",
+     "false_alarm_rate": {
+      "value": 0.0136,
+      "k": 4,
+      "n": 294,
+      "ci": [
+       0.0053,
+       0.0345
+      ]
+     },
+     "detection_rate": {
+      "value": 0.2602,
+      "k": 96,
+      "n": 369,
+      "ci": [
+       0.218,
+       0.3072
+      ]
+     },
+     "seconds_per_item": null,
+     "rank": 1,
+     "tied_with_leader": true
+    },
+    {
+     "model": "phys-room",
+     "family": "physics",
+     "n_real": 26,
+     "n_fake": 50,
+     "auc": 0.4923,
+     "auc_ci": [
+      0.3544,
+      0.6302
+     ],
+     "auc_ci_method": "Hanley-McNeil",
+     "eer": null,
+     "threshold": "any violation",
+     "false_alarm_rate": {
+      "value": 0.1538,
+      "k": 4,
+      "n": 26,
+      "ci": [
+       0.0615,
+       0.3353
+      ]
+     },
+     "detection_rate": {
+      "value": 0.12,
+      "k": 6,
+      "n": 50,
+      "ci": [
+       0.0562,
+       0.2381
+      ]
+     },
+     "seconds_per_item": null,
+     "rank": 2,
+     "tied_with_leader": true
+    }
+   ],
+   "files": [
+    "physics/asvspoof_eval_learned.json"
+   ]
+  },
+  {
+   "id": "deepfake-eval-2024",
+   "name": "Deepfake-Eval-2024",
+   "task": "Real-world deepfakes collected in 2024 (video, audio, image)",
+   "modality": "mixed",
+   "license": "CC BY-SA 4.0 (evaluation only, gated)",
+   "dataset_url": "https://huggingface.co/datasets/nuriachandra/Deepfake-Eval-2024",
+   "status": "pending",
+   "reproduce": "python scripts/eval_deepfake_eval_2024.py --data /content/de2024 --modality video --device cuda --max-per-class 250 --out results/de2024_video.json --scores-out results/de2024_video_scores.csv",
+   "caveats": [
+    "Request access on Hugging Face first. Run each modality (video, audio, image)."
+   ],
+   "rows": []
+  },
+  {
+   "id": "forensix-image-set",
+   "name": "ForensiX image set",
+   "task": "Generated vs real images (SDXL, PixArt-\u03a3, Kandinsky 2.2, FLUX.1-schnell)",
+   "modality": "image",
+   "license": "Open Images CC BY 2.0 photos; generators whose outputs allow commercial use",
+   "dataset_url": null,
+   "status": "pending",
+   "reproduce": "python scripts/build_image_eval_set.py --out /content/forensix_image_eval && python scripts/eval_image.py --data /content/forensix_image_eval --device cuda --out results/image_eval.json --scores-out results/image_scores.csv",
+   "caveats": [
+    "Build the set on a GPU first (about 1,000 real and 1,000 generated images)."
+   ],
+   "rows": []
+  }
+ ],
+ "excluded": [
+  {
+   "name": "LAV-DF",
+   "license": "CC BY-NC 4.0",
+   "reason": "Non-commercial license. Results exist in results/lavdf/ but aren't on this leaderboard."
+  }
+ ],
+ "threshold": 0.5,
+ "method": {
+  "auc_ci": "stratified bootstrap, 2000 resamples, seed 0 (Hanley-McNeil when per-item scores weren't saved)",
+  "rate_ci": "Wilson score interval, 95%"
+ },
+ "throughput": {
+  "hardware": "NVIDIA L4",
+  "description": "Items per second scoring SDFVD (video models) or ASVspoof (audio models): the plain per-file loop, and the batch runner in fp32 and bf16.",
+  "rows": [
+   {
+    "model": "aasist",
+    "n": 400,
+    "gpu": "NVIDIA L4",
+    "baseline_items_per_s": 67.28,
+    "runner_fp32_items_per_s": 67.85,
+    "runner_bf16_items_per_s": 77.99,
+    "bf16_max_score_change": 0.03972804546356201,
+    "bf16_auc": 0.9968,
+    "baseline_auc": 0.9968
+   },
+   {
+    "model": "xlsr-aasist",
+    "n": 400,
+    "gpu": "NVIDIA L4",
+    "baseline_items_per_s": 33.91,
+    "runner_fp32_items_per_s": 34.36,
+    "runner_bf16_items_per_s": 82.84,
+    "bf16_max_score_change": 0.008201181888580322,
+    "bf16_auc": 1.0,
+    "baseline_auc": 1.0
+   },
+   {
+    "model": "commfor",
+    "n": 106,
+    "gpu": "NVIDIA L4",
+    "baseline_items_per_s": 6.55,
+    "runner_fp32_items_per_s": 13.19,
+    "runner_bf16_items_per_s": 18.94,
+    "bf16_max_score_change": 0.06036669760942459,
+    "bf16_auc": 0.6999,
+    "baseline_auc": 0.6963
+   },
+   {
+    "model": "univfd",
+    "n": 106,
+    "gpu": "NVIDIA L4",
+    "baseline_items_per_s": 4.31,
+    "runner_fp32_items_per_s": 5.25,
+    "runner_bf16_items_per_s": 16.19,
+    "bf16_max_score_change": 0.018721237778663635,
+    "bf16_auc": 0.7188,
+    "baseline_auc": 0.7188
+   },
+   {
+    "model": "gend",
+    "n": 40,
+    "gpu": "NVIDIA L4",
+    "baseline_items_per_s": 0.58,
+    "runner_fp32_items_per_s": 0.55,
+    "runner_bf16_items_per_s": 0.77,
+    "bf16_max_score_change": 0.01095065288245678,
+    "bf16_auc": 0.9125,
+    "baseline_auc": 0.91
+   }
+  ]
+ }
+}

@@ -256,6 +256,12 @@ details summary { cursor: pointer; color: var(--ink-2); font-size: 12.5px; margi
 .meter .tick { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); border-radius: 1px; }
 .meter .tick-label { position: absolute; top: 12px; transform: translateX(-50%); font-size: 11px; color: var(--muted); white-space: nowrap; }
 
+/* leaderboard */
+.segmented.wrap { flex-wrap: wrap; }
+.code-row { display: flex; gap: 8px; align-items: flex-start; margin-top: 8px; }
+.code-row pre { flex: 1; margin: 0; }
+sup { font-size: 10px; }
+
 /* provenance findings */
 .findings { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
 .findings li { display: flex; gap: 8px; align-items: baseline; }

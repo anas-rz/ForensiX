@@ -17,6 +17,7 @@ comes from the [HTTP API](server.md), so anything you do in the UI can be script
 
 | Page | What you can do |
 |---|---|
+| **Leaderboard** | Every model on commercially usable benchmarks ([below](#the-leaderboard)): AUC with 95% intervals as a forest plot, EER, false-alarm and detection rates at a fixed threshold, speed; run details, caveats and a copyable reproduce command; pending benchmarks; a throughput table |
 | **Overview** | A live dashboard of this server ([below](#the-overview-dashboard)): requests, outcomes, latency, cache and resource use over the last 15 minutes to 24 hours, for all models or one; loaded models and recent jobs. Refreshes every 5 seconds |
 | **Models** | Every registered detector, with search and filters by family and loaded state: whether it's loaded, needs trained weights, or has a calibration in use, and which media types it's a default for. Load or unload it |
 | **Model** (click a model) | Description, license and paper; runtime statistics; every calibration version (mode, what it was built on, datasets, counts, AUC) with activate, roll back and turn off; the performance of the selected version; benchmark results |
@@ -53,6 +54,25 @@ this one instance. For a fleet, or for history beyond a restart, use the Prometh
 `/metrics`.
 
 Every chart has a tooltip on hover, and the main ones have a **Table view**.
+
+## The leaderboard
+
+One tab per benchmark, plus **Speed**. Links can open a tab: `/ui/#/leaderboard?b=asvspoof2019-la`.
+
+- **Forest plot:** each model's AUC (dot) and 95% interval (line). The shaded band is the
+  leader's interval: a model whose line reaches into it is **tied** with the leader, because the
+  data can't separate them. The line at 0.5 is chance. Benchmarks without saved per-item scores
+  show EER instead (lower is better).
+- **Table:** rank, AUC [95% CI], EER, false alarms (real media flagged) and detections (fakes
+  caught) at the fixed threshold with their intervals, seconds per item, and "vs #1".
+  Footnotes flag corrected values and timings measured on a shared GPU.
+- **Run details:** dataset, license, archive hash, hardware, date, commit and result files,
+  then caveats and the exact command to reproduce.
+- **Not run yet / not included:** benchmarks waiting to be run (with their commands), and
+  benchmarks left out because of their license.
+
+The same data is in [LEADERBOARD.md](../LEADERBOARD.md) and at `GET /v1/leaderboard`
+([Evaluation: the leaderboard](guides/evaluation.md#the-leaderboard)).
 
 ## Reading model performance
 

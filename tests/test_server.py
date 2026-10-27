@@ -666,3 +666,17 @@ def test_provenance_sees_the_original_upload(tmp_path):
         r = c.post("/v1/detect", files={"file": ("gen.mp4", src.read_bytes())}).json()
         assert r["media"]["bounded"]["scaled_to_height"] == 120
         assert r["results"]["metadata"]["provenance"]["verdict"] == "ai_generated"
+
+
+def test_leaderboard_is_public_and_falls_back_to_the_snapshot(tmp_path, monkeypatch):
+    with client(api_key="k") as c:
+        r = c.get("/v1/leaderboard")
+        assert r.status_code == 200 and r.json()["source"] == "results/ (computed live)"
+        assert any(b["id"] == "sdfvd" and b["rows"] for b in r.json()["benchmarks"])
+    with client(api_key="k", public_leaderboard=False) as c:
+        assert c.get("/v1/leaderboard").status_code == 401
+    import forensix.leaderboard
+
+    monkeypatch.setattr(forensix.leaderboard, "default_root", lambda: tmp_path)   # no results/ (a container)
+    with client() as c:
+        assert c.get("/v1/leaderboard").json()["source"] == "packaged snapshot"

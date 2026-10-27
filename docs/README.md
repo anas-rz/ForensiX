@@ -15,6 +15,7 @@ preprocessing details and parity checks against upstream code.
 | Install ForensiX and score your first file | [Installation](guides/installation.md) |
 | Understand the building blocks (registry, `Prediction`, score types, families) | [Concepts](concepts.md) |
 | Look up a function, class or field | [API reference](api-reference.md) |
+| Compare models on commercially usable benchmarks | [Leaderboard](../LEADERBOARD.md) |
 | Copy working code for a common task | [Recipes](recipes.md) |
 | Call the detectors over HTTP | [HTTP server](server.md) |
 | Manage, test and calibrate models in the browser | [Web manager](ui.md) |

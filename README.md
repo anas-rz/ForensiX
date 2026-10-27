@@ -13,6 +13,10 @@ python scripts/download_weights.py          # optional: pre-fetch all weights
 
 Weights are cached in `~/.cache/forensix` (override with `FORENSIX_CACHE`) and checked against a SHA-256 hash. `forensix.load()` downloads them automatically on first use.
 
+## Leaderboard
+
+Every model on commercially usable benchmarks (SDFVD face swaps, ASVspoof 2019 LA; Deepfake-Eval-2024 and the ForensiX image set pending), with AUC 95% confidence intervals, false-alarm and detection rates at a fixed threshold, and speed: [LEADERBOARD.md](LEADERBOARD.md). It's recomputed from the raw results by `python scripts/build_leaderboard.py`, and also shown in the web manager.
+
 ## Documentation
 
 [docs/](docs/README.md) has the [concepts](docs/concepts.md), the [API reference](docs/api-reference.md), [recipes](docs/recipes.md) for common tasks, [guides](docs/README.md#guides) (choosing detectors, interpreting scores, evaluation, identity, physics, training, Colab, extending, licensing), the [HTTP server](docs/server.md), and [deployment at scale](docs/deployment.md).

@@ -361,7 +361,7 @@ let cleanups = [];
 function every(ms, fn) { const id = setInterval(fn, ms); cleanups.push(() => clearInterval(id)); }
 const page = () => document.getElementById("page");
 
-const ROUTES = { overview: overviewPage, models: modelsPage, model: modelPage, test: testPage, calibration: calibrationPage, settings: settingsPage };
+const ROUTES = { overview: overviewPage, leaderboard: leaderboardPage, models: modelsPage, model: modelPage, test: testPage, calibration: calibrationPage, settings: settingsPage };
 
 function route() {
   cleanups.forEach((f) => f());
@@ -777,6 +777,194 @@ function jobsSummaryCard(jobs) {
     el("div", { class: "card-head" }, el("h2", { text: "Recent calibration jobs" }), el("a", { href: "#/calibration", text: "Calibration" })),
     recent.length ? simpleTable(["Job", "Kind", "Status", "Created"], recent.map(jobRow))
       : el("div", { class: "empty", text: "No jobs since the server started." }));
+}
+
+// -- leaderboard -------------------------------------------------------------------------------
+
+/** Forest plot: one row per model, the estimate as a dot and its 95% interval as a line. */
+function forestPlot(rows, width, { metric = "auc", higherIsBetter = true } = {}) {
+  const valid = rows.filter((r) => isNum(r[metric]));
+  const ci = (r) => (metric === "auc" ? r.auc_ci : r.eer_ci) || [r[metric], r[metric]];
+  const row = 30, m = { l: 150, r: 64, t: 26, b: 28 };
+  const W = Math.max(320, width), H = m.t + valid.length * row + m.b, pw = W - m.l - m.r;
+  let lo, hi;
+  if (metric === "auc") { lo = Math.min(0.4, ...valid.map((r) => ci(r)[0])); hi = 1; lo = Math.floor(lo * 10) / 10; }
+  else { lo = 0; hi = Math.max(0.01, ...valid.map((r) => ci(r)[1])) * 1.1; }
+  const xs = (v) => m.l + ((v - lo) / (hi - lo)) * pw;
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img",
+    "aria-label": `${metric.toUpperCase()} with 95% confidence intervals per model` });
+  const ticks = metric === "auc" ? Array.from({ length: Math.round((hi - lo) / 0.1) + 1 }, (_, i) => +(lo + i * 0.1).toFixed(1))
+    : niceTicks(hi, 4);
+  ticks.forEach((t) => {
+    if (t > hi + 1e-9) return;
+    svg.append(sv("line", { class: "gridline", x1: xs(t), x2: xs(t), y1: m.t - 6, y2: H - m.b }));
+    svg.append(sv("text", { class: "axis-label", x: xs(t), y: H - 8, "text-anchor": "middle" }, metric === "auc" ? t.toFixed(1) : pct(t, 1)));
+  });
+  const lead = valid[0];
+  if (lead) {  // tie zone: the leader's interval
+    const [a, b] = ci(lead);
+    svg.append(sv("rect", { x: xs(a), y: m.t - 6, width: Math.max(1, xs(b) - xs(a)), height: H - m.b - m.t + 6, fill: "var(--accent)", opacity: 0.08 }));
+    svg.append(sv("text", { class: "axis-label", x: (xs(a) + xs(b)) / 2, y: m.t - 10, "text-anchor": "middle" }, "#1's interval"));
+  }
+  if (metric === "auc" && lo <= 0.5) {
+    svg.append(sv("line", { x1: xs(0.5), x2: xs(0.5), y1: m.t - 6, y2: H - m.b, stroke: "var(--ink-2)", "stroke-width": 1 }));
+    svg.append(sv("text", { class: "axis-label", x: xs(0.5) + 4, y: H - m.b - 4 }, "chance"));
+  }
+  valid.forEach((r, i) => {
+    const y = m.t + i * row + row / 2, [a, b] = ci(r), v = r[metric];
+    svg.append(sv("text", { class: "value-label", x: m.l - 10, y: y + 4, "text-anchor": "end" }, `${r.rank}. ${r.model}`));
+    svg.append(sv("line", { x1: xs(a), x2: xs(b), y1: y, y2: y, stroke: "var(--series-1)", "stroke-width": 2, "stroke-linecap": "round" }));
+    svg.append(sv("circle", { cx: xs(v), cy: y, r: 5, fill: "var(--series-1)", stroke: "var(--surface)", "stroke-width": 2 }));
+    svg.append(sv("text", { class: "value-label", x: W - m.r + 8, y: y + 4 }, metric === "auc" ? v.toFixed(3) : pct(v, 1)));
+    svg.append(sv("rect", { x: 0, y: y - row / 2, width: W, height: row, fill: "transparent",
+      onpointermove: (e) => showTip(e, [
+        { value: metric === "auc" ? `AUC ${v.toFixed(3)}` : `EER ${pct(v, 2)}`, label: r.model, color: "var(--series-1)", key: "line" },
+        { value: metric === "auc" ? `[${a.toFixed(3)}, ${b.toFixed(3)}]` : `[${pct(a, 2)}, ${pct(b, 2)}]`, label: `95% CI (${r.auc_ci_method || "approx."})` },
+        { value: `${r.n_real} real · ${r.n_fake} fake`, label: "" },
+        r.rank > 1 ? { value: r.tied_with_leader ? "tied with #1" : "below #1", label: "" } : { value: "#1", label: "" }]),
+      onpointerleave: hideTip }));
+  });
+  return el("div", { class: "chart" }, svg);
+}
+
+function rateCell(r) {
+  if (!r || !isNum(r.value)) return el("span", { class: "muted", text: "—" });
+  return el("span", { title: `${r.k} of ${r.n}; 95% CI ${pct(r.ci[0])}–${pct(r.ci[1])}` },
+    pct(r.value), el("span", { class: "muted small", text: ` [${pct(r.ci[0], 0)}–${pct(r.ci[1], 0)}]` }));
+}
+
+function copyable(text) {
+  const btn = el("button", { class: "small", type: "button", text: "Copy" });
+  btn.onclick = async () => {
+    try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; setTimeout(() => (btn.textContent = "Copy"), 1500); }
+    catch (e) { toast("Couldn't copy: select the text instead", "error"); }
+  };
+  return el("div", { class: "code-row" }, el("pre", { text }), btn);
+}
+
+async function leaderboardPage(root) {
+  const board = await api("/v1/leaderboard");
+  const done = board.benchmarks.filter((b) => b.status === "done");
+  const pending = board.benchmarks.filter((b) => b.status !== "done");
+  const tabs = [...done.map((b) => [b.id, b.name]), ...(board.throughput ? [["speed", "Speed"]] : [])];
+  const query = new URLSearchParams(location.hash.split("?")[1] || "");
+  let current = query.get("b") || store.get("lb.tab", tabs[0] && tabs[0][0]);
+  if (!tabs.some(([id]) => id === current)) current = tabs[0] && tabs[0][0];
+  const seg = el("div", { class: "segmented wrap", role: "group", "aria-label": "Benchmark" });
+  const body = el("div", { class: "stack" });
+  const renderTabs = () => put(seg, tabs.map(([id, name]) => {
+    const b = el("button", { type: "button", text: name, "aria-pressed": String(id === current) });
+    b.onclick = () => { current = id; store.set("lb.tab", id); renderTabs(); draw(); };
+    return b;
+  }));
+  const download = el("button", { class: "small", type: "button", text: "Download JSON", onclick: () => {
+    const a = el("a", { href: URL.createObjectURL(new Blob([JSON.stringify(board, null, 1)], { type: "application/json" })), download: "forensix-leaderboard.json" });
+    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  } });
+  put(root,
+    head("Leaderboard", "Every model on commercially usable benchmarks, recomputed from the raw result files. Intervals are 95%; overlapping the leader's interval means the data can't separate the models.", download),
+    el("div", { class: "filter-row" }, seg, el("span", { class: "spacer" }), el("span", { class: "small muted", text: `source: ${board.source || "—"}` })),
+    body);
+
+  const chartHolders = [];
+  const draw = () => {
+    chartHolders.length = 0;
+    if (current === "speed") { put(body, speedView(board.throughput)); }
+    else {
+      const b = done.find((x) => x.id === current);
+      put(body, benchmarkView(b, chartHolders), pendingCard(pending), excludedCard(board.excluded));
+    }
+    chartHolders.forEach((f) => f());
+  };
+  renderTabs();
+  draw();
+  let lastWidth = root.clientWidth, timer = null;
+  const ro = new ResizeObserver(() => {
+    if (root.clientWidth === lastWidth) return;
+    lastWidth = root.clientWidth; clearTimeout(timer); timer = setTimeout(draw, 120);
+  });
+  ro.observe(root);
+  cleanups.push(() => ro.disconnect());
+}
+
+function benchmarkView(b, chartHolders) {
+  const rows = b.rows;
+  const hasAuc = rows.some((r) => isNum(r.auc));
+  const metric = hasAuc ? "auc" : "eer";
+  const leader = rows[0];
+  const info = el("div", { class: "card" },
+    el("div", { class: "card-head" }, el("h2", { text: b.name }), el("span", { class: "badge", text: b.license })),
+    el("p", { class: "sub", style: { marginTop: "-6px" }, text: `${b.task}. ${b.description || ""}` }),
+    el("dl", { class: "kv" },
+      el("dt", { text: "Dataset" }), el("dd", {}, safeUrl(b.dataset_url) ? el("a", { href: b.dataset_url, target: "_blank", rel: "noopener noreferrer", text: b.dataset_url }) : "—"),
+      b.dataset_sha256 ? [el("dt", { text: "Archive SHA-256" }), el("dd", { class: "mono small", text: b.dataset_sha256 })] : null,
+      el("dt", { text: "Items" }), el("dd", { text: leader ? `${leader.n_real} real · ${leader.n_fake} fake` : "—" }),
+      el("dt", { text: "Hardware" }), el("dd", { text: b.hardware || "not recorded" }),
+      el("dt", { text: "Run" }), el("dd", { text: `${b.date || "date not recorded"} · commit ${b.commit ? b.commit.slice(0, 12) : "not recorded"}` }),
+      el("dt", { text: "Result files" }), el("dd", { class: "mono small", text: (b.files || []).map((f) => "results/" + f).join(", ") })));
+
+  const plotHolder = el("div");
+  const toggle = el("button", { class: "small", type: "button", text: "Table only" });
+  let tableOnly = false;
+  toggle.onclick = () => { tableOnly = !tableOnly; toggle.textContent = tableOnly ? "Show chart" : "Table only"; plotHolder.style.display = tableOnly ? "none" : ""; };
+  const threshold = rows[0] ? rows[0].threshold : 0.5;
+  const thrLabel = isNum(threshold) ? `@ ${threshold}` : `(${threshold})`;
+  const table = simpleTable(
+    hasAuc ? ["#", "Model", "Family", "AUC [95% CI]", "EER", `False alarms ${thrLabel}`, `Detection ${thrLabel}`, "s / item", "vs #1"]
+      : ["#", "Model", "EER [≈95% CI]", "Accuracy @ 0.5", "s / item", "vs #1"],
+    rows.map((r) => {
+      const name = el("span", {}, el("a", { href: `#/model/${encodeURIComponent(r.model)}`, text: r.model }), r.note ? el("sup", { title: r.note, text: " ¹" }) : null,
+        r.timed_alone === false ? el("sup", { class: "muted", title: "Timed while sharing the GPU: an upper bound", text: " ²" }) : null);
+      const vs = r.rank === 1 ? el("span", { class: "badge", text: "#1" }) : r.tied_with_leader ? el("span", { class: "badge", text: "tied" }) : el("span", { class: "muted", text: "below" });
+      return hasAuc
+        ? [String(r.rank), name, r.family || "—", el("span", {}, num(r.auc), el("span", { class: "muted small", text: ` [${num(r.auc_ci[0])}, ${num(r.auc_ci[1])}]` })),
+          isNum(r.eer) ? pct(r.eer) : "—", rateCell(r.false_alarm_rate), rateCell(r.detection_rate),
+          isNum(r.seconds_per_item) ? secs(r.seconds_per_item) : "—", vs]
+        : [String(r.rank), name, el("span", {}, pct(r.eer, 2), el("span", { class: "muted small", text: ` [${pct(r.eer_ci[0], 2)}, ${pct(r.eer_ci[1], 2)}]` })),
+          isNum(r.accuracy) ? pct(r.accuracy) : "—", isNum(r.seconds_per_item) ? secs(r.seconds_per_item) : "—", vs];
+    }), hasAuc ? [0, 3, 4, 5, 6, 7] : [0, 2, 3, 4]);
+  const notes = rows.filter((r) => r.note);
+  const results = el("div", { class: "card" },
+    el("div", { class: "card-head" }, el("h2", { text: hasAuc ? "AUC with 95% confidence intervals" : "EER with approximate 95% intervals (lower is better)" }), toggle),
+    plotHolder, table,
+    notes.length ? el("p", { class: "small muted", text: `¹ ${notes.map((r) => r.model).join(", ")}: ${notes[0].note}` }) : null,
+    rows.some((r) => r.timed_alone === false) ? el("p", { class: "small muted", text: "² Timed while sharing the GPU with other processes: an upper bound." }) : null,
+    b.timing ? el("p", { class: "small muted", text: `Speed: ${b.timing}` }) : null);
+  chartHolders.push(() => put(plotHolder, forestPlot(rows, plotHolder.clientWidth || 700, { metric, higherIsBetter: hasAuc })));
+  const caveats = el("div", { class: "card" }, el("h2", { text: "Caveats and reproduction" }),
+    (b.caveats || []).length ? el("ul", { class: "warn-list" }, b.caveats.map((c) => el("li", { text: c }))) : null,
+    el("h3", { text: "Reproduce" }), copyable(b.reproduce));
+  return el("div", { class: "stack" }, info, results, caveats);
+}
+
+function speedView(tp) {
+  const rows = tp.rows;
+  const items = rows.map((r) => ({ label: r.model, value: r.runner_fp32_items_per_s || r.baseline_items_per_s, display: `${num(r.runner_fp32_items_per_s || r.baseline_items_per_s, 2)} items/s` }));
+  return el("div", { class: "stack" },
+    el("div", { class: "card" }, el("div", { class: "card-head" }, el("h2", { text: `Throughput on ${tp.hardware}` })),
+      el("p", { class: "sub", style: { marginTop: "-6px" }, text: `${tp.description} An item is a video for video and image models and a clip for audio models, so compare within a modality.` }),
+      hBars(items, { valueLabel: "items per second, batch runner fp32" }),
+      simpleTable(["Model", "Items", "Per-file loop", "Batch runner fp32", "Batch runner bf16", "AUC loop → bf16", "bf16 max score change"],
+        rows.map((r) => [r.model, String(r.n), `${num(r.baseline_items_per_s, 2)}/s`, isNum(r.runner_fp32_items_per_s) ? `${num(r.runner_fp32_items_per_s, 2)}/s` : "—",
+          isNum(r.runner_bf16_items_per_s) ? `${num(r.runner_bf16_items_per_s, 2)}/s` : "—",
+          `${num(r.baseline_auc)} → ${num(r.bf16_auc)}`, isNum(r.bf16_max_score_change) ? num(r.bf16_max_score_change, 4) : "—"]), [1, 2, 3, 4, 6])));
+}
+
+function pendingCard(pending) {
+  if (!pending.length) return null;
+  return el("div", { class: "card" }, el("h2", { text: "Not run yet" }),
+    pending.map((b) => el("div", { class: "result" },
+      el("div", { class: "result-head" }, el("span", { class: "name", text: b.name }), el("span", { class: "badge", text: b.license }),
+        safeUrl(b.dataset_url) ? el("a", { href: b.dataset_url, target: "_blank", rel: "noopener noreferrer", text: "dataset" }) : null),
+      el("div", { class: "small", text: b.task }),
+      (b.caveats || []).length ? el("div", { class: "small muted", text: b.caveats.join(" ") }) : null,
+      copyable(b.reproduce))));
+}
+
+function excludedCard(excluded) {
+  if (!excluded || !excluded.length) return null;
+  return el("div", { class: "card" }, el("h2", { text: "Not on this leaderboard" }),
+    el("ul", { class: "warn-list" }, excluded.map((e) => el("li", {}, el("strong", { text: e.name }), ` (${e.license}): ${e.reason}`))));
 }
 
 // -- models ----------------------------------------------------------------------------

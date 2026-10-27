@@ -1,0 +1,132 @@
+{
+ "title": "ForensiX leaderboard",
+ "policy": "Only benchmarks whose license allows commercial use. Every number is recomputed from the result files in results/ by forensix/leaderboard.py; nothing is typed in by hand.",
+ "benchmarks": [
+  {
+   "id": "sdfvd",
+   "name": "SDFVD face swaps",
+   "task": "Face-swap video (whole frames for image detectors)",
+   "modality": "video",
+   "license": "CC BY 4.0",
+   "dataset_url": "https://data.mendeley.com/datasets/bcmkfgct2s/1",
+   "dataset_sha256": "734a101fdfd89d5b20ac69f510d6a7cf3b588a145c1993ba2488322ae50d95a5",
+   "description": "53 real Pexels clips and 53 Remaker AI face swaps of them, format-matched pairs (same resolution, frame rate, codec).",
+   "results": "sdfvd.json",
+   "scores": "sdfvd_scores.csv",
+   "hardware": "NVIDIA L4 (Google Colab Pro)",
+   "date": "2026-10-26",
+   "commit": "16649a37fd31585fa49641c9f2a3ede17fbbe135",
+   "timing": "Seconds per video on the L4. Only univfd and rine were timed alone; the other models shared the GPU with 1-3 other processes, so their times are inflated (upper bounds).",
+   "timed_alone": ["univfd", "rine"],
+   "reproduce": "python scripts/eval_video_folder.py --device cuda --real SDFVD/videos_real --fake SDFVD/videos_fake --dataset SDFVD --out results/sdfvd.json --scores-out results/sdfvd_scores.csv",
+   "caveats": [
+    "106 videos from one face-swap tool: differences of a few AUC points aren't meaningful (see the confidence intervals).",
+    "Image detectors score 8 whole frames per video; they were built for whole generated images, not face swaps."
+   ]
+  },
+  {
+   "id": "sdfvd-facecrop",
+   "name": "SDFVD face swaps, face crops",
+   "task": "Face-swap video, image detectors on face crops",
+   "modality": "video",
+   "license": "CC BY 4.0",
+   "dataset_url": "https://data.mendeley.com/datasets/bcmkfgct2s/1",
+   "dataset_sha256": "734a101fdfd89d5b20ac69f510d6a7cf3b588a145c1993ba2488322ae50d95a5",
+   "description": "The same 106 videos; image detectors score the largest face (MTCNN crop) in 8 frames per video.",
+   "results": "sdfvd_facecrop.json",
+   "scores": "sdfvd_facecrop_scores.csv",
+   "hardware": "NVIDIA L4 (Google Colab Pro)",
+   "date": "2026-10-26",
+   "commit": null,
+   "timing": "Seconds per video with 3 processes sharing one L4 (upper bounds).",
+   "reproduce": "python scripts/eval_video_folder.py --device cuda --face-crop --real SDFVD/videos_real --fake SDFVD/videos_fake --dataset SDFVD --models univfd rine rine-ldm commfor commfor-224 safe clipdet --out results/sdfvd_facecrop.json --scores-out results/sdfvd_facecrop_scores.csv",
+   "caveats": ["Same dataset caveats as SDFVD."]
+  },
+  {
+   "id": "asvspoof2019-la",
+   "name": "ASVspoof 2019 LA (subset)",
+   "task": "Spoofed and synthetic speech",
+   "modality": "audio",
+   "license": "ODC-By 1.0",
+   "dataset_url": "https://datashare.ed.ac.uk/handle/10283/3336",
+   "description": "Fixed subset of the 2019 LA evaluation set: 1,000 bona fide trials and 77 from each of the 13 attacks A07-A19 (2,001 trials, seed 0).",
+   "results": "asvspoof2019_la_subset.json",
+   "format": "asvspoof",
+   "n_real": 1000,
+   "n_fake": 1001,
+   "hardware": null,
+   "date": null,
+   "commit": null,
+   "timing": "Seconds per trial, hardware not recorded.",
+   "reproduce": "python scripts/eval_asvspoof2019_la.py --protocol LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt --audio-dir LA/ASVspoof2019_LA_eval/flac --device cuda --out results/asvspoof2019_la_subset.json",
+   "caveats": [
+    "Per-trial scores weren't saved, so there's no AUC or false-alarm rate here: the EER interval is a binomial approximation. Rerun with scores saved for the full set of metrics.",
+    "Older, in-domain attacks; the In-the-Wild-tuned models (nes2net-x-itw, xlsr-aasist-df) are the better choice for real-world audio."
+   ]
+  },
+  {
+   "id": "physics-sdfvd",
+   "name": "SDFVD, physics detectors",
+   "task": "Face-swap video, physics constraints (provisional priors)",
+   "modality": "video",
+   "license": "CC BY 4.0",
+   "dataset_url": "https://data.mendeley.com/datasets/bcmkfgct2s/1",
+   "description": "Physics detectors on the SDFVD clips they could measure (47 real, 47 fake).",
+   "results": "physics/sdfvd_eval_provisional.json",
+   "format": "physics",
+   "hardware": null,
+   "date": null,
+   "commit": null,
+   "timing": null,
+   "reproduce": "python scripts/calibrate_physics.py eval --measurements results/physics/sdfvd_real.jsonl results/physics/sdfvd_fake.jsonl",
+   "caveats": ["Provisional (hand-set) priors; physics detectors aren't calibrated for video yet."]
+  },
+  {
+   "id": "physics-asvspoof",
+   "name": "ASVspoof 2019 LA, physics detectors",
+   "task": "Spoofed speech, voice and room physics (learned priors)",
+   "modality": "audio",
+   "license": "ODC-By 1.0",
+   "dataset_url": "https://datashare.ed.ac.uk/handle/10283/3336",
+   "description": "phys-voice and phys-room with priors learned on real ASVspoof speech.",
+   "results": "physics/asvspoof_eval_learned.json",
+   "format": "physics",
+   "hardware": null,
+   "date": null,
+   "commit": null,
+   "timing": null,
+   "reproduce": "python scripts/calibrate_physics.py eval --measurements <asvspoof measurements> --priors results/physics/learned_priors_asvspoof.json",
+   "caveats": ["phys-room applies only to clips long enough to measure the room (76 of the clips)."]
+  },
+  {
+   "id": "deepfake-eval-2024",
+   "name": "Deepfake-Eval-2024",
+   "task": "Real-world deepfakes collected in 2024 (video, audio, image)",
+   "modality": "mixed",
+   "license": "CC BY-SA 4.0 (evaluation only, gated)",
+   "dataset_url": "https://huggingface.co/datasets/nuriachandra/Deepfake-Eval-2024",
+   "status": "pending",
+   "reproduce": "python scripts/eval_deepfake_eval_2024.py --data /content/de2024 --modality video --device cuda --max-per-class 250 --out results/de2024_video.json --scores-out results/de2024_video_scores.csv",
+   "caveats": ["Request access on Hugging Face first. Run each modality (video, audio, image)."]
+  },
+  {
+   "id": "forensix-image-set",
+   "name": "ForensiX image set",
+   "task": "Generated vs real images (SDXL, PixArt-Σ, Kandinsky 2.2, FLUX.1-schnell)",
+   "modality": "image",
+   "license": "Open Images CC BY 2.0 photos; generators whose outputs allow commercial use",
+   "dataset_url": null,
+   "status": "pending",
+   "reproduce": "python scripts/build_image_eval_set.py --out /content/forensix_image_eval && python scripts/eval_image.py --data /content/forensix_image_eval --device cuda --out results/image_eval.json --scores-out results/image_scores.csv",
+   "caveats": ["Build the set on a GPU first (about 1,000 real and 1,000 generated images)."]
+  }
+ ],
+ "throughput": {
+  "file": "throughput_l4.jsonl",
+  "hardware": "NVIDIA L4",
+  "description": "Items per second scoring SDFVD (video models) or ASVspoof (audio models): the plain per-file loop, and the batch runner in fp32 and bf16."
+ },
+ "excluded": [
+  {"name": "LAV-DF", "license": "CC BY-NC 4.0", "reason": "Non-commercial license. Results exist in results/lavdf/ but aren't on this leaderboard."}
+ ]
+}

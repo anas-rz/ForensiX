@@ -90,7 +90,7 @@ def main() -> None:
             writer.writerow(["path", "label", "condition", "generator", *all_scores])
             for i, r in enumerate(rows):
                 writer.writerow([r["path"], r["label"], r["condition"], r["generator"],
-                                 *(f"{s[i]:.6f}" for s in all_scores.values())])
+                                 *(repr(float(s[i])) for s in all_scores.values())])  # full precision
 
 
 if __name__ == "__main__":

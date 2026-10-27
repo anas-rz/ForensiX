@@ -133,7 +133,7 @@ def main() -> None:
         summary.update(family=family, failed=int((~ok).sum()),
                        seconds=round(time.perf_counter() - start, 1))
         results["models"][name] = summary
-        results["scores"][name] = [None if np.isnan(s) else round(float(s), 6) for s in scores]
+        results["scores"][name] = [None if np.isnan(s) else float(s) for s in scores]  # full precision: rounding ties tiny scores
         print(f"  {name}: AUC {summary['auc']:.3f}  AP {summary['ap']:.3f}  EER {summary['eer']:.3f}  "
               f"bal.acc {summary['balanced_acc']:.3f}  (failed {summary['failed']})")
         args.out.parent.mkdir(parents=True, exist_ok=True)

@@ -60,6 +60,8 @@ class ServerConfig:
     benchmarks_dir: str | None = None
     # serve the web manager at /ui
     ui: bool = True
+    # GET /v1/leaderboard without an API key (it's benchmark results, meant to be published)
+    public_leaderboard: bool = True
     # serve endpoints that change shared state (datasets, calibrations, identity galleries). Turn off on
     # horizontally scaled inference replicas and let one manager instance own those writes; replicas
     # still pick up activated calibrations and gallery changes from the shared calibration_dir/gallery_dir

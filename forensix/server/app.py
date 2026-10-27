@@ -219,6 +219,20 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             model_or_404(model)
         return to_jsonable(await run_in_threadpool(telemetry.summary, window, model))
 
+    leaderboard_cache: dict = {}
+
+    def leaderboard_access(request: Request) -> None:
+        if not config.public_leaderboard:
+            check_key(request)
+
+    @app.get("/v1/leaderboard", tags=["leaderboard"], dependencies=[Depends(leaderboard_access)])
+    async def get_leaderboard():
+        """Every model on commercially usable benchmarks: AUC with 95% CIs, EER, false-alarm and detection
+        rates at a fixed threshold, speed. Computed from results/ when present, else the packaged snapshot."""
+        if "board" not in leaderboard_cache:
+            leaderboard_cache["board"] = await run_in_threadpool(load_leaderboard)
+        return to_jsonable(leaderboard_cache["board"])
+
     @app.get("/v1/stats", tags=["service"], dependencies=[Depends(user)])
     async def stats():
         return {"uptime_s": round(time.time() - state["started"], 1), "device": config.device,
@@ -617,6 +631,19 @@ def prometheus_metrics(manager, jobs, state) -> str:
     active = [({"model": m}, a[0]) for m in manager.store.models() if (a := manager.store.active(m))]
     metric("calibration_active_version", "gauge", "Active calibration version per model", active)
     return "\n".join(lines) + "\n"
+
+
+def load_leaderboard() -> dict:
+    """Live from the repo's results/ (development), else the snapshot built by scripts/build_leaderboard.py."""
+    from forensix import leaderboard
+
+    root = leaderboard.default_root()
+    if (root / "leaderboard.json").is_file():
+        return {**leaderboard.build(root), "source": "results/ (computed live)"}
+    snapshot = Path(__file__).parent / "static" / "leaderboard.json"
+    if snapshot.is_file():
+        return {**json.loads(snapshot.read_text()), "source": "packaged snapshot"}
+    return {"title": "ForensiX leaderboard", "benchmarks": [], "excluded": [], "source": "none"}
 
 
 BENCHMARK_METRICS = ("auc", "ap", "eer", "eer_percent", "balanced_acc", "real_acc", "fake_acc",

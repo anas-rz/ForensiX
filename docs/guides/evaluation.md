@@ -86,6 +86,35 @@ Bootstrap your own intervals: resample reals and fakes separately, with replacem
 recompute the metric a few thousand times. To compare two models, bootstrap the *difference* on
 the same resamples (a paired bootstrap), as `benchmark.md` does.
 
+## The leaderboard
+
+Results become public through the leaderboard: [LEADERBOARD.md](../../LEADERBOARD.md), the web
+manager's Leaderboard page, and `GET /v1/leaderboard`. All three come from one module,
+`forensix/leaderboard.py`, which recomputes every number from the raw result files. Nothing is
+typed in by hand.
+
+| Metric | How |
+|---|---|
+| AUC 95% CI | Stratified bootstrap (reals and fakes resampled separately, 2,000 times, seed 0) from per-item scores; Hanley–McNeil when only a summary exists |
+| False alarms, detections | At a fixed threshold (0.5 on `fake_prob`; "any violation" for physics), with Wilson 95% intervals |
+| EER | From per-item scores, else the run's summary (with an approximate binomial interval) |
+| Speed | Seconds per item on the recorded hardware; the Speed tab shows measured throughput |
+| Tied with #1 | The model's interval overlaps the leader's |
+
+**Adding a benchmark run:**
+1. Run the evaluation with `--out` and `--scores-out`. Per-item scores are what make the intervals
+   and rates possible; the eval scripts now save them at full precision.
+2. Put both files in `results/` and add an entry to `results/leaderboard.json`: name, task, license,
+   dataset URL and archive hash, hardware, date, commit, reproduce command, caveats. Only
+   benchmarks whose license allows commercial use belong there; list others under `excluded`
+   with the reason.
+3. Run `python scripts/build_leaderboard.py`. It rewrites `LEADERBOARD.md` and the snapshot the
+   server ships (`forensix/server/static/leaderboard.json`, used when `results/` isn't present,
+   e.g. in containers). A test fails if `LEADERBOARD.md` is out of date with `results/`.
+
+The pending benchmarks (Deepfake-Eval-2024, the ForensiX image set) are listed with their exact
+commands; once their result files exist, they appear automatically.
+
 ## Reporting
 
 Write results up like [benchmark.md](../../benchmark.md):

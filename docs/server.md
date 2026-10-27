@@ -57,6 +57,7 @@ Interactive API docs (OpenAPI) are at `http://localhost:8000/docs`, and the
 | `GET /v1/benchmarks[?model=name]` | user | Benchmark results from `benchmarks_dir` |
 | `GET /ui/` | none | The [web manager](ui.md) (static page; its API calls use your keys) |
 | `GET /v1/telemetry?window=3600[&model=name]` | user | Recent predictions and resource use of this instance, bucketed for the dashboard (in memory, since start) |
+| `GET /v1/leaderboard` | none (`public_leaderboard`) | The [leaderboard](guides/evaluation.md#the-leaderboard): every model on commercially usable benchmarks, with intervals |
 | `GET /metrics` | none | Prometheus metrics: aggregate counters only ([Observability](cloud.md#observability)) |
 | `POST /v1/datasets` | admin | Upload a labelled dataset (ZIP) for calibration ([Calibration](calibration.md)) |
 | `GET /v1/datasets`, `GET /v1/datasets/{id}` | user | Uploaded datasets and their validation summary |
@@ -199,6 +200,7 @@ seconds in-flight requests get on shutdown.
 | `ui` | `true` | Serve the web manager at `/ui/` |
 | `admin_endpoints` | `true` | Serve endpoints that change shared state (datasets, calibrations, identities). Set `false` on scaled-out inference replicas; they still pick up calibrations and galleries from the shared directories ([Kubernetes](cloud.md#kubernetes)) |
 | `metrics` | `true` | Prometheus metrics at `/metrics` |
+| `public_leaderboard` | `true` | Serve `/v1/leaderboard` without an API key (it's published benchmark data) |
 
 Example `server.json`:
 
