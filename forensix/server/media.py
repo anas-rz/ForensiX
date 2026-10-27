@@ -103,3 +103,30 @@ def bound_video(path: Path, info: MediaInfo, max_seconds: float, max_height: int
         check=True, timeout=600, capture_output=True)
     return dst, {"trimmed_to_s": max_seconds if too_long else None,
                  "scaled_to_height": max_height if too_big else None}
+
+
+AUDIO_PHYSICS = {"phys-voice", "phys-room"}
+AUDIO_IDENTITY = {"id-voice"}
+VIDEO_PHYSICS = {"phys-bloodflow", "phys-motion", "phys-lighting"}
+
+
+def applicable(name: str, family: str, info: MediaInfo) -> str | None:
+    """None if ``name`` can score this media, else why not."""
+    kind, sound = info.kind, info.kind == "audio" or info.has_audio
+    if family == "image":
+        ok = kind == "image"
+    elif family == "video" or name in VIDEO_PHYSICS:
+        ok = kind == "video"
+    elif family == "audio" or name in AUDIO_PHYSICS or name in AUDIO_IDENTITY:
+        ok = sound
+    elif family == "audiovisual":
+        ok = kind == "video" and info.has_audio
+    elif name == "physdf":
+        ok = kind != "image"
+    elif name == "id-motion":
+        ok = kind == "video"
+    elif family == "identity":
+        ok = kind in {"image", "video"}
+    else:
+        ok = True
+    return None if ok else f"{name} ({family}) doesn't score {info.modality} media"

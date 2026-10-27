@@ -17,6 +17,7 @@ person = specialized
 
 __all__ = [
     "ModelSpec",
+    "calibrate",
     "Prediction",
     "cache_dir",
     "download",
@@ -71,6 +72,15 @@ def load(name: str, device: str = "cpu", weights_path: str | Path | None = None,
     if table.model != name:
         raise ValueError(f"Calibration {calibration} is for {table.model!r}, not {name!r}")
     return CalibratedDetector(detector, table)
+
+
+def calibrate(model, real_media=None, fake_media=None, dataset=None, **kwargs):
+    """Score labelled media with ``model`` and fit its calibration: ``(Calibration, report)``.
+    ``dataset`` is a folder or ZIP in the ForensiX dataset format (``forensix.dataset``).
+    See ``forensix.calibration.calibrate`` for the options."""
+    from forensix.calibration import calibrate as _calibrate
+
+    return _calibrate(model, real_media, fake_media, dataset, **kwargs)
 
 
 def load_fusion(path: str | Path, device: str = "cpu"):

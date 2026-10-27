@@ -11,45 +11,53 @@ import secrets
 import tempfile
 import time
 import uuid
+import zipfile
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 import numpy as np
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
+from pydantic import BaseModel, Field
 
 import forensix
+from forensix.server.calibration import Jobs
 from forensix.server.config import ServerConfig
 from forensix.server.manager import NEEDS_WEIGHTS, ModelManager
-from forensix.server.media import MediaInfo, bound_video, probe, sha256_file
+from forensix.server.media import MediaInfo, applicable, bound_video, probe, sha256_file
 
 log = logging.getLogger("forensix.server")
 
-AUDIO_PHYSICS = {"phys-voice", "phys-room"}
-AUDIO_IDENTITY = {"id-voice"}
-VIDEO_PHYSICS = {"phys-bloodflow", "phys-motion", "phys-lighting"}
+VERDICTS = {("fake",): "fake", ("real",): "real", ("real", "fake"): "uncertain", (): "out_of_distribution"}
 
 
-def applicable(name: str, family: str, info: MediaInfo) -> str | None:
-    """None if ``name`` can score this media, else why not."""
-    kind, sound = info.kind, info.kind == "audio" or info.has_audio
-    if family == "image":
-        ok = kind == "image"
-    elif family == "video" or name in VIDEO_PHYSICS:
-        ok = kind == "video"
-    elif family == "audio" or name in AUDIO_PHYSICS or name in AUDIO_IDENTITY:
-        ok = sound
-    elif family == "audiovisual":
-        ok = kind == "video" and info.has_audio
-    elif name == "physdf":
-        ok = kind != "image"
-    elif name == "id-motion":
-        ok = kind == "video"
-    elif family == "identity":
-        ok = kind in {"image", "video"}
-    else:
-        ok = True
-    return None if ok else f"{name} ({family}) doesn't score {info.modality} media"
+def confidence(pred, calibration: str) -> dict:
+    """The calibrated reading of a prediction (see docs/server.md#confidence)."""
+    d = pred.details
+    return {"fake_probability": to_jsonable(pred.fake_prob), "verdict": VERDICTS[tuple(d["prediction_set"])],
+            "prediction_set": d["prediction_set"], "p_real": d["p_real"], "p_fake": d["p_fake"],
+            "alpha": d["alpha"], "calibration": calibration}
+
+
+class CalibrateRequest(BaseModel):
+    dataset: str = Field(description="Dataset id from POST /v1/datasets")
+    models: list[str] = Field(min_length=1)
+    alpha: float = Field(0.05, gt=0, lt=1, description="Target false-alarm rate on real media")
+    folds: int = Field(5, ge=2, le=20)
+    seed: int = 0
+    activate: bool = Field(True, description="Use the new calibration for predictions right away")
+    score_types: dict[str, str] = Field(default_factory=dict,
+                                        description='"raw" for models whose score is not a probability (auto-detected)')
+
+
+class CheckRequest(BaseModel):
+    dataset: str
+    models: list[str] | None = Field(None, description="Default: every model with an active calibration")
+    level: float = Field(0.01, gt=0, lt=1, description="Significance level of the drift tests")
+
+
+class ActiveRequest(BaseModel):
+    version: int | None = Field(description="Version to use for predictions; null for uncalibrated scores")
 
 
 def to_jsonable(x):
@@ -72,6 +80,7 @@ def to_jsonable(x):
 def create_app(config: ServerConfig | None = None) -> FastAPI:
     config = config or ServerConfig.load()
     manager = ModelManager(config)
+    jobs = Jobs(manager.store, manager, config)
     state = {"ready": False, "started": time.time()}
 
     @asynccontextmanager
@@ -186,14 +195,15 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
 
     # -- detection ---------------------------------------------------------------
 
-    async def save_upload(upload: UploadFile, directory: Path) -> Path:
-        limit = int(config.max_upload_mb * 1024 * 1024)
+    async def save_upload(upload: UploadFile, directory: Path, limit_mb: float | None = None) -> Path:
+        limit_mb = config.max_upload_mb if limit_mb is None else limit_mb
+        limit = int(limit_mb * 1024 * 1024)
         path, size = directory / "upload", 0
         with open(path, "wb") as f:
             while chunk := await upload.read(1 << 20):
                 size += len(chunk)
                 if size > limit:
-                    raise HTTPException(413, f"File larger than {config.max_upload_mb:g} MB")
+                    raise HTTPException(413, f"File larger than {limit_mb:g} MB")
                 f.write(chunk)
         if size == 0:
             raise HTTPException(400, "Empty file")
@@ -210,20 +220,23 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             return {"status": "not_applicable", "reason": f"{name} needs the identity form field"}
         start = time.perf_counter()
         try:
-            pred, cached = await run_in_threadpool(manager.predict, name, path, sha, identity)
+            pred, cached, calibration = await run_in_threadpool(manager.predict, name, path, sha, identity)
         except LookupError as e:  # needs trained weights
             return {"status": "unavailable", "reason": str(e)}
         except Exception as e:  # undecodable media, no face track, ...
             log.warning("%s failed: %r", name, e)
             return {"status": "error", "error": str(e)[:500], "seconds": round(time.perf_counter() - start, 3)}
-        threshold = config.thresholds.get(name, pred.threshold)
+        # a calibration sets its own threshold; config thresholds apply to uncalibrated scores
+        threshold = pred.threshold if calibration else config.thresholds.get(name, pred.threshold)
         result = {
             "status": "ok", "family": family, "score": to_jsonable(pred.fake_prob),
             "score_type": pred.score_type, "threshold": to_jsonable(threshold),
             "label": None if threshold is None else ("fake" if pred.fake_prob >= threshold else "real"),
-            "n_segments": len(pred.segment_fake_probs), "cached": cached,
+            "n_segments": len(pred.segment_fake_probs), "cached": cached, "calibration": calibration,
             "seconds": round(time.perf_counter() - start, 3),
         }
+        if calibration:
+            result["confidence"] = confidence(pred, calibration)
         if family == "video" and not pred.segment_fake_probs:
             result.update(status="no_face", label=None)  # these models return 0.5 without a face
         if segments:
@@ -232,21 +245,26 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             result["details"] = to_jsonable(pred.details)
         return result
 
+    async def prepare(upload: UploadFile, tmp: Path) -> tuple[Path, str, MediaInfo, dict | None]:
+        """Save, hash, probe and bound an upload: ``(path, sha256, info, bounded)``."""
+        raw = await save_upload(upload, tmp)
+        sha = await run_in_threadpool(sha256_file, raw)
+        try:
+            info = await run_in_threadpool(probe, raw)
+        except ValueError as e:
+            raise HTTPException(415, str(e)) from None
+        path = raw.rename(raw.with_suffix(info.suffix(Path(upload.filename or "").suffix)))
+        bounded = None
+        if info.kind == "video":
+            path, bounded = await run_in_threadpool(bound_video, path, info, config.max_video_seconds,
+                                                    config.max_video_height, tmp)
+        return path, sha, info, bounded
+
     async def detect_one(upload: UploadFile, models: list[str] | None, identity: str | None,
                          details: bool, segments: bool) -> dict:
         start = time.perf_counter()
         with tempfile.TemporaryDirectory(dir=config.tmp_dir) as tmp:
-            raw = await save_upload(upload, Path(tmp))
-            sha = await run_in_threadpool(sha256_file, raw)
-            try:
-                info = await run_in_threadpool(probe, raw)
-            except ValueError as e:
-                raise HTTPException(415, str(e)) from None
-            path = raw.rename(raw.with_suffix(info.suffix(Path(upload.filename or "").suffix)))
-            bounded = None
-            if info.kind == "video":
-                path, bounded = await run_in_threadpool(bound_video, path, info, config.max_video_seconds,
-                                                        config.max_video_height, Path(tmp))
+            path, sha, info, bounded = await prepare(upload, Path(tmp))
             names = models or config.default_models.get(info.modality, [])
             results = await asyncio.gather(*(run_model(n, path, sha, info, identity, details, segments)
                                              for n in names))
@@ -340,6 +358,109 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         if not removed:
             raise HTTPException(404, f"{identity!r} is not enrolled in {model}")
         return {"model": model, "identity": identity, "removed": True}
+
+    # -- calibration -------------------------------------------------------------
+
+    @app.post("/v1/datasets", tags=["calibration"], status_code=201, dependencies=[Depends(admin)])
+    async def upload_dataset(
+        file: UploadFile = File(..., description="ZIP in the ForensiX dataset format (manifest.csv, or real/ and fake/)"),
+        name: str | None = Form(None),
+    ):
+        """Upload a labelled dataset. It's validated and stored; calibrate models on it with POST /v1/calibrations."""
+        with tempfile.TemporaryDirectory(dir=config.tmp_dir) as tmp:
+            archive = await save_upload(file, Path(tmp), config.max_dataset_mb)
+            try:
+                return await run_in_threadpool(manager.store.add_dataset, archive, name or file.filename or "dataset",
+                                               int(config.max_dataset_mb * 1024 * 1024))
+            except (ValueError, zipfile.BadZipFile) as e:
+                raise HTTPException(422, f"Invalid dataset: {e}") from None
+
+    @app.get("/v1/datasets", tags=["calibration"], dependencies=[Depends(user)])
+    async def list_datasets():
+        return {"datasets": manager.store.datasets()}
+
+    @app.get("/v1/datasets/{dataset_id}", tags=["calibration"], dependencies=[Depends(user)])
+    async def get_dataset(dataset_id: str):
+        if (info := manager.store.dataset_info(dataset_id)) is None:
+            raise HTTPException(404, f"Unknown dataset {dataset_id!r}")
+        return info
+
+    @app.delete("/v1/datasets/{dataset_id}", tags=["calibration"], dependencies=[Depends(admin)])
+    async def delete_dataset(dataset_id: str):
+        if not manager.store.delete_dataset(dataset_id):
+            raise HTTPException(404, f"Unknown dataset {dataset_id!r}")
+        return {"id": dataset_id, "deleted": True}
+
+    def check_job_inputs(dataset: str, models: list[str]) -> None:
+        if manager.store.dataset_info(dataset) is None:
+            raise HTTPException(404, f"Unknown dataset {dataset!r}")
+        for m in models:
+            model_or_404(m)
+
+    @app.post("/v1/calibrations", tags=["calibration"], status_code=202, dependencies=[Depends(admin)])
+    async def start_calibration(req: CalibrateRequest):
+        """Calibrate models on a dataset, in the background. Poll GET /v1/jobs/{id}."""
+        check_job_inputs(req.dataset, req.models)
+        return jobs.submit("calibrate", req.model_dump())
+
+    @app.post("/v1/calibrations/check", tags=["calibration"], status_code=202, dependencies=[Depends(admin)])
+    async def start_check(req: CheckRequest):
+        """Check active calibrations against new labelled data (drift), in the background."""
+        models = req.models or [m for m in manager.store.models() if manager.store.active(m)]
+        if not models:
+            raise HTTPException(409, "No model has an active calibration")
+        check_job_inputs(req.dataset, models)
+        return jobs.submit("check", {**req.model_dump(), "models": models})
+
+    @app.get("/v1/jobs", tags=["calibration"], dependencies=[Depends(user)])
+    async def list_jobs():
+        return {"jobs": [{k: j[k] for k in ("id", "kind", "status", "created")} for j in jobs.all()]}
+
+    @app.get("/v1/jobs/{job_id}", tags=["calibration"], dependencies=[Depends(user)])
+    async def get_job(job_id: str):
+        if (job := jobs.get(job_id)) is None:
+            raise HTTPException(404, f"Unknown job {job_id!r}")
+        return to_jsonable(job)
+
+    def calibration_status(model: str) -> dict:
+        store, active = manager.store, manager.store.active(model)
+        versions = []
+        for n in store.versions(model):
+            cal, report = store.version(model, n)
+            versions.append({"version": n, "created": report.get("created", cal.created),
+                             "dataset": report.get("dataset_name"), "n_real": len(cal.real_scores),
+                             "n_fake": len(cal.fake_scores), "auc": report.get("auc"), "alpha": cal.alpha,
+                             "score_type": cal.score_type, "warnings": report.get("warnings", [])})
+        in_use = manager.calibration(model)
+        return {"model": model, "active_version": active[0] if active else None,
+                "in_use": in_use[0] if in_use else None, "versions": versions}
+
+    @app.get("/v1/calibrations", tags=["calibration"], dependencies=[Depends(user)])
+    async def list_calibrations():
+        models = sorted(set(manager.store.models()) | set(config.calibrations))
+        return {"calibrations": to_jsonable([calibration_status(m) for m in models])}
+
+    @app.get("/v1/calibrations/{model}", tags=["calibration"], dependencies=[Depends(user)])
+    async def get_calibration(model: str):
+        model_or_404(model)
+        return to_jsonable(calibration_status(model))
+
+    @app.get("/v1/calibrations/{model}/versions/{version}", tags=["calibration"], dependencies=[Depends(user)])
+    async def get_calibration_version(model: str, version: int):
+        """The fitted table (usable with forensix.load(..., calibration=...)) and its report."""
+        if (found := manager.store.version(model, version)) is None:
+            raise HTTPException(404, f"{model} has no calibration version {version}")
+        return to_jsonable({"table": found[0].to_dict(), "report": found[1]})
+
+    @app.put("/v1/calibrations/{model}/active", tags=["calibration"], dependencies=[Depends(admin)])
+    async def set_active_calibration(model: str, req: ActiveRequest):
+        """Switch the version used for predictions (roll back, or null for raw scores)."""
+        model_or_404(model)
+        try:
+            manager.store.set_active(model, req.version)
+        except KeyError as e:
+            raise HTTPException(404, str(e)) from None
+        return calibration_status(model)
 
     return app
 

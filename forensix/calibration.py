@@ -34,6 +34,7 @@ recalibration; ``drift_check`` tells you when the old calibration no longer hold
 
 import json
 import math
+import random
 from dataclasses import asdict, dataclass, field
 from datetime import date
 from pathlib import Path
@@ -241,6 +242,158 @@ def drift_check(calibration: Calibration, fake_scores=(), real_scores=(), level:
     out["tests"] = {k: round(float(v), 6) for k, v in out["tests"].items()}
     out["recalibrate"] = any(v < level for v in out["tests"].values())
     return out
+
+
+def group_folds(groups: list[str], folds: int, seed: int) -> np.ndarray:
+    unique = sorted(set(groups))
+    random.Random(seed).shuffle(unique)
+    fold_of = {g: k % folds for k, g in enumerate(unique)}
+    return np.array([fold_of[g] for g in groups])
+
+
+def _decisions(scores, is_fake, flagged) -> dict:
+    real_acc = float(np.mean(~flagged[~is_fake]))
+    fake_acc = float(np.mean(flagged[is_fake]))
+    return {"balanced_acc": round((real_acc + fake_acc) / 2, 4), "false_alarm_rate": round(1 - real_acc, 4),
+            "detection_rate": round(fake_acc, 4)}
+
+
+def _prob_metrics(probs, is_fake) -> dict:
+    p = np.clip(probs, 1e-6, 1 - 1e-6)
+    return {"brier": round(float(np.mean((p - is_fake) ** 2)), 4),
+            "log_loss": round(float(-np.mean(np.where(is_fake, np.log(p), np.log1p(-p)))), 4),
+            "ece": round(expected_calibration_error(p, is_fake), 4)}
+
+
+def cross_validate(scores, is_fake, groups, alpha, folds, seed, raw_threshold, score_type="probability") -> dict:
+    """Out-of-fold raw vs calibrated metrics (each fold calibrated on the others)."""
+    fold = group_folds(groups, folds, seed)
+    prob, flagged, p_real, p_fake = (np.zeros(len(scores)) for _ in range(4))
+    for k in range(folds):
+        test, train = fold == k, fold != k
+        if not test.any():
+            continue
+        cal = fit_calibration("cv", scores[train & is_fake], scores[train & ~is_fake], alpha,
+                              score_type=score_type)
+        prob[test] = cal.prob(scores[test])
+        flagged[test] = scores[test] > cal.threshold
+        p_real[test], p_fake[test] = cal.p_values(scores[test])
+    flagged = flagged.astype(bool)
+    in_real, in_fake = p_real > alpha, p_fake > alpha
+    covered = np.where(is_fake, in_fake, in_real)
+    size = in_real.astype(int) + in_fake.astype(int)
+    raw = {"threshold": None}  # a raw score has no default threshold or probability
+    if score_type == "probability":
+        raw = {"threshold": raw_threshold, **_decisions(scores, is_fake, scores >= raw_threshold),
+               **_prob_metrics(scores, is_fake)}
+    return {
+        "raw": raw,
+        "platt": {**_decisions(scores, is_fake, prob >= 0.5), **_prob_metrics(prob, is_fake)},
+        "conformal": {"alpha": alpha, **_decisions(scores, is_fake, flagged)},
+        "prediction_sets": {"coverage_real": round(float(covered[~is_fake].mean()), 4),
+                            "coverage_fake": round(float(covered[is_fake].mean()), 4),
+                            "single_label": round(float(np.mean(size == 1)), 4),
+                            "both_labels": round(float(np.mean(size == 2)), 4),
+                            "empty": round(float(np.mean(size == 0)), 4)},
+    }
+
+
+def calibrate_scores(model: str, scores, is_fake, groups=None, alpha: float = 0.05, folds: int = 5,
+                     seed: int = 0, source: str = "", score_type: str | None = None,
+                     raw_threshold: float | None = 0.5) -> tuple["Calibration", dict]:
+    """Fit a calibration on labelled raw scores, with an out-of-fold report.
+
+    ``groups`` keeps related items in one cross-validation fold. ``score_type``
+    defaults to ``"raw"`` when any score is outside [0, 1]. Returns
+    ``(calibration, report)``; the report has the counts, AUC/AP, the
+    ``cross_validate`` metrics and warnings about thin data.
+    """
+    from forensix.metrics import binary_summary
+
+    scores, is_fake = np.asarray(scores, np.float64), np.asarray(is_fake, bool)
+    groups = [str(i) for i in range(len(scores))] if groups is None else [str(g) for g in groups]
+    ok = np.isfinite(scores)
+    scores, is_fake, groups = scores[ok], is_fake[ok], [g for g, k in zip(groups, ok) if k]
+    if score_type is None:
+        score_type = "raw" if np.any((scores < 0) | (scores > 1)) else "probability"
+    report = {"model": model, "n_real": int((~is_fake).sum()), "n_fake": int(is_fake.sum()),
+              "score_type": score_type, "alpha": alpha, "warnings": []}
+    if report["n_real"] < 2 or report["n_fake"] < 2:
+        raise ValueError(f"{model}: need at least 2 scored real and 2 scored fake items, "
+                         f"got {report['n_real']} and {report['n_fake']}")
+    report.update({k: v for k, v in binary_summary(scores[is_fake], scores[~is_fake], None).items()
+                   if k in ("auc", "ap")})
+    n_groups = len(set(groups))
+    if n_groups >= 2:
+        try:
+            report["cv"] = cross_validate(scores, is_fake, groups, alpha, min(folds, n_groups), seed,
+                                          0.5 if raw_threshold is None else raw_threshold, score_type)
+        except ValueError as e:  # a fold's training part lacks a class
+            report["warnings"].append(f"cross-validation skipped: {e}")
+    cal = fit_calibration(model, scores[is_fake], scores[~is_fake], alpha, source, score_type)
+    report.update(conformal_threshold=None if math.isinf(cal.threshold) else cal.threshold, platt=list(cal.platt))
+    if math.isinf(cal.threshold):
+        report["warnings"].append(f"{report['n_real']} real items are too few for alpha={alpha}: "
+                                  f"the conformal threshold never flags; add real items or raise alpha")
+    if min(report["n_real"], report["n_fake"]) < 50:
+        report["warnings"].append("fewer than 50 items in a class: probabilities and rates are rough")
+    if report["auc"] < 0.6:
+        report["warnings"].append(f"AUC {report['auc']:.2f}: the model barely separates this data; "
+                                  "calibration can't fix that")
+    return cal, report
+
+
+def calibrate(model, real_media=None, fake_media=None, dataset=None, alpha: float = 0.05, folds: int = 5,
+              seed: int = 0, source: str = "", score_type: str | None = None, device: str = "cpu",
+              **load_options) -> tuple["Calibration", dict]:
+    """Score labelled media with a detector and fit its calibration in one call.
+
+    Give either ``dataset`` (a folder or ZIP in the ForensiX dataset format, see
+    ``forensix.dataset``) or ``real_media`` and ``fake_media`` lists. ``model`` is
+    a registered name (loaded on ``device`` with ``load_options``) or a loaded,
+    uncalibrated detector. Media the detector can't score are skipped and listed
+    in the report.
+
+        cal, report = forensix.calibrate("dfdet-clip", dataset="my_data.zip", device="cuda")
+        cal.save("calibrations/dfdet-clip.json")
+        det = forensix.load("dfdet-clip", device="cuda", calibration="calibrations/dfdet-clip.json")
+    """
+    import tempfile
+
+    from forensix.dataset import Item, extract_dataset, read_dataset
+
+    with tempfile.TemporaryDirectory() as tmp:
+        if dataset is not None:
+            root = Path(dataset)
+            if root.is_file():
+                root = extract_dataset(root, tmp)
+            data = read_dataset(root)
+            items, source = data.items, source or f"dataset:{Path(dataset).name}"
+        elif real_media is not None and fake_media is not None:
+            items = ([Item(Path(m), "real", str(m)) for m in real_media]
+                     + [Item(Path(m), "fake", str(m)) for m in fake_media])
+        else:
+            raise ValueError("Give a dataset, or both real_media and fake_media")
+        if isinstance(model, str):
+            import forensix
+
+            detector, name = forensix.load(model, device=device, **load_options), model
+        else:
+            detector, name = model, model.name
+        scores, skipped, anomaly = np.full(len(items), np.nan), [], False
+        for i, item in enumerate(items):
+            try:
+                pred = (detector.predict(item.path, identity=item.identity) if item.identity
+                        else detector.predict(item.path))
+            except Exception as e:  # undecodable, no face, too short
+                skipped.append({"file": str(item.path), "error": f"{type(e).__name__}: {e}"})
+                continue
+            scores[i], anomaly = pred.fake_prob, anomaly or pred.score_type == "anomaly"
+    cal, report = calibrate_scores(name, scores, [i.is_fake for i in items], [i.group for i in items], alpha,
+                                   folds, seed, source, score_type or ("raw" if anomaly else None),
+                                   getattr(detector, "threshold", None))
+    report["skipped"] = skipped
+    return cal, report
 
 
 class CalibratedDetector:

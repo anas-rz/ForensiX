@@ -17,6 +17,7 @@ preprocessing details and parity checks against upstream code.
 | Look up a function, class or field | [API reference](api-reference.md) |
 | Copy working code for a common task | [Recipes](recipes.md) |
 | Call the detectors over HTTP | [HTTP server](server.md) |
+| Calibrate models on your own labelled data, and get predictions with confidence | [Calibration](calibration.md) |
 | Run ForensiX as a service over large volumes of media | [Deployment at scale](deployment.md) |
 
 ## Guides

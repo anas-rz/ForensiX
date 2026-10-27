@@ -46,7 +46,7 @@ from pathlib import Path
 
 import numpy as np
 
-from forensix.calibration import Calibration, drift_check, expected_calibration_error, fit_calibration
+from forensix.calibration import Calibration, cross_validate, drift_check, fit_calibration
 from forensix.metrics import binary_summary
 
 DRIFT_EXIT_CODE = 3
@@ -74,60 +74,6 @@ def labelled(rows: list[dict], model: str) -> tuple[np.ndarray, np.ndarray, list
     idx = [i for i, r in enumerate(rows) if np.isfinite(r["scores"].get(model, np.nan))]
     scores = np.array([rows[i]["scores"][model] for i in idx])
     return scores, np.array([rows[i]["label"] == "fake" for i in idx]), idx
-
-
-def group_folds(groups: list[str], folds: int, seed: int) -> np.ndarray:
-    unique = sorted(set(groups))
-    random.Random(seed).shuffle(unique)
-    fold_of = {g: k % folds for k, g in enumerate(unique)}
-    return np.array([fold_of[g] for g in groups])
-
-
-def _decisions(scores, is_fake, flagged) -> dict:
-    real_acc = float(np.mean(~flagged[~is_fake]))
-    fake_acc = float(np.mean(flagged[is_fake]))
-    return {"balanced_acc": round((real_acc + fake_acc) / 2, 4), "false_alarm_rate": round(1 - real_acc, 4),
-            "detection_rate": round(fake_acc, 4)}
-
-
-def _prob_metrics(probs, is_fake) -> dict:
-    p = np.clip(probs, 1e-6, 1 - 1e-6)
-    return {"brier": round(float(np.mean((p - is_fake) ** 2)), 4),
-            "log_loss": round(float(-np.mean(np.where(is_fake, np.log(p), np.log1p(-p)))), 4),
-            "ece": round(expected_calibration_error(p, is_fake), 4)}
-
-
-def cross_validate(scores, is_fake, groups, alpha, folds, seed, raw_threshold, score_type="probability") -> dict:
-    """Out-of-fold raw vs calibrated metrics (each fold calibrated on the others)."""
-    fold = group_folds(groups, folds, seed)
-    prob, flagged, p_real, p_fake = (np.zeros(len(scores)) for _ in range(4))
-    for k in range(folds):
-        test, train = fold == k, fold != k
-        if not test.any():
-            continue
-        cal = fit_calibration("cv", scores[train & is_fake], scores[train & ~is_fake], alpha,
-                              score_type=score_type)
-        prob[test] = cal.prob(scores[test])
-        flagged[test] = scores[test] > cal.threshold
-        p_real[test], p_fake[test] = cal.p_values(scores[test])
-    flagged = flagged.astype(bool)
-    in_real, in_fake = p_real > alpha, p_fake > alpha
-    covered = np.where(is_fake, in_fake, in_real)
-    size = in_real.astype(int) + in_fake.astype(int)
-    raw = {"threshold": None}  # a raw score has no default threshold or probability
-    if score_type == "probability":
-        raw = {"threshold": raw_threshold, **_decisions(scores, is_fake, scores >= raw_threshold),
-               **_prob_metrics(scores, is_fake)}
-    return {
-        "raw": raw,
-        "platt": {**_decisions(scores, is_fake, prob >= 0.5), **_prob_metrics(prob, is_fake)},
-        "conformal": {"alpha": alpha, **_decisions(scores, is_fake, flagged)},
-        "prediction_sets": {"coverage_real": round(float(covered[~is_fake].mean()), 4),
-                            "coverage_fake": round(float(covered[is_fake].mean()), 4),
-                            "single_label": round(float(np.mean(size == 1)), 4),
-                            "both_labels": round(float(np.mean(size == 2)), 4),
-                            "empty": round(float(np.mean(size == 0)), 4)},
-    }
 
 
 def cmd_fit(args) -> None:

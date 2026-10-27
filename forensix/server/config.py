@@ -26,8 +26,11 @@ class ServerConfig:
     weights: dict[str, str] = field(default_factory=dict)
     # decision thresholds that replace a model's default, e.g. {"dfdet-clip": 0.71}
     thresholds: dict[str, float] = field(default_factory=dict)
-    # calibration tables (forensix.calibration), e.g. {"syncnet": "/cal/syncnet.json"}
+    # calibration tables (forensix.calibration), e.g. {"syncnet": "/cal/syncnet.json"};
+    # a version fitted and activated through /v1/calibrations takes precedence
     calibrations: dict[str, str] = field(default_factory=dict)
+    # where calibration data and fitted versions are kept; None keeps them in memory
+    calibration_dir: str | None = None
     # model options passed to forensix.load, e.g. {"aasist": {"clip_score": "first"}}
     options: dict[str, dict] = field(default_factory=dict)
     # fusion tables (forensix.fusion) served as models under these names, e.g. {"av-fusion": "/f/av.json"}
@@ -39,6 +42,8 @@ class ServerConfig:
     # results kept per (file hash, model); 0 disables the cache
     result_cache_size: int = 10000
     max_upload_mb: float = 500.0
+    # labelled datasets uploaded for calibration (ZIP size, and size once extracted)
+    max_dataset_mb: float = 20000.0
     # longer or larger videos are re-encoded within these limits before scoring
     max_video_seconds: float = 60.0
     max_video_height: int = 720

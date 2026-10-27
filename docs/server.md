@@ -52,6 +52,15 @@ Interactive API docs (OpenAPI) are at `http://localhost:8000/docs`.
 | `POST /v1/identities/{identity}?model=id-face` | admin | Enroll a person from photos, videos or (for `id-voice`) recordings (`files`) |
 | `DELETE /v1/identities/{identity}?model=id-face` | admin | Remove a person |
 | `GET /v1/stats` | user | Per-model load time, calls, errors, cache hits, latency, batch size |
+| `POST /v1/datasets` | admin | Upload a labelled dataset (ZIP) for calibration ([Calibration](calibration.md)) |
+| `GET /v1/datasets`, `GET /v1/datasets/{id}` | user | Uploaded datasets and their validation summary |
+| `DELETE /v1/datasets/{id}` | admin | Delete a dataset |
+| `POST /v1/calibrations` | admin | Start a job that calibrates models on a dataset |
+| `POST /v1/calibrations/check` | admin | Start a job that checks active calibrations against new data (drift) |
+| `GET /v1/jobs`, `GET /v1/jobs/{id}` | user | Job status, progress and reports |
+| `GET /v1/calibrations`, `GET /v1/calibrations/{model}` | user | Calibration versions per model and the one in use |
+| `GET /v1/calibrations/{model}/versions/{n}` | user | A fitted table and its report |
+| `PUT /v1/calibrations/{model}/active` | admin | Switch, roll back or turn off a model's calibration |
 
 ### `POST /v1/detect`
 
@@ -82,7 +91,7 @@ Every requested model gets an entry in `results`, with a `status`:
 
 | `status` | Meaning | Other fields |
 |---|---|---|
-| `ok` | Scored | `score`, `score_type`, `threshold`, `label`, `n_segments`, `cached`, `seconds`, optional `segments` and `details` |
+| `ok` | Scored | `score`, `score_type`, `threshold`, `label`, `n_segments`, `cached`, `seconds`, `calibration` (version in use or `null`), `confidence` (when calibrated), optional `segments` and `details` |
 | `no_face` | A video model found no face. Its score is the meaningless 0.5, and `label` is `null` | as `ok` |
 | `not_applicable` | The model can't score this media (an image model on audio), or an identity model got no `identity` | `reason` |
 | `unavailable` | The model needs weights you train (`avcons`, `avid`, `id-motion`, `person-detector`) and none are configured | `reason` |
@@ -92,9 +101,11 @@ One model failing never fails the request. Request-level errors: `401` wrong or 
 `404` unknown model name, `400` empty file, `413` file too large, `415` not an image, video or
 audio file.
 
-**Reading scores.** `score` is the model's `fake_prob`: higher means more likely fake. Scores
+**Reading scores.** `score` is the model's `fake_prob`: higher means more likely fake. Raw scores
 are **not comparable across models**. `threshold` is the configured override or the model's
-default, and `label` applies it. Anomaly-type models (`syncnet`, `avad`, physics) have
+default, and `label` applies it. With a calibration in use, `score` is a calibrated probability,
+`threshold` the calibration's (with a false-alarm guarantee), and `confidence` gives the verdict
+and p-values ([Calibration](calibration.md#predictions-with-confidence)). Anomaly-type models (`syncnet`, `avad`, physics) have
 `threshold: null` and `label: null` until you configure a threshold for them. See
 [Interpreting scores](guides/interpreting-scores.md); defaults are often wrong for a new domain.
 
@@ -157,7 +168,7 @@ environment variables, then command-line flags.
 | `max_loaded` | `8` | Models in memory at once; the least recently used one is unloaded beyond this |
 | `weights` | `{}` | Checkpoints for models you trained: `{"avcons": "/models/avcons.safetensors"}` |
 | `thresholds` | `{}` | Decision thresholds replacing model defaults: `{"dfdet-clip": 0.71, "syncnet": -2.0}` |
-| `calibrations` | `{}` | Calibration tables (`forensix.calibration`) per model: `{"syncnet": "/cal/syncnet.json"}`. Scores become calibrated probabilities, and `details` gains the raw score, conformal p-values and prediction set |
+| `calibrations` | `{}` | Fixed calibration tables per model: `{"syncnet": "/cal/syncnet.json"}`. A version fitted and activated through the API takes precedence ([Calibration](calibration.md)) |
 | `options` | `{}` | Model options passed to `forensix.load`: `{"aasist": {"clip_score": "first"}}` |
 | `fusions` | `{}` | Fusion tables (`forensix.fusion`) served as models under these names: `{"av-fusion": "/f/av.json"}`. A fusion applies only to media all its members can score |
 | `default_models` | see above | Models per media type: keys `image`, `video`, `video+audio`, `audio` |
@@ -168,6 +179,8 @@ environment variables, then command-line flags.
 | `max_video_seconds` | `60` | Longer videos are trimmed to this before scoring |
 | `max_video_height` | `720` | Taller videos are downscaled to this before scoring |
 | `gallery_dir` | none | Where identity galleries are saved |
+| `calibration_dir` | none (temporary) | Where uploaded datasets, fitted calibration versions and job records are kept. Set it, or they're lost on restart |
+| `max_dataset_mb` | `20000` | Largest dataset ZIP, and largest size once extracted |
 | `api_key` | none | Required for user endpoints when set (`X-API-Key` header or `Authorization: Bearer`) |
 | `admin_key` | none | Required for load/unload and enrollment when set; falls back to `api_key` |
 | `tmp_dir` | system temp | Where uploads are written while being scored |

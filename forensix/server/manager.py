@@ -5,6 +5,7 @@ import queue
 import threading
 import time
 from collections import OrderedDict
+from types import SimpleNamespace
 from concurrent.futures import Future
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -12,6 +13,8 @@ from pathlib import Path
 import numpy as np
 
 import forensix
+from forensix.calibration import Calibration, CalibratedDetector
+from forensix.server.calibration import CalibrationStore
 from forensix.server.config import ServerConfig
 from forensix.types import Prediction
 
@@ -21,13 +24,6 @@ log = logging.getLogger("forensix.server")
 BATCHED_FAMILIES = {"image", "audio"}
 # models that only work after training, so they need a checkpoint in ServerConfig.weights
 NEEDS_WEIGHTS = {"avcons", "avid", "id-motion", "person-detector"}
-
-
-def _base(detector):
-    """The detector inside a calibration wrapper (galleries live on the wrapped one)."""
-    from forensix.calibration import CalibratedDetector
-
-    return detector.detector if isinstance(detector, CalibratedDetector) else detector
 
 
 @dataclass
@@ -114,6 +110,18 @@ class ModelManager:
         self._loading: dict[str, threading.Lock] = {}
         self._results: "OrderedDict[tuple, Prediction]" = OrderedDict()
         self._results_lock = threading.Lock()
+        # detectors stay uncalibrated; calibrations apply to their predictions, so a new
+        # table takes effect without reloading the model and calibration data is scored raw
+        self.store = CalibrationStore(config.calibration_dir)
+        self._static = {name: Calibration.load(path) for name, path in config.calibrations.items()}
+
+    def calibration(self, name: str) -> tuple[str, Calibration] | None:
+        """``(version, table)`` in use for ``name``: the active fitted version, else the config's table."""
+        if active := self.store.active(name):
+            return f"v{active[0]}", active[1]
+        if name in self._static:
+            return "config", self._static[name]
+        return None
 
     # -- loading -----------------------------------------------------------------
 
@@ -157,14 +165,13 @@ class ModelManager:
                 raise LookupError(f"{name} has no pretrained weights; train it and set weights[{name!r}] "
                                   "in the server config")
             detector = forensix.load(name, device=self.config.device, weights_path=weights,
-                                     calibration=self.config.calibrations.get(name),
                                      **self.config.options.get(name, {}))
         family = self.family(name)
         entry = Entry(name, family, detector)
         if family == "identity":
             gallery = self._gallery_path(name)
             if gallery and gallery.exists():
-                _base(detector).load_gallery(gallery)
+                detector.load_gallery(gallery)
         if family in BATCHED_FAMILIES and self.config.max_batch > 1:
             entry.batcher = Batcher(entry, self.config.max_batch, self.config.batch_wait_ms)
         if self.config.warmup:
@@ -208,8 +215,17 @@ class ModelManager:
 
     # -- scoring -----------------------------------------------------------------
 
-    def predict(self, name: str, path: Path, sha256: str, identity: str | None = None) -> tuple[Prediction, bool]:
-        """``(prediction, from_cache)``. Blocking: call it from a worker thread."""
+    def predict(self, name: str, path: Path, sha256: str, identity: str | None = None,
+                raw: bool = False) -> tuple[Prediction, bool, str | None]:
+        """``(prediction, from_cache, calibration_version)``; ``raw`` skips calibration.
+        Blocking: call it from a worker thread."""
+        pred, cached = self._predict_raw(name, path, sha256, identity)
+        cal = None if raw else self.calibration(name)
+        if cal is None:
+            return pred, cached, None
+        return CalibratedDetector(SimpleNamespace(name=name), cal[1]).calibrate(pred), cached, cal[0]
+
+    def _predict_raw(self, name: str, path: Path, sha256: str, identity: str | None) -> tuple[Prediction, bool]:
         entry = self.get(name)
         key = (sha256, name, self.config.weights.get(name), identity, entry.gallery_version)
         cached = self._cache_get(key)
@@ -264,7 +280,7 @@ class ModelManager:
         if entry.family != "identity":
             raise ValueError(f"{name} is not an identity model")
         with entry.lock:
-            result = _base(entry.detector).enroll(identity, paths)
+            result = entry.detector.enroll(identity, paths)
             entry.gallery_version += 1
             self._save_gallery(entry)
         return result
@@ -272,9 +288,9 @@ class ModelManager:
     def remove_identity(self, name: str, identity: str) -> bool:
         entry = self.get(name)
         with entry.lock:
-            if identity not in _base(entry.detector).gallery:
+            if identity not in entry.detector.gallery:
                 return False
-            _base(entry.detector).gallery.remove(identity)
+            entry.detector.gallery.remove(identity)
             entry.gallery_version += 1
             self._save_gallery(entry)
         return True
@@ -282,13 +298,13 @@ class ModelManager:
     def identities(self, name: str) -> list[str]:
         entry = self.get(name)
         with entry.lock:
-            return _base(entry.detector).gallery.names()
+            return entry.detector.gallery.names()
 
     def _save_gallery(self, entry: Entry) -> None:
         path = self._gallery_path(entry.name)
         if path:
             path.parent.mkdir(parents=True, exist_ok=True)
-            _base(entry.detector).save_gallery(path)
+            entry.detector.save_gallery(path)
 
     # -- status ------------------------------------------------------------------
 

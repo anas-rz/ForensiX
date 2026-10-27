@@ -242,3 +242,126 @@ def test_fusion_table_is_served_as_a_model(tmp_path):
         assert r["status"] == "ok" and r["family"] == "fusion" and r["label"] == "fake"
         r = detect(c, wav(0.1), models="img-fusion").json()["results"]["img-fusion"]
         assert r["status"] == "not_applicable"      # its member is an image model
+
+
+# -- calibration from labelled datasets ------------------------------------------------
+
+def make_dataset(root, n=30, layout="manifest"):
+    """Toy-image data: reals dark, fakes bright, some overlap; pairs share a group."""
+    root.mkdir(parents=True, exist_ok=True)
+    rows = ["file,label,group"]
+    for i in range(n):
+        for label, value in (("real", 10 + 4 * i), ("fake", 120 + 4 * i)):
+            rel = f"{label}/{i}.png" if layout == "folders" else f"media/{label}_{i}.png"
+            (root / rel).parent.mkdir(parents=True, exist_ok=True)
+            (root / rel).write_bytes(png(value))
+            rows.append(f"{rel},{label},pair{i}")
+    if layout == "manifest":
+        (root / "manifest.csv").write_text("\n".join(rows) + "\n")
+    return root
+
+
+def zip_folder(folder, dest):
+    import shutil
+
+    return shutil.make_archive(str(dest), "zip", root_dir=folder.parent, base_dir=folder.name)
+
+
+def test_read_dataset_layouts_and_problems(tmp_path):
+    from forensix.dataset import read_dataset
+
+    d = make_dataset(tmp_path / "m", n=3)
+    with open(d / "manifest.csv", "a") as f:
+        f.write("media/missing.png,real,\nmedia/real_0.png,maybe,\n../outside.png,fake,\n")
+    data = read_dataset(d)
+    assert (data.n_real, data.n_fake, data.layout) == (3, 3, "manifest")
+    assert {i.group for i in data.items} == {"pair0", "pair1", "pair2"}
+    assert len(data.problems) == 3 and any("outside" in p for p in data.problems)
+    folders = read_dataset(make_dataset(tmp_path / "f", n=2, layout="folders"))
+    assert (folders.n_real, folders.n_fake, folders.layout) == (2, 2, "folders")
+    with pytest.raises(ValueError):
+        read_dataset(tmp_path / "f" / "real")      # no manifest, no real/ and fake/
+
+
+def test_extract_dataset_rejects_unsafe_archives(tmp_path):
+    import zipfile
+
+    from forensix.dataset import extract_dataset
+
+    bad = tmp_path / "bad.zip"
+    with zipfile.ZipFile(bad, "w") as zf:
+        zf.writestr("../evil.txt", "x")
+    with pytest.raises(ValueError, match="Unsafe"):
+        extract_dataset(bad, tmp_path / "out")
+    root = extract_dataset(zip_folder(make_dataset(tmp_path / "nested", n=2), tmp_path / "ok"), tmp_path / "out2")
+    assert (root / "manifest.csv").exists()        # found one level down
+
+
+def test_library_calibrate_from_dataset(tmp_path):
+    archive = zip_folder(make_dataset(tmp_path / "data"), tmp_path / "data")
+    cal, report = forensix.calibrate("toy-image", dataset=archive)
+    assert (report["n_real"], report["n_fake"]) == (30, 30) and report["auc"] > 0.99
+    assert report["cv"]["conformal"]["false_alarm_rate"] <= 0.1 and report["skipped"] == []
+    assert cal.prob(0.9) > 0.9 > 0.1 > cal.prob(0.05)
+
+
+def wait_for(c, job_id, timeout=60):
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        job = c.get(f"/v1/jobs/{job_id}").json()
+        if job["status"] in ("done", "failed"):
+            return job
+        time.sleep(0.1)
+    raise TimeoutError(job)
+
+
+def test_calibrate_from_uploaded_dataset_and_predict_with_confidence(tmp_path):
+    archive = zip_folder(make_dataset(tmp_path / "data"), tmp_path / "data")
+    with client(calibration_dir=str(tmp_path / "cal")) as c:
+        before = detect(c, png(200)).json()["results"]["toy-image"]
+        assert before["calibration"] is None and "confidence" not in before
+
+        with open(archive, "rb") as f:
+            info = c.post("/v1/datasets", files={"file": ("data.zip", f)}, data={"name": "toy"}).json()
+        assert (info["n_real"], info["n_fake"], info["n_groups"]) == (30, 30, 30)
+
+        job = c.post("/v1/calibrations", json={"dataset": info["id"], "models": ["toy-image"]}).json()
+        job = wait_for(c, job["id"])
+        res = job["results"]["toy-image"]
+        assert job["status"] == "done" and res["version"] == 1 and res["activated"] and res["auc"] > 0.99
+
+        fake = detect(c, png(250)).json()["results"]["toy-image"]
+        real = detect(c, png(20)).json()["results"]["toy-image"]
+        assert fake["calibration"] == real["calibration"] == "v1"
+        assert fake["label"] == "fake" and fake["confidence"]["verdict"] == "fake"
+        assert real["label"] == "real" and real["confidence"]["verdict"] == "real"
+        assert fake["confidence"]["fake_probability"] > 0.9 > 0.1 > real["confidence"]["fake_probability"]
+
+        status = c.get("/v1/calibrations/toy-image").json()
+        assert status["active_version"] == 1 and status["versions"][0]["n_real"] == 30
+        table = c.get("/v1/calibrations/toy-image/versions/1").json()["table"]
+        assert table["model"] == "toy-image" and table["format"] == "forensix-calibration/1"
+
+        check = wait_for(c, c.post("/v1/calibrations/check", json={"dataset": info["id"]}).json()["id"])
+        assert check["results"]["toy-image"]["recalibrate"] is False    # same data: no drift
+
+        assert c.put("/v1/calibrations/toy-image/active", json={"version": None}).json()["in_use"] is None
+        assert "confidence" not in detect(c, png(250)).json()["results"]["toy-image"]
+        assert c.put("/v1/calibrations/toy-image/active", json={"version": 7}).status_code == 404
+
+    with client(calibration_dir=str(tmp_path / "cal")) as c:        # versions survive a restart
+        assert c.get("/v1/calibrations/toy-image").json()["versions"][0]["version"] == 1
+
+
+def test_dataset_upload_errors(tmp_path):
+    with client() as c:
+        r = c.post("/v1/datasets", files={"file": ("x.zip", b"not a zip")})
+        assert r.status_code == 422
+        empty = tmp_path / "empty"
+        (empty / "real").mkdir(parents=True)
+        (empty / "fake").mkdir()
+        (empty / "real" / "notes.txt").write_text("hi")
+        with open(zip_folder(empty, tmp_path / "empty"), "rb") as f:
+            r = c.post("/v1/datasets", files={"file": ("e.zip", f)})
+        assert r.status_code == 422 and "no usable items" in r.json()["detail"]
+        assert c.post("/v1/calibrations", json={"dataset": "nope", "models": ["toy-image"]}).status_code == 404
