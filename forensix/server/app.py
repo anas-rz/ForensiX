@@ -30,6 +30,7 @@ from forensix.server.calibration import Jobs
 from forensix.server.config import ServerConfig
 from forensix.server.manager import NEEDS_WEIGHTS, ModelManager
 from forensix.server.media import MediaInfo, applicable, bound_video, probe, sha256_file
+from forensix.server.telemetry import Telemetry
 
 log = logging.getLogger("forensix.server")
 
@@ -105,6 +106,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     config = config or ServerConfig.load()
     manager = ModelManager(config)
     jobs = Jobs(manager.store, manager, config)
+    telemetry = Telemetry()
     state = {"ready": False, "started": time.time()}
 
     @asynccontextmanager
@@ -117,11 +119,14 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             log.warning("default models not preloaded (loaded, and downloaded if needed, on first request): %s",
                         ", ".join(lazy))
         state["ready"] = True
+        telemetry.start_sampler(lambda: {"models_loaded": len(manager.loaded())})
         yield
+        telemetry.stop()
 
     app = FastAPI(title="ForensiX", version=_version(), lifespan=lifespan,
                   description="Deepfake and manipulated-media detection with ForensiX models.")
     app.state.manager = manager
+    app.state.telemetry = telemetry
     app.state.config = config
 
     def check_key(request: Request, admin: bool = False) -> None:
@@ -206,6 +211,14 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         rows = benchmarks_cache["rows"]
         return {"benchmarks": [r for r in rows if model is None or r["model"] == model]}
 
+    @app.get("/v1/telemetry", tags=["service"], dependencies=[Depends(user)])
+    async def get_telemetry(window: int = Query(3600, description="Seconds: 900, 3600, 21600 or 86400"),
+                            model: str | None = None):
+        """Recent predictions and resource use of this instance, bucketed for the dashboard."""
+        if model is not None:
+            model_or_404(model)
+        return to_jsonable(await run_in_threadpool(telemetry.summary, window, model))
+
     @app.get("/v1/stats", tags=["service"], dependencies=[Depends(user)])
     async def stats():
         return {"uptime_s": round(time.time() - state["started"], 1), "device": config.device,
@@ -286,7 +299,9 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             return {"status": "unavailable", "reason": str(e)}
         except Exception as e:  # undecodable media, no face track, ...
             log.warning("%s failed: %r", name, e)
-            return {"status": "error", "error": str(e)[:500], "seconds": round(time.perf_counter() - start, 3)}
+            result = {"status": "error", "error": str(e)[:500], "seconds": round(time.perf_counter() - start, 3)}
+            telemetry.record(name, family, info.modality, result)
+            return result
         # a calibration sets its own threshold; config thresholds apply to uncalibrated scores
         threshold = pred.threshold if calibration else config.thresholds.get(name, pred.threshold)
         result = {
@@ -300,6 +315,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             result["confidence"] = confidence(pred, calibration)
         if family == "video" and not pred.segment_fake_probs:
             result.update(status="no_face", label=None)  # these models return 0.5 without a face
+        telemetry.record(name, family, info.modality, result)
         if segments:
             result["segments"] = to_jsonable(pred.segment_fake_probs)
         if details:

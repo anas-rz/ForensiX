@@ -178,10 +178,11 @@ function labelMark(label) {
 
 // -- charts ----------------------------------------------------------------------------
 
-function niceTicks(max, count = 4) {
+function niceTicks(max, count = 4, integer = false) {
   if (!(max > 0)) return [0, 1];
   const raw = max / count, mag = 10 ** Math.floor(Math.log10(raw));
-  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw);
+  let step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw);
+  if (integer) step = Math.max(1, Math.ceil(step));
   const ticks = [];
   for (let v = 0; v <= max + step * 0.001; v += step) ticks.push(+v.toFixed(10));
   if (ticks[ticks.length - 1] < max) ticks.push(+(ticks[ticks.length - 1] + step).toFixed(10));
@@ -234,7 +235,7 @@ function scoreHistogram({ real, fake, threshold, scoreType }) {
   const W = 640, H = 230, m = { l: 36, r: 12, t: 22, b: 30 };
   const pw = W - m.l - m.r, ph = H - m.t - m.b;
   const maxC = Math.max(1, ...counts.real, ...counts.fake);
-  const yt = niceTicks(maxC, 4), yMax = yt[yt.length - 1];
+  const yt = niceTicks(maxC, 4, true), yMax = yt[yt.length - 1];
   const xs = (v) => m.l + ((v - lo) / (hi - lo)) * pw;
   const ys = (c) => m.t + ph - (c / yMax) * ph;
   const band = pw / bins, gap = 2, bw = Math.min(24, (band - gap * 3) / 2);
@@ -282,11 +283,12 @@ function scoreHistogram({ real, fake, threshold, scoreType }) {
  * items: [{label, value, display}] */
 function hBars(items, { valueLabel = "" } = {}) {
   const max = Math.max(...items.map((d) => d.value).filter(isNum), 1e-9);
+  const reserve = Math.max(48, ...items.map((d) => String(d.display).length * 7.2 + 12));  // px for the value label
   return el("div", { class: "hbars", role: "img", "aria-label": valueLabel }, items.map((d) => {
     const row = el("div", { class: "hbar-row", tabindex: "0" },
       el("span", { class: "hbar-label", text: d.label }),
       el("span", { class: "hbar-track" },
-        el("span", { class: "hbar mark", style: { width: `calc((100% - 72px) * ${isNum(d.value) ? Math.max(0.005, d.value / max) : 0})` } }),
+        el("span", { class: "hbar mark", style: { width: `calc((100% - ${reserve}px) * ${isNum(d.value) ? Math.max(0.005, d.value / max) : 0})` } }),
         el("span", { class: "hbar-value", text: d.display })));
     const tipRows = [{ value: d.display, label: `${d.label} · ${valueLabel}`, color: "var(--series-1)", key: "rect" }];
     row.addEventListener("pointermove", (e) => showTip(e, tipRows));
@@ -349,7 +351,8 @@ function tiles(list) {
   return el("div", { class: "tiles" }, list.map((t) => el("div", { class: "tile" },
     el("div", { class: "label", text: t.label }),
     el("div", { class: "value" }, t.value),
-    t.note ? el("div", { class: "note", text: t.note }) : null)));
+    t.note ? el("div", { class: "note", text: t.note }) : null,
+    t.spark ? miniSpark(t.spark) : null)));
 }
 
 // -- router ----------------------------------------------------------------------------
@@ -399,42 +402,337 @@ async function refreshServerLine() {
   }
 }
 
-// -- overview --------------------------------------------------------------------------
+// -- overview dashboard -------------------------------------------------------------------
+
+const OUTCOMES = ["real", "fake", "uncertain", "error"];
+const OUTCOME_STYLE = {
+  real: { color: "var(--good)", label: "Real", status: "good" },
+  fake: { color: "var(--critical)", label: "Fake", status: "critical" },
+  uncertain: { color: "var(--warning)", label: "Uncertain / no decision", status: "warning" },
+  error: { color: "var(--serious)", label: "Error", status: "serious" },
+};
+const WINDOWS = [[900, "15 min"], [3600, "1 hour"], [21600, "6 hours"], [86400, "24 hours"]];
+
+function statusKey(kind) {
+  const s = STATUS[kind];
+  return el("span", { class: "status-icon small-icon " + (s.cls || ""), style: { background: s.color }, "aria-hidden": "true", text: s.icon });
+}
+function outcomeLegend() {
+  return el("div", { class: "legend" }, OUTCOMES.map((o) => el("span", {}, statusKey(OUTCOME_STYLE[o].status), OUTCOME_STYLE[o].label)));
+}
+const clock = (t, withSeconds = false) => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...(withSeconds ? { second: "2-digit" } : {}) });
+const share = (a, b) => (b ? a / b : null);
+const mem = (mb) => (!isNum(mb) ? "—" : mb >= 1000 ? `${(mb / 1024).toFixed(mb >= 10240 ? 0 : 1)} GB` : `${Math.round(mb)} MB`);
+
+/** Stacked columns over time: one column per bucket, segments per outcome. */
+function outcomeColumns(series, width) {
+  const H = 210, m = { l: 38, r: 8, t: 10, b: 26 };
+  const W = Math.max(280, width), pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const n = series.length, band = pw / n, bw = Math.max(2, Math.min(24, band - 2));
+  const yt = niceTicks(Math.max(1, ...series.map((b) => b.n)), 4, true), yMax = yt[yt.length - 1];
+  const ys = (v) => m.t + ph - (v / yMax) * ph;
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img", "aria-label": "Requests over time by outcome" });
+  yt.forEach((t) => {
+    svg.append(sv("line", { class: "gridline", x1: m.l, x2: W - m.r, y1: ys(t), y2: ys(t) }));
+    svg.append(sv("text", { class: "axis-label", x: m.l - 6, y: ys(t) + 4, "text-anchor": "end" }, compact(t)));
+  });
+  const every = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(pw / 70))));
+  series.forEach((b, i) => {
+    const x = m.l + i * band + (band - bw) / 2;
+    if (i % every === 0) svg.append(sv("text", { class: "axis-label", x: x + bw / 2, y: H - 8, "text-anchor": "middle" }, clock(b.t)));
+    const hover = sv("rect", { x: m.l + i * band, y: m.t, width: band, height: ph, fill: "var(--surface-2)", opacity: 0 });
+    svg.append(hover);
+    let base = ys(0);
+    const present = OUTCOMES.filter((o) => b[o] > 0);
+    present.forEach((o, j) => {
+      const h = ys(0) - ys(b[o]);
+      const top = base - h, isTop = j === present.length - 1;
+      const gap = isTop ? 0 : Math.min(2, h / 2);  // 2px surface gap between stacked segments
+      svg.append(isTop ? sv("path", { d: columnPath(x, top, bw, h), fill: OUTCOME_STYLE[o].color })
+        : sv("rect", { x, y: top + gap, width: bw, height: Math.max(0.5, h - gap), fill: OUTCOME_STYLE[o].color }));
+      base = top;
+    });
+    svg.append(sv("rect", {
+      x: m.l + i * band, y: m.t, width: band, height: ph, fill: "transparent",
+      onpointermove: (e) => { hover.setAttribute("opacity", 1); showTip(e, [
+        { value: `${b.n} requests`, label: `${clock(b.t)}–${clock(b.t + (series[1] ? series[1].t - series[0].t : 60))}` },
+        ...OUTCOMES.filter((o) => b[o]).map((o) => ({ value: String(b[o]), label: OUTCOME_STYLE[o].label, color: OUTCOME_STYLE[o].color, key: "rect" }))]); },
+      onpointerleave: () => { hover.setAttribute("opacity", 0); hideTip(); },
+    }));
+  });
+  // hover backgrounds sit under the bars
+  svg.querySelectorAll("rect[opacity]").forEach((r) => svg.insertBefore(r, svg.querySelector(".gridline")));
+  svg.append(sv("line", { class: "baseline", x1: m.l, x2: W - m.r, y1: ys(0), y2: ys(0) }));
+  return el("div", { class: "chart" }, svg);
+}
+
+/** Lines over time on one axis. series: [{name, color, values}] aligned with xs (unix seconds). */
+function timeLines(xs, series, width, { fmt = num, height = 180, floorZero = true } = {}) {
+  const H = height, m = { l: 46, r: 12, t: 12, b: 26 };
+  const W = Math.max(280, width), pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const all = series.flatMap((s) => s.values).filter(isNum);
+  let lo = floorZero ? 0 : Math.min(...all), hi = Math.max(...all, floorZero ? 0 : -Infinity);
+  if (!all.length) { lo = 0; hi = 1; }
+  const yt = niceTicks(hi - lo || 1, 4).map((t) => t + lo), yMax = yt[yt.length - 1];
+  const x0 = xs[0], x1 = xs[xs.length - 1] === x0 ? x0 + 1 : xs[xs.length - 1];
+  const xsc = (t) => m.l + ((t - x0) / (x1 - x0)) * pw;
+  const ysc = (v) => m.t + ph - ((v - lo) / (yMax - lo || 1)) * ph;
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img", "aria-label": series.map((s) => s.name).join(", ") });
+  yt.forEach((t) => {
+    svg.append(sv("line", { class: "gridline", x1: m.l, x2: W - m.r, y1: ysc(t), y2: ysc(t) }));
+    svg.append(sv("text", { class: "axis-label", x: m.l - 6, y: ysc(t) + 4, "text-anchor": "end" }, fmt(t)));
+  });
+  const ticks = Math.max(2, Math.floor(pw / 90));
+  for (let i = 0; i <= ticks; i++) {
+    const t = x0 + ((x1 - x0) * i) / ticks;
+    svg.append(sv("text", { class: "axis-label", x: xsc(t), y: H - 8, "text-anchor": i === 0 ? "start" : i === ticks ? "end" : "middle" }, clock(t)));
+  }
+  series.forEach((s) => {
+    let d = "", pen = false;
+    s.values.forEach((v, i) => {
+      if (!isNum(v)) { pen = false; return; }
+      d += `${pen ? "L" : "M"}${xsc(xs[i])},${ysc(v)}`;
+      pen = true;
+    });
+    if (d) svg.append(sv("path", { d, fill: "none", stroke: s.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+    const last = s.values.map((v, i) => [v, i]).filter(([v]) => isNum(v)).pop();
+    if (last) svg.append(sv("circle", { cx: xsc(xs[last[1]]), cy: ysc(last[0]), r: 4, fill: s.color, stroke: "var(--surface)", "stroke-width": 2 }));
+  });
+  const cross = sv("line", { y1: m.t, y2: m.t + ph, stroke: "var(--axis)", "stroke-width": 1, visibility: "hidden" });
+  const dots = series.map((s) => sv("circle", { r: 4, fill: s.color, stroke: "var(--surface)", "stroke-width": 2, visibility: "hidden" }));
+  svg.append(cross, ...dots);
+  svg.append(sv("rect", {
+    x: m.l, y: 0, width: pw, height: H, fill: "transparent",
+    onpointermove: (e) => {
+      const box = svg.getBoundingClientRect();
+      const t = x0 + (((e.clientX - box.left) / box.width) * W - m.l) / pw * (x1 - x0);
+      let i = 0;
+      xs.forEach((x, k) => { if (Math.abs(x - t) < Math.abs(xs[i] - t)) i = k; });
+      cross.setAttribute("x1", xsc(xs[i])); cross.setAttribute("x2", xsc(xs[i])); cross.setAttribute("visibility", "visible");
+      series.forEach((s, k) => {
+        const v = s.values[i];
+        dots[k].setAttribute("visibility", isNum(v) ? "visible" : "hidden");
+        if (isNum(v)) { dots[k].setAttribute("cx", xsc(xs[i])); dots[k].setAttribute("cy", ysc(v)); }
+      });
+      showTip(e, [{ value: clock(xs[i], true), label: "" },
+        ...series.map((s) => ({ value: isNum(s.values[i]) ? fmt(s.values[i]) : "—", label: s.name, color: s.color, key: "line" }))]);
+    },
+    onpointerleave: () => { hideTip(); cross.setAttribute("visibility", "hidden"); dots.forEach((d) => d.setAttribute("visibility", "hidden")); },
+  }));
+  const legend = series.length > 1 ? el("div", { class: "legend" }, series.map((s) => el("span", {}, el("span", { class: "line-key", style: { borderColor: s.color } }), s.name))) : null;
+  return el("div", { class: "chart" }, legend, svg);
+}
+
+/** Distribution of one model's live scores, with its threshold. */
+function valueHistogram(values, threshold, width) {
+  const H = 190, m = { l: 38, r: 10, t: 22, b: 26 };
+  const W = Math.max(280, width), pw = W - m.l - m.r, ph = H - m.t - m.b;
+  let lo = 0, hi = 1;
+  if (values.some((v) => v < 0 || v > 1)) { lo = Math.min(...values); hi = Math.max(...values); if (hi === lo) { lo -= 0.5; hi += 0.5; } }
+  const bins = 25, step = (hi - lo) / bins, counts = new Array(bins).fill(0);
+  values.forEach((v) => counts[Math.min(bins - 1, Math.max(0, Math.floor((v - lo) / step)))]++);
+  const yt = niceTicks(Math.max(1, ...counts), 4, true), yMax = yt[yt.length - 1];
+  const ys = (c) => m.t + ph - (c / yMax) * ph, xs = (v) => m.l + ((v - lo) / (hi - lo)) * pw;
+  const band = pw / bins, bw = Math.min(24, band - 2);
+  const fmtX = (v) => (Math.abs(hi - lo) >= 10 ? v.toFixed(0) : v.toFixed(2));
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img", "aria-label": "Distribution of recent scores" });
+  yt.forEach((t) => {
+    svg.append(sv("line", { class: "gridline", x1: m.l, x2: W - m.r, y1: ys(t), y2: ys(t) }));
+    svg.append(sv("text", { class: "axis-label", x: m.l - 6, y: ys(t) + 4, "text-anchor": "end" }, compact(t)));
+  });
+  for (let i = 0; i <= 4; i++) svg.append(sv("text", { class: "axis-label", x: xs(lo + ((hi - lo) * i) / 4), y: H - 8, "text-anchor": "middle" }, fmtX(lo + ((hi - lo) * i) / 4)));
+  counts.forEach((c, b) => {
+    const x = m.l + b * band + (band - bw) / 2;
+    if (c) svg.append(sv("path", { class: "mark", d: columnPath(x, ys(c), bw, ys(0) - ys(c)), fill: "var(--series-1)" }));
+    svg.append(sv("rect", { x: m.l + b * band, y: m.t, width: band, height: ph, fill: "transparent",
+      onpointermove: (e) => showTip(e, [{ value: `${c} requests`, label: `score ${fmtX(lo + b * step)}–${fmtX(lo + (b + 1) * step)}`, color: "var(--series-1)", key: "rect" }]),
+      onpointerleave: hideTip }));
+  });
+  svg.append(sv("line", { class: "baseline", x1: m.l, x2: W - m.r, y1: ys(0), y2: ys(0) }));
+  if (isNum(threshold) && threshold >= lo && threshold <= hi) {
+    svg.append(sv("line", { x1: xs(threshold), x2: xs(threshold), y1: m.t - 4, y2: ys(0), stroke: "var(--ink-2)", "stroke-width": 1.5 }));
+    svg.append(sv("text", { class: "value-label", x: xs(threshold), y: m.t - 8, "text-anchor": "middle" }, `threshold ${fmtX(threshold)}`));
+  }
+  return el("div", { class: "chart" }, svg);
+}
+
+/** Per-model outcome shares as 100% bars (HTML), with counts on hover. */
+function outcomeShares(byModel) {
+  return el("div", { class: "shares" }, Object.entries(byModel).map(([name, m]) => {
+    const track = el("div", { class: "share-track" }, OUTCOMES.filter((o) => m[o] > 0).map((o) => {
+      const seg = el("span", { class: "share-seg", tabindex: "0", style: { flexGrow: m[o], background: OUTCOME_STYLE[o].color } });
+      const rows = [{ value: `${m[o]} (${pct(m[o] / m.n, 0)})`, label: `${OUTCOME_STYLE[o].label} · ${name}`, color: OUTCOME_STYLE[o].color, key: "rect" }];
+      seg.addEventListener("pointermove", (e) => showTip(e, rows));
+      seg.addEventListener("pointerleave", hideTip);
+      return seg;
+    }));
+    return el("div", { class: "share-row" },
+      el("a", { class: "share-label", href: `#/model/${encodeURIComponent(name)}`, text: name }), track,
+      el("span", { class: "share-n", text: compact(m.n) }));
+  }));
+}
+
+function miniSpark(values) {
+  const v = values.map((x) => (isNum(x) ? x : null));
+  const finite = v.filter(isNum);
+  if (finite.length < 2) return null;
+  const W = 120, H = 30, max = Math.max(...finite), min = Math.min(0, ...finite);
+  const xs = (i) => 2 + (i / (v.length - 1)) * (W - 6), ys = (x) => H - 3 - ((x - min) / (max - min || 1)) * (H - 6);
+  let d = "", pen = false;
+  v.forEach((x, i) => { if (x === null) { pen = false; return; } d += `${pen ? "L" : "M"}${xs(i)},${ys(x)}`; pen = true; });
+  const lastI = v.map((x, i) => [x, i]).filter(([x]) => x !== null).pop()[1];
+  return sv("svg", { class: "spark", viewBox: `0 0 ${W} ${H}`, width: W, height: H, "aria-hidden": "true" },
+    sv("path", { d, fill: "none", stroke: "var(--muted)", "stroke-width": 1.5, "stroke-linejoin": "round" }),
+    sv("circle", { cx: xs(lastI), cy: ys(v[lastI]), r: 3, fill: "var(--accent)" }));
+}
+
+function card(title, ...extra) {
+  const body = el("div", { class: "card-body" });
+  const actions = el("div", { class: "row" });
+  const node = el("div", { class: "card" }, el("div", { class: "card-head" }, el("h2", { text: title }), actions), ...extra, body);
+  return { node, body, actions };
+}
 
 async function overviewPage(root) {
-  const body = el("div", { class: "stack" });
-  put(root, head("Overview", "Server health, loaded models and recent calibration jobs. Refreshes every 5 seconds."), body);
-  let first = true;
-  const refresh = async () => {
-    if (!first) body.classList.add("refreshing");
-    const [srv, stats, jobs, cals] = await Promise.all([
-      api("/v1/server"), api("/v1/stats"),
-      api("/v1/jobs").catch(() => ({ jobs: [] })), api("/v1/calibrations").catch(() => ({ calibrations: [] })),
-    ]);
-    const models = Object.entries(stats.models);
-    const sum = (k) => models.reduce((a, [, m]) => a + (m[k] || 0), 0);
-    const calls = sum("calls"), hits = sum("cache_hits");
-    const inUse = Object.fromEntries(cals.calibrations.map((c) => [c.model, c.in_use]));
-    const content = [
-      tiles([
-        { label: "Status", value: srv.ready ? statusMark("good", "Ready") : statusMark("warning", "Loading") },
-        { label: "Device", value: srv.device, note: `ForensiX ${srv.version}` },
-        { label: "Uptime", value: secs(stats.uptime_s) },
-        { label: "Models in memory", value: `${models.length} / ${srv.max_loaded}` },
-        { label: "Requests scored", value: compact(calls), note: "since start, per model" },
-        { label: "Errors", value: compact(sum("errors")) },
-        { label: "Cache hits", value: compact(hits), note: calls + hits ? pct(hits / (calls + hits)) + " of lookups" : null },
-        { label: "Calibrated models", value: String(Object.values(inUse).filter(Boolean).length) },
-      ]),
-      loadedCard(models, inUse, refresh),
-      el("div", { class: "grid cols-2" }, latencyCard(models), jobsSummaryCard(jobs.jobs)),
-    ];
-    put(body, ...content);
-    body.classList.remove("refreshing");
-    first = false;
+  const query = new URLSearchParams(location.hash.split("?")[1] || "");  // shareable: #/overview?window=900&model=x
+  let windowS = +(query.get("window") || store.get("dash.window", "3600")) || 3600;
+  let model = query.get("model") ?? store.get("dash.model", "");
+  const seenModels = new Set();
+  const winButtons = el("div", { class: "segmented", role: "group", "aria-label": "Time range" }, WINDOWS.map(([w, label]) => {
+    const b = el("button", { type: "button", text: label, "aria-pressed": String(w === windowS) });
+    b.onclick = () => { windowS = w; store.set("dash.window", String(w)); winButtons.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); refresh(); };
+    return b;
+  }));
+  const modelSelect = el("select", { "aria-label": "Model" });
+  modelSelect.onchange = () => { model = modelSelect.value; store.set("dash.model", model); refresh(); };
+  const updated = el("span", { class: "small muted" });
+  const statusStrip = el("div", { class: "status-strip" });
+  const kpis = el("div");
+  const traffic = card("Requests over time");
+  const latency = card("Latency (computed requests)");
+  const shares = card("Outcomes by model");
+  const perModel = card("Requests by model");
+  const media = card("Media types");
+  const scores = card("Score distribution");
+  const memory = card("Memory");
+  const cpu = card("CPU");
+  const gpu = card("GPU memory");
+  const loaded = el("div"), jobsHolder = el("div");
+  const body = el("div", { class: "stack" },
+    statusStrip, kpis, traffic.node,
+    el("div", { class: "grid cols-2" }, latency.node, shares.node),
+    el("div", { class: "grid cols-2" }, perModel.node, media.node),
+    scores.node,
+    el("div", { class: "grid cols-3" }, memory.node, cpu.node, gpu.node),
+    loaded, jobsHolder);
+  put(root,
+    head("Overview", "Live activity of this server. Predictions and resource use since it started; refreshes every 5 seconds."),
+    el("div", { class: "filter-row" }, winButtons, modelSelect, el("span", { class: "spacer" }), updated),
+    body);
+
+  let last = null;
+  const draw = () => {
+    if (!last) return;
+    const { t, srv, stats, jobs, inUse } = last;
+    const series = t.series, xs = series.map((b) => b.t), tot = t.totals;
+    const decided = tot.real + tot.fake, computed = tot.n - tot.cached;
+    // filter options: models seen in traffic or in memory
+    Object.keys(stats.models).concat(Object.keys(t.by_model)).forEach((m) => seenModels.add(m));
+    if (model) seenModels.add(model);
+    const opts = ["", ...[...seenModels].sort()];
+    if (modelSelect.options.length !== opts.length) {
+      put(modelSelect, opts.map((m) => el("option", { value: m, text: m || "All models" })));
+    }
+    modelSelect.value = model;
+    put(statusStrip,
+      srv.ready ? statusMark("good", "Ready") : statusMark("warning", "Loading"),
+      el("span", { class: "badge", text: srv.device }), el("span", { class: "badge", text: `up ${secs(srv.uptime_s)}` }),
+      el("span", { class: "badge", text: `${Object.keys(stats.models).length}/${srv.max_loaded} models in memory` }),
+      el("span", { class: "badge", text: `${Object.values(inUse).filter(Boolean).length} calibrated` }),
+      el("span", { class: "badge", text: `v${srv.version}` }));
+    put(kpis, tiles([
+      { label: "Requests", value: compact(tot.n), note: `last ${WINDOWS.find((w) => w[0] === t.window)[1]}`, spark: series.map((b) => b.n) },
+      { label: "Flagged fake", value: compact(tot.fake), note: decided ? `${pct(share(tot.fake, decided))} of decided` : "no decisions yet", spark: series.map((b) => b.fake) },
+      { label: "Uncertain", value: compact(tot.uncertain), note: tot.n ? `${pct(share(tot.uncertain, tot.n))} of requests` : "—" },
+      { label: "Error rate", value: tot.n ? pct(share(tot.error, tot.n)) : "—", note: `${compact(tot.error)} errors`, spark: series.map((b) => (b.n ? b.error / b.n : null)) },
+      { label: "Latency p50", value: secs(tot.p50), note: `p95 ${secs(tot.p95)}`, spark: series.map((b) => b.p50) },
+      { label: "Cache hit rate", value: tot.n ? pct(share(tot.cached, tot.n)) : "—", note: `${compact(tot.cached)} served from cache` },
+    ]));
+    const width = (c) => c.body.clientWidth || 600;
+    const empty = (msg) => el("div", { class: "empty", text: msg });
+    const noTraffic = tot.n === 0;
+
+    const trafficTable = simpleTable(["Time", "Requests", "Real", "Fake", "Uncertain", "Error"],
+      series.filter((b) => b.n).map((b) => [clock(b.t), String(b.n), String(b.real), String(b.fake), String(b.uncertain), String(b.error)]), [1, 2, 3, 4, 5]);
+    const trafficView = withTableView(noTraffic ? empty("No requests in this period. Score a file in Test.") : el("div", {}, outcomeLegend(), outcomeColumns(series, width(traffic))), trafficTable);
+    put(traffic.actions, trafficView.toggle); put(traffic.body, trafficView.node);
+
+    put(latency.node.querySelector("h2"), model ? `Latency · ${model}` : "Latency · all models");
+    put(latency.actions);
+    perModel.node.parentElement.style.display = model ? "none" : "";  // one-bar charts add nothing
+    const latView = withTableView(computed ? timeLines(xs, [
+      { name: "p50", color: "var(--series-1)", values: series.map((b) => b.p50) },
+      { name: "p95", color: "var(--series-2)", values: series.map((b) => b.p95) }], width(latency), { fmt: secs }) : empty("No computed requests in this period."),
+    simpleTable(["Time", "p50", "p95"], series.filter((b) => isNum(b.p50)).map((b) => [clock(b.t), secs(b.p50), secs(b.p95)]), [1, 2]));
+    put(latency.actions, latView.toggle); put(latency.body, latView.node);
+
+    const models = Object.entries(t.by_model);
+    const shareView = withTableView(models.length ? el("div", {}, outcomeLegend(), outcomeShares(t.by_model)) : empty("No requests in this period."),
+      simpleTable(["Model", "Requests", "Real", "Fake", "Uncertain", "Error", "p50", "p95"],
+        models.map(([n, m]) => [n, String(m.n), String(m.real), String(m.fake), String(m.uncertain), String(m.error), secs(m.p50), secs(m.p95)]), [1, 2, 3, 4, 5, 6, 7]));
+    put(shares.actions, shareView.toggle); put(shares.body, shareView.node);
+
+    put(perModel.body, models.length ? hBars(models.map(([n, m]) => ({ label: n, value: m.n, display: `${compact(m.n)} · p50 ${secs(m.p50)}` })), { valueLabel: "requests" })
+      : empty("No requests in this period."));
+    const mediaRows = Object.entries(t.by_media);
+    put(media.body, mediaRows.length ? hBars(mediaRows.map(([k, v]) => ({ label: k, value: v, display: compact(v) })), { valueLabel: "model runs" })
+      : empty("No requests in this period."));
+
+    scores.node.style.display = model ? "" : "none";
+    if (model) {
+      const sc = t.scores || { values: [] };
+      put(scores.actions, el("span", { class: "small muted", text: `${model} · ${sc.calibrated ? "calibrated probabilities" : "raw scores"} · ${sc.values.length} requests` }));
+      put(scores.body, sc.values.length ? valueHistogram(sc.values, sc.threshold, width(scores)) : empty(`No ${model} requests in this period.`));
+    }
+
+    const sys = t.system, sxs = sys.map((s) => s.t);
+    put(memory.body, sys.length > 1 ? timeLines(sxs, [{ name: "Resident memory", color: "var(--series-1)", values: sys.map((s) => s.rss_mb) }], width(memory), { fmt: mem, height: 150 }) : empty("Collecting…"));
+    put(cpu.body, sys.length > 1 ? timeLines(sxs, [{ name: "CPU", color: "var(--series-1)", values: sys.map((s) => s.cpu_pct) }], width(cpu), { fmt: (v) => `${Math.round(v)}%`, height: 150 }) : empty("Collecting…"));
+    put(memory.actions, sys.length ? el("span", { class: "small muted", text: `${mem(sys[sys.length - 1].rss_mb)} now` }) : null);
+    put(cpu.actions, sys.length ? el("span", { class: "small muted", text: `${Math.round(sys[sys.length - 1].cpu_pct)}% now · 100% = 1 core` }) : null);
+    const hasGpu = sys.some((s) => isNum(s.gpu_mb));
+    gpu.node.style.display = hasGpu ? "" : "none";
+    if (hasGpu) put(gpu.body, timeLines(sxs, [{ name: "Allocated", color: "var(--series-1)", values: sys.map((s) => s.gpu_mb) },
+      { name: "Reserved", color: "var(--series-2)", values: sys.map((s) => s.gpu_reserved_mb) }], width(gpu), { fmt: mem, height: 150 }));
+
+    put(loaded, loadedCard(Object.entries(stats.models), inUse, refresh));
+    put(jobsHolder, jobsSummaryCard(jobs.jobs));
   };
+
+  async function refresh() {
+    body.classList.add("refreshing");
+    try {
+      const q = `/v1/telemetry?window=${windowS}${model ? "&model=" + encodeURIComponent(model) : ""}`;
+      const [t, srv, stats, jobs, cals] = await Promise.all([
+        api(q), api("/v1/server"), api("/v1/stats"),
+        api("/v1/jobs").catch(() => ({ jobs: [] })), api("/v1/calibrations").catch(() => ({ calibrations: [] })),
+      ]);
+      last = { t, srv, stats, jobs, inUse: Object.fromEntries(cals.calibrations.map((c) => [c.model, c.in_use])) };
+      draw();
+      updated.textContent = `Updated ${clock(Date.now() / 1000, true)}`;
+    } finally { body.classList.remove("refreshing"); }
+  }
   await refresh();
-  every(5000, () => refresh().catch(() => body.classList.remove("refreshing")));
+  every(5000, () => refresh().catch(() => {}));
+  let lastWidth = root.clientWidth, timer = null;
+  const ro = new ResizeObserver(() => {
+    if (root.clientWidth === lastWidth) return;
+    lastWidth = root.clientWidth;
+    clearTimeout(timer);
+    timer = setTimeout(draw, 120);
+  });
+  ro.observe(root);
+  cleanups.push(() => ro.disconnect());
 }
 
 function loadedCard(models, inUse, refresh) {
@@ -451,16 +749,6 @@ function loadedCard(models, inUse, refresh) {
     el("div", { class: "card-head" }, el("h2", { text: "Models in memory" }), el("a", { href: "#/models", text: "All models" })),
     rows.length ? simpleTable(["Model", "Family", "Load", "Calls", "Errors", "Mean time", "Calibration", ""], rows, [2, 3, 4, 5])
       : el("div", { class: "empty", text: "No model loaded yet. Load one from Models, or score a file in Test." }));
-}
-
-function latencyCard(models) {
-  const items = models.filter(([, m]) => isNum(m.mean_seconds))
-    .map(([name, m]) => ({ label: name, value: m.mean_seconds, display: secs(m.mean_seconds) }))
-    .sort((a, b) => b.value - a.value);
-  return el("div", { class: "card" },
-    el("div", { class: "card-head" }, el("h2", { text: "Mean time per request" })),
-    items.length ? hBars(items, { valueLabel: "mean time per request" })
-      : el("div", { class: "empty", text: "No requests scored yet." }));
 }
 
 function jobRow(j) {

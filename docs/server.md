@@ -56,6 +56,7 @@ Interactive API docs (OpenAPI) are at `http://localhost:8000/docs`, and the
 | `GET /v1/server` | user | Server settings without secrets: version, device, limits, defaults, persistence |
 | `GET /v1/benchmarks[?model=name]` | user | Benchmark results from `benchmarks_dir` |
 | `GET /ui/` | none | The [web manager](ui.md) (static page; its API calls use your keys) |
+| `GET /v1/telemetry?window=3600[&model=name]` | user | Recent predictions and resource use of this instance, bucketed for the dashboard (in memory, since start) |
 | `GET /metrics` | none | Prometheus metrics: aggregate counters only ([Observability](cloud.md#observability)) |
 | `POST /v1/datasets` | admin | Upload a labelled dataset (ZIP) for calibration ([Calibration](calibration.md)) |
 | `GET /v1/datasets`, `GET /v1/datasets/{id}` | user | Uploaded datasets and their validation summary |

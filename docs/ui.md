@@ -17,12 +17,41 @@ comes from the [HTTP API](server.md), so anything you do in the UI can be script
 
 | Page | What you can do |
 |---|---|
-| **Overview** | Server status, device, uptime, models in memory, requests, errors, cache hits, calibrated models; a table of loaded models (load time, calls, errors, mean time, calibration in use) with unload buttons; mean time per request per model; recent calibration jobs. Refreshes every 5 seconds |
+| **Overview** | A live dashboard of this server ([below](#the-overview-dashboard)): requests, outcomes, latency, cache and resource use over the last 15 minutes to 24 hours, for all models or one; loaded models and recent jobs. Refreshes every 5 seconds |
 | **Models** | Every registered detector, with search and filters by family and loaded state: whether it's loaded, needs trained weights, or has a calibration in use, and which media types it's a default for. Load or unload it |
 | **Model** (click a model) | Description, license and paper; runtime statistics; every calibration version (mode, what it was built on, datasets, counts, AUC) with activate, roll back and turn off; the performance of the selected version; benchmark results |
 | **Test** | Drop an image, video or audio file, pick models (or use the server's defaults for the media type), optionally an identity, then score it. Each model shows its score on a meter with the threshold, the decision, the confidence verdict when calibrated, per-segment scores, and optionally the full evidence |
 | **Calibration** | Upload labelled datasets (with progress) and see their validation; start full, incremental or refit calibrations; start drift checks; follow jobs live, with progress and per-model reports |
 | **Settings** | API and admin keys (kept in this browser only), theme (system, light, dark), and the server's configuration |
+
+## The overview dashboard
+
+Filters sit in one row at the top and apply to everything below them: a **time range** (15 min,
+1 hour, 6 hours, 24 hours) and a **model** (all, or one). They're remembered in the browser, and
+a link can carry them, e.g. `/ui/#/overview?window=900&model=dfdc-wm`.
+
+| Panel | Shows |
+|---|---|
+| Status strip | Ready, device, uptime, models in memory, calibrated models, version |
+| Tiles | Requests, flagged fake (share of decided), uncertain, error rate, latency p50 (with p95), cache hit rate; most with a trend sparkline |
+| Requests over time | Stacked columns per time bucket, by outcome: real, fake, uncertain / no decision, error |
+| Latency | p50 and p95 per bucket, for requests computed by a model (cache hits excluded). Pick a model for its own latency; "all models" mixes fast and slow ones |
+| Outcomes by model | Each model's share of real, fake, uncertain and error |
+| Requests by model, Media types | Volume per model and per media type (hidden when one model is selected) |
+| Score distribution | With one model selected: its live scores (calibrated probabilities when calibrated) and its threshold |
+| Memory, CPU, GPU memory | Resident memory, CPU (100% = one core) and, on GPU servers, allocated and reserved GPU memory, sampled every 10 s |
+| Models in memory, Recent jobs | As before, with unload buttons |
+
+**Outcomes** come from the calibrated verdict when a model is calibrated, otherwise from its
+label at the threshold. *Uncertain / no decision* covers uncertain and out-of-distribution
+verdicts, anomaly scores without a threshold, and videos without a face.
+
+**Data** comes from `GET /v1/telemetry?window=…&model=…`. It's held in memory: the last 50,000
+model runs and 24 hours of resource samples. It starts empty when the server starts, and covers
+this one instance. For a fleet, or for history beyond a restart, use the Prometheus metrics at
+`/metrics`.
+
+Every chart has a tooltip on hover, and the main ones have a **Table view**.
 
 ## Reading model performance
 

@@ -581,3 +581,51 @@ def test_read_only_cache_error_is_actionable(tmp_path, monkeypatch):
             fetch(WeightFile("file:///nonexistent", "0" * 64, "missing.bin"))
     finally:
         os.chmod(cache / "weights", 0o755)
+
+
+# -- dashboard telemetry -----------------------------------------------------------------
+
+def test_telemetry_outcomes_buckets_and_scores():
+    from forensix.server.telemetry import Telemetry, outcome
+
+    assert outcome({"status": "ok", "label": "fake"}) == "fake"
+    assert outcome({"status": "ok", "label": "fake", "confidence": {"verdict": "uncertain"}}) == "uncertain"
+    assert outcome({"status": "ok", "label": None}) == "uncertain"          # anomaly score, no threshold
+    assert outcome({"status": "no_face", "label": None}) == "uncertain"
+    assert outcome({"status": "error"}) == "error"
+
+    t = Telemetry()
+    ok = lambda label, s, cached=False: {"status": "ok", "label": label, "score": s, "threshold": 0.5,  # noqa: E731
+                                          "seconds": s, "cached": cached}
+    for s in (0.1, 0.2, 0.9):
+        t.record("m", "image", "image", ok("fake" if s > 0.5 else "real", s))
+    t.record("m", "image", "image", ok("real", 0.1, cached=True))
+    t.record("other", "audio", "audio", {"status": "error", "seconds": 1.0})
+    t.record("m", "image", "image", {"status": "not_applicable"})            # not a model run: ignored
+    summary = t.summary(900)
+    assert (summary["window"], summary["bucket"], len(summary["series"])) == (900, 30, 30)
+    tot = summary["totals"]
+    assert (tot["n"], tot["real"], tot["fake"], tot["error"], tot["cached"]) == (5, 3, 1, 1, 1)
+    assert tot["p50"] == pytest.approx(0.55)                                # cached hits excluded from latency
+    assert summary["series"][-1]["n"] == 5 and sum(b["n"] for b in summary["series"]) == 5
+    assert list(summary["by_model"]) == ["m", "other"] and summary["by_media"] == {"image": 4, "audio": 1}
+    only = t.summary(3600, model="m")
+    assert only["totals"]["n"] == 4 and sorted(only["scores"]["values"]) == [0.1, 0.1, 0.2, 0.9]
+    assert only["scores"]["threshold"] == 0.5 and "scores" not in summary
+    t.sample()
+    assert t.samples[-1]["rss_mb"] > 0 and "cpu_pct" in t.samples[-1]
+
+
+def test_telemetry_endpoint_counts_detections():
+    with client() as c:
+        detect(c, png(250))
+        detect(c, png(10))
+        detect(c, png(10))                                                  # cache hit
+        detect(c, wav(0.1), models="toy-image")                             # not applicable: not counted
+        t = c.get("/v1/telemetry?window=3600").json()
+        assert (t["window"], t["bucket"]) == (3600, 60)
+        assert (t["totals"]["n"], t["totals"]["fake"], t["totals"]["real"], t["totals"]["cached"]) == (3, 1, 2, 1)
+        assert t["by_model"]["toy-image"]["n"] == 3 and len(t["system"]) >= 1
+        filtered = c.get("/v1/telemetry?window=900&model=toy-image").json()
+        assert len(filtered["scores"]["values"]) == 3
+        assert c.get("/v1/telemetry?model=nope").status_code == 404
