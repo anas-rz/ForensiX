@@ -56,6 +56,7 @@ Interactive API docs (OpenAPI) are at `http://localhost:8000/docs`, and the
 | `GET /v1/server` | user | Server settings without secrets: version, device, limits, defaults, persistence |
 | `GET /v1/benchmarks[?model=name]` | user | Benchmark results from `benchmarks_dir` |
 | `GET /ui/` | none | The [web manager](ui.md) (static page; its API calls use your keys) |
+| `GET /metrics` | none | Prometheus metrics: aggregate counters only ([Observability](cloud.md#observability)) |
 | `POST /v1/datasets` | admin | Upload a labelled dataset (ZIP) for calibration ([Calibration](calibration.md)) |
 | `GET /v1/datasets`, `GET /v1/datasets/{id}` | user | Uploaded datasets and their validation summary |
 | `DELETE /v1/datasets/{id}` | admin | Delete a dataset |
@@ -161,8 +162,10 @@ for name, res in result["results"].items():
 
 ## Configuration
 
-Settings are layered: defaults, then a JSON file (`--config`), then `FORENSIX_SERVER_<FIELD>`
-environment variables, then command-line flags.
+Settings are layered: defaults, then a JSON file (`--config` or `FORENSIX_SERVER_CONFIG`), then
+`FORENSIX_SERVER_<FIELD>` environment variables, then command-line flags. `PORT` and `HOST` set
+the bind address, `LOG_FORMAT=json` switches to JSON log lines, and `GRACEFUL_TIMEOUT` sets the
+seconds in-flight requests get on shutdown.
 
 | Field | Default | Meaning |
 |---|---|---|
@@ -190,6 +193,8 @@ environment variables, then command-line flags.
 | `tmp_dir` | system temp | Where uploads are written while being scored |
 | `benchmarks_dir` | the repo's `results/` | Benchmark result JSONs shown in the UI; `""` disables |
 | `ui` | `true` | Serve the web manager at `/ui/` |
+| `admin_endpoints` | `true` | Serve endpoints that change shared state (datasets, calibrations, identities). Set `false` on scaled-out inference replicas; they still pick up calibrations and galleries from the shared directories ([Kubernetes](cloud.md#kubernetes)) |
+| `metrics` | `true` | Prometheus metrics at `/metrics` |
 
 Example `server.json`:
 

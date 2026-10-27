@@ -72,8 +72,15 @@ def fetch(weights: WeightFile, force: bool = False) -> Path:
         dest.unlink()
         _stamp_path(dest).unlink(missing_ok=True)
 
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(dir=dest.parent, suffix=".part")
+    try:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(dir=dest.parent, suffix=".part")
+    except OSError as e:
+        raise RuntimeError(
+            f"{weights.filename} isn't in the weights cache ({cache_dir()}) and the cache isn't writable "
+            f"({e.strerror}). Bake the model into the image (e.g. Docker build arg MODELS), or make "
+            "FORENSIX_CACHE a writable volume"
+        ) from e
     try:
         with os.fdopen(fd, "wb") as out, urllib.request.urlopen(weights.url) as resp:
             shutil.copyfileobj(resp, out)

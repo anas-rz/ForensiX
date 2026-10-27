@@ -1,0 +1,40 @@
+# ForensiX with Docker Compose.
+#
+#   cp deploy/forensix.env.example .env      # set the API keys
+#   docker compose up -d --build             # CPU, http://localhost:8000/ui/
+#   docker compose -f compose.yaml -f compose.gpu.yaml up -d --build    # NVIDIA GPU
+#
+# Weights download on first use into the "cache" volume and survive restarts. Datasets,
+# calibrations and identity galleries live in the "data" volume.
+services:
+  forensix:
+    build:
+      context: .
+      args:
+        TORCH_INDEX: https://download.pytorch.org/whl/cpu
+        MODELS: ""                    # e.g. "commfor dfdet-clip" to bake weights into the image
+    image: forensix:cpu
+    ports:
+      - "8000:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      HF_HUB_OFFLINE: "0"             # the cache volume starts empty; set to 1 once it's filled
+      FORENSIX_SERVER_PRELOAD: ${FORENSIX_PRELOAD:-commfor}
+      FORENSIX_SERVER_DEVICE: cpu
+    volumes:
+      - data:/data
+      - cache:/opt/forensix/cache
+    tmpfs:
+      - /tmp:size=4g
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    stop_grace_period: 40s
+    restart: unless-stopped
+
+volumes:
+  data:
+  cache:

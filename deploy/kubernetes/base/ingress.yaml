@@ -1,0 +1,33 @@
+# One host: management paths go to the manager, everything else to the inference replicas.
+# Set the host, TLS secret and class for your cluster in an overlay. Upload limits must cover
+# dataset ZIPs (see max_dataset_mb).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: forensix
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "20g"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "900"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "900"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [forensix.example.com]
+      secretName: forensix-tls
+  rules:
+    - host: forensix.example.com
+      http:
+        paths:
+          - { path: /v1/detect, pathType: Prefix, backend: { service: { name: forensix-inference, port: { name: http } } } }
+          - { path: /ui, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
+          - { path: /v1/datasets, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
+          - { path: /v1/calibrations, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
+          - { path: /v1/jobs, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
+          - { path: /v1/identities, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
+          - { path: /v1/models, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
+          - { path: /v1/stats, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
+          - { path: /v1/server, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
+          - { path: /v1/benchmarks, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
+          - { path: /docs, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
+          - { path: /openapi.json, pathType: Exact, backend: { service: { name: forensix-manager, port: { name: http } } } }
+          - { path: /, pathType: Prefix, backend: { service: { name: forensix-inference, port: { name: http } } } }

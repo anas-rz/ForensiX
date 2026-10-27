@@ -1,0 +1,18 @@
+# GPU override: docker compose -f compose.yaml -f compose.gpu.yaml up -d --build
+# Needs the NVIDIA driver and the NVIDIA Container Toolkit on the host.
+services:
+  forensix:
+    build:
+      args:
+        TORCH_INDEX: https://download.pytorch.org/whl/cu124   # match your driver's CUDA version
+    image: forensix:gpu
+    environment:
+      FORENSIX_SERVER_DEVICE: cuda
+      FORENSIX_SERVER_PRELOAD: ${FORENSIX_PRELOAD:-dfdet-clip commfor nes2net-x-itw syncnet}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

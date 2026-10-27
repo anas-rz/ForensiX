@@ -1,0 +1,110 @@
+# The manager: web UI, datasets, calibration jobs and identity enrollment. One replica, so
+# shared state has a single writer (Recreate: the old pod stops before the new one starts).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forensix-manager
+  labels:
+    app.kubernetes.io/name: forensix
+    app.kubernetes.io/component: manager
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: forensix
+      app.kubernetes.io/component: manager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: forensix
+        app.kubernetes.io/component: manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: /metrics
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: forensix
+          image: forensix
+          imagePullPolicy: IfNotPresent
+          args: ["python", "-m", "forensix.server"]
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: FORENSIX_SERVER_CONFIG
+              value: /etc/forensix/server.json
+            - name: FORENSIX_SERVER_DEVICE
+              value: cpu
+            - name: FORENSIX_SERVER_ADMIN_ENDPOINTS
+              value: "true"
+            - name: FORENSIX_SERVER_UI
+              value: "true"
+            - name: OMP_NUM_THREADS
+              value: "4"
+          envFrom:
+            - secretRef:
+                name: forensix-keys
+          resources:
+            requests:
+              cpu: "4"
+              memory: 12Gi
+            limits:
+              memory: 16Gi
+          startupProbe:          # preloading models can take minutes
+            httpGet: { path: /ready, port: http }
+            periodSeconds: 10
+            failureThreshold: 90
+          readinessProbe:
+            httpGet: { path: /ready, port: http }
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet: { path: /health, port: http }
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - { name: config, mountPath: /etc/forensix, readOnly: true }
+            - { name: data, mountPath: /data }
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: config
+          configMap:
+            name: forensix-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: forensix-data
+        - name: tmp
+          emptyDir:
+            sizeLimit: 40Gi      # dataset uploads are extracted to /data, staged here
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forensix-manager
+spec:
+  selector:
+    app.kubernetes.io/name: forensix
+    app.kubernetes.io/component: manager
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

@@ -1,0 +1,25 @@
+# ForensiX on Kubernetes (base). Deploy an overlay, not the base:
+#   kubectl apply -k deploy/kubernetes/overlays/cpu      # or overlays/gpu
+# Before that, create the keys Secret (see docs/cloud.md):
+#   kubectl -n forensix create secret generic forensix-keys --from-env-file=deploy/forensix.env
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: forensix
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: forensix
+    includeSelectors: false
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - pvc.yaml
+  - manager.yaml
+  - inference.yaml
+  - hpa.yaml
+  - pdb.yaml
+  - networkpolicy.yaml
+  - ingress.yaml
+images:
+  - name: forensix
+    newName: ghcr.io/anas-rz/forensix
+    newTag: cpu-bundled

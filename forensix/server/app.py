@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import RedirectResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from typing import Literal
 
@@ -112,6 +112,10 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         for name in config.preload:
             log.info("preloading %s", name)
             await run_in_threadpool(manager.get, name)
+        lazy = sorted({m for names in config.default_models.values() for m in names} - set(config.preload))
+        if lazy:
+            log.warning("default models not preloaded (loaded, and downloaded if needed, on first request): %s",
+                        ", ".join(lazy))
         state["ready"] = True
         yield
 
@@ -135,6 +139,13 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         check_key(request)
 
     def admin(request: Request) -> None:
+        check_key(request, admin=True)
+
+    def shared_writer(request: Request) -> None:
+        """Endpoints that change shared state: off on inference replicas (admin_endpoints=false)."""
+        if not config.admin_endpoints:
+            raise HTTPException(409, "This instance serves predictions only; datasets, calibrations and "
+                                     "identities are managed by the manager instance")
         check_key(request, admin=True)
 
     def model_or_404(name: str) -> str:
@@ -178,6 +189,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
                 "trained_weights": sorted(config.weights), "auth": bool(config.api_key),
                 "admin_auth": bool(config.admin_key or config.api_key),
                 "calibration_persistent": bool(config.calibration_dir),
+                "admin_endpoints": config.admin_endpoints,
                 "gallery_persistent": bool(config.gallery_dir),
                 "limits": {"max_upload_mb": config.max_upload_mb, "max_dataset_mb": config.max_dataset_mb,
                            "max_video_seconds": config.max_video_seconds,
@@ -378,7 +390,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             raise HTTPException(409, str(e)) from None
         return {"model": model, "identities": names}
 
-    @app.post("/v1/identities/{identity}", tags=["identities"], dependencies=[Depends(admin)])
+    @app.post("/v1/identities/{identity}", tags=["identities"], dependencies=[Depends(shared_writer)])
     async def enroll(identity: str, files: list[UploadFile] = File(...), model: str = Query("id-face")):
         """Enroll (or add references to) a person from photos and/or videos."""
         model = identity_model(model)
@@ -401,7 +413,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
                 raise HTTPException(422, str(e)) from None
         return {"model": model, **to_jsonable(result)}
 
-    @app.delete("/v1/identities/{identity}", tags=["identities"], dependencies=[Depends(admin)])
+    @app.delete("/v1/identities/{identity}", tags=["identities"], dependencies=[Depends(shared_writer)])
     async def remove_identity(identity: str, model: str = Query("id-face")):
         removed = await run_in_threadpool(manager.remove_identity, identity_model(model), identity)
         if not removed:
@@ -410,7 +422,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
 
     # -- calibration -------------------------------------------------------------
 
-    @app.post("/v1/datasets", tags=["calibration"], status_code=201, dependencies=[Depends(admin)])
+    @app.post("/v1/datasets", tags=["calibration"], status_code=201, dependencies=[Depends(shared_writer)])
     async def upload_dataset(
         file: UploadFile = File(..., description="ZIP in the ForensiX dataset format (manifest.csv, or real/ and fake/)"),
         name: str | None = Form(None),
@@ -434,7 +446,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             raise HTTPException(404, f"Unknown dataset {dataset_id!r}")
         return info
 
-    @app.delete("/v1/datasets/{dataset_id}", tags=["calibration"], dependencies=[Depends(admin)])
+    @app.delete("/v1/datasets/{dataset_id}", tags=["calibration"], dependencies=[Depends(shared_writer)])
     async def delete_dataset(dataset_id: str):
         if not manager.store.delete_dataset(dataset_id):
             raise HTTPException(404, f"Unknown dataset {dataset_id!r}")
@@ -447,7 +459,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         for m in models:
             model_or_404(m)
 
-    @app.post("/v1/calibrations", tags=["calibration"], status_code=202, dependencies=[Depends(admin)])
+    @app.post("/v1/calibrations", tags=["calibration"], status_code=202, dependencies=[Depends(shared_writer)])
     async def start_calibration(req: CalibrateRequest):
         """Calibrate models in the background (full, incremental or refit). Poll GET /v1/jobs/{id}."""
         datasets = req.dataset_ids()
@@ -468,7 +480,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         params["datasets"] = datasets
         return jobs.submit("calibrate", params)
 
-    @app.post("/v1/calibrations/check", tags=["calibration"], status_code=202, dependencies=[Depends(admin)])
+    @app.post("/v1/calibrations/check", tags=["calibration"], status_code=202, dependencies=[Depends(shared_writer)])
     async def start_check(req: CheckRequest):
         """Check active calibrations against new labelled data (drift), in the background."""
         models = req.models or [m for m in manager.store.models() if manager.store.active(m)]
@@ -523,7 +535,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             raise HTTPException(404, f"{model} has no calibration version {version}")
         return to_jsonable({"table": found[0].to_dict(), "report": found[1]})
 
-    @app.put("/v1/calibrations/{model}/active", tags=["calibration"], dependencies=[Depends(admin)])
+    @app.put("/v1/calibrations/{model}/active", tags=["calibration"], dependencies=[Depends(shared_writer)])
     async def set_active_calibration(model: str, req: ActiveRequest):
         """Switch the version used for predictions (roll back, or null for raw scores)."""
         model_or_404(model)
@@ -532,6 +544,12 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         except KeyError as e:
             raise HTTPException(404, str(e)) from None
         return calibration_status(model)
+
+    if config.metrics:
+        @app.get("/metrics", include_in_schema=False)
+        async def metrics():
+            """Prometheus text format: server, per-model and job counters."""
+            return PlainTextResponse(prometheus_metrics(manager, jobs, state), media_type="text/plain; version=0.0.4")
 
     if config.ui:
         static = Path(__file__).parent / "static"
@@ -542,6 +560,40 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             return RedirectResponse("/ui/")
 
     return app
+
+
+def prometheus_metrics(manager, jobs, state) -> str:
+    """Counters and gauges in the Prometheus exposition format (text 0.0.4)."""
+    lines: list[str] = []
+
+    def metric(name: str, kind: str, help_: str, samples: list[tuple[dict, float]]) -> None:
+        lines.append(f"# HELP forensix_{name} {help_}")
+        lines.append(f"# TYPE forensix_{name} {kind}")
+        for labels, value in samples:
+            tag = ",".join(f'{k}="{str(v).replace(chr(92), chr(92) * 2).replace(chr(34), chr(92) + chr(34))}"'
+                           for k, v in labels.items())
+            lines.append(f"forensix_{name}{{{tag}}} {float(value):.6g}" if tag else f"forensix_{name} {float(value):.6g}")
+
+    stats = manager.stats()
+    metric("ready", "gauge", "1 when preloaded models are in memory", [({}, 1 if state["ready"] else 0)])
+    metric("uptime_seconds", "gauge", "Seconds since the server started", [({}, time.time() - state["started"])])
+    metric("models_loaded", "gauge", "Models in memory", [({}, len(stats))])
+    per = lambda key: [({"model": n, "family": m["family"]}, m[key] or 0) for n, m in stats.items()]  # noqa: E731
+    metric("requests_total", "counter", "Predictions computed per model (cache misses)", per("calls"))
+    metric("errors_total", "counter", "Predictions that raised per model", per("errors"))
+    metric("cache_hits_total", "counter", "Predictions served from the result cache", per("cache_hits"))
+    metric("busy_seconds_total", "counter", "Seconds spent computing predictions per model", per("busy_seconds"))
+    metric("load_seconds", "gauge", "Seconds the model took to load", per("load_seconds"))
+    metric("batches_total", "counter", "Dynamic batches run per model", per("batches"))
+    metric("batched_items_total", "counter", "Items scored in dynamic batches per model", per("batched_items"))
+    by_status: dict[str, int] = {}
+    for j in jobs.all():
+        by_status[j["status"]] = by_status.get(j["status"], 0) + 1
+    metric("jobs", "gauge", "Calibration jobs since start, by status",
+           [({"status": s}, by_status.get(s, 0)) for s in ("queued", "running", "done", "failed")])
+    active = [({"model": m}, a[0]) for m in manager.store.models() if (a := manager.store.active(m))]
+    metric("calibration_active_version", "gauge", "Active calibration version per model", active)
+    return "\n".join(lines) + "\n"
 
 
 BENCHMARK_METRICS = ("auc", "ap", "eer", "eer_percent", "balanced_acc", "real_acc", "fake_acc",

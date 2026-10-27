@@ -1,0 +1,13 @@
+# Datasets, calibration versions and identity galleries, shared by every pod.
+# ReadWriteMany so inference replicas on other nodes see what the manager writes:
+# use your cluster's RWX class (GKE Filestore, EKS EFS, AKS Azure Files, NFS).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: forensix-data
+spec:
+  accessModes: [ReadWriteMany]
+  resources:
+    requests:
+      storage: 100Gi
+  # storageClassName: filestore-rwx   # set in your overlay

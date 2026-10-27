@@ -1,0 +1,22 @@
+# Server settings shared by the manager and the inference replicas (ServerConfig fields).
+# Per-deployment differences (admin_endpoints, ui, device) are environment variables.
+# Keys never go here: they come from the forensix-keys Secret.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: forensix-config
+data:
+  server.json: |
+    {
+      "preload": ["dfdet-clip", "commfor", "nes2net-x-itw", "syncnet"],
+      "max_loaded": 6,
+      "calibration_dir": "/data/calibration",
+      "gallery_dir": "/data/galleries",
+      "tmp_dir": "/tmp/forensix",
+      "benchmarks_dir": "",
+      "max_upload_mb": 500,
+      "max_dataset_mb": 20000,
+      "max_video_seconds": 60,
+      "max_video_height": 720,
+      "thresholds": {}
+    }

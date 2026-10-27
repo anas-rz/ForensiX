@@ -7,9 +7,9 @@ auditably, with queues and worker pools. It is written for the engineers who wil
 that service. A pool of `forensix.server` instances behind a load balancer is one way to build
 the worker pools below.
 
-The worker code below was run end to end with real models. The Dockerfile, queue, Kubernetes and
-autoscaling sections are patterns to adapt. They have not been built or run as part of ForensiX's
-tests, so build and check them in your environment.
+The worker code below was run end to end with real models. The queue and autoscaling sections
+are patterns to adapt. The container image and Kubernetes manifests are in the repo; see
+[Docker, Kubernetes and cloud](cloud.md) for what has been verified.
 
 - [Architecture](#architecture)
 - [Input limits](#input-limits)
@@ -223,52 +223,22 @@ download the media to local disk, call `worker.run`, write the record, acknowled
 
 ## Packaging
 
-Bake code, dependencies and weights into one image, so a new node starts without downloading
-anything and the running service never needs the network. This is a starting template, not yet
-built in ForensiX's CI. Check it with a CPU build first
-(`--build-arg TORCH_INDEX=https://download.pytorch.org/whl/cpu --build-arg MODELS="aasist dfdc-wm"`)
-and `docker run --network none`.
+The repo ships a production [`Dockerfile`](../Dockerfile), Compose files and Kubernetes manifests;
+[Docker, Kubernetes and cloud](cloud.md) covers them. In short:
 
-```dockerfile
-FROM python:3.12-slim
-
-RUN apt-get update \
- && apt-get install -y --no-install-recommends ffmpeg libgl1 libglib2.0-0 \
- && rm -rf /var/lib/apt/lists/*
-
-# CUDA build of PyTorch; use https://download.pytorch.org/whl/cpu for CPU-only images
-ARG TORCH_INDEX=https://download.pytorch.org/whl/cu124
-RUN pip install --no-cache-dir torch torchvision --index-url ${TORCH_INDEX}
-
-WORKDIR /app
-COPY pyproject.toml README.md ./
-COPY forensix ./forensix
-RUN pip install --no-cache-dir .
-
-# Bake the weights into the image: no downloads at startup, no network needed at runtime.
-# Loading each model also fetches the helper files its builder needs (face detectors etc.).
-ENV FORENSIX_CACHE=/opt/forensix_cache
-ARG MODELS="gend-pe dfdet-clip nes2net-x-itw syncnet"
-RUN python -c "import forensix, sys; [forensix.load(m) for m in sys.argv[1:]]" ${MODELS} \
- && chmod -R a+rX ${FORENSIX_CACHE}
-
-COPY worker.py ./
-RUN useradd --create-home --uid 10001 app
-USER app
-ENV HF_HUB_OFFLINE=1 OMP_NUM_THREADS=2
-CMD ["python", "worker.py"]
-```
-
-- **One image per pool** (`--build-arg MODELS=...`) keeps images small. The four default models
-  add about 6 GB of weights.
-- **Match the CUDA build to your nodes.** `cu124` above is an example; pick the PyTorch wheel
-  index that matches your GPU driver.
+- **Bake weights into the image** (`--build-arg MODELS="..."`), so a new node starts without
+  downloading anything and the running service never needs the network. Baking runs
+  `python -m forensix.server --warm-only`, which loads each model once, so lazily fetched helper
+  files (face detectors, landmark models) are included, with verified hash stamps.
+- **One image per pool** keeps images small. Bake the models that pool preloads and uses as
+  defaults.
+- **Match the CUDA build to your nodes** with `--build-arg TORCH_INDEX=...`.
 - **Lazy helper files.** `phys-lighting` and `physdf` download the ICT-FaceKit meshes on their
-  first *prediction*, not at load. For those, add a build step that runs one prediction on a
-  short sample video, then verify the image runs with networking disabled
-  (`docker run --network none`).
+  first *prediction*, not at load. If you serve them, run one prediction on a short sample video
+  during the build or give them a writable cache. Verify the image with
+  `docker run --network none`.
 - **Your trained checkpoints** (`avcons`, `avid`, `id-motion`, `physdf`, `person-detector`):
-  `COPY` them into the image, or mount them read-only, and pass `weights_path=`.
+  `COPY` them into the image, or mount them read-only, and set `weights` in the server config.
 
 ## Sizing and scaling
 

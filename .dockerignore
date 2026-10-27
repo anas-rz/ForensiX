@@ -1,0 +1,7 @@
+# Only pyproject.toml, README.md and forensix/ go into the image.
+*
+!pyproject.toml
+!README.md
+!forensix/
+forensix/**/__pycache__
+forensix/**/*.pyc

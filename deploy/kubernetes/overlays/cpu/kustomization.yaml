@@ -1,0 +1,24 @@
+# CPU nodes. kubectl apply -k deploy/kubernetes/overlays/cpu
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: forensix
+    newName: ghcr.io/anas-rz/forensix     # your registry
+    newTag: cpu-bundled
+patches:
+  # your RWX storage class and host name
+  - target: { kind: PersistentVolumeClaim, name: forensix-data }
+    patch: |-
+      - op: add
+        path: /spec/storageClassName
+        value: standard-rwx
+  - target: { kind: Ingress, name: forensix }
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: forensix.example.com
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: forensix.example.com

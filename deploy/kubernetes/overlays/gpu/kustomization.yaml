@@ -1,0 +1,29 @@
+# NVIDIA GPU nodes (e.g. GKE L4 node pool, EKS g6, AKS NC A100). kubectl apply -k deploy/kubernetes/overlays/gpu
+# Needs the NVIDIA device plugin (GKE and AKS GPU pools ship it; on EKS install the NVIDIA GPU operator).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: forensix
+    newName: ghcr.io/anas-rz/forensix
+    newTag: gpu-bundled
+patches:
+  - path: gpu.yaml
+    target: { kind: Deployment, name: forensix-manager }
+  - path: gpu.yaml
+    target: { kind: Deployment, name: forensix-inference }
+  - target: { kind: PersistentVolumeClaim, name: forensix-data }
+    patch: |-
+      - op: add
+        path: /spec/storageClassName
+        value: standard-rwx
+  # one GPU per pod: scale on load rather than CPU (see base/hpa.yaml); here, a fixed floor
+  - target: { kind: HorizontalPodAutoscaler, name: forensix-inference }
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 4

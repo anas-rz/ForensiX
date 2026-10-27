@@ -1,0 +1,15 @@
+# Applied to both deployments: one NVIDIA GPU, scheduled on GPU nodes, models on cuda.
+- op: add
+  path: /spec/template/spec/containers/0/resources/limits/nvidia.com~1gpu
+  value: 1
+- op: replace
+  path: /spec/template/spec/containers/0/env/1
+  value: { name: FORENSIX_SERVER_DEVICE, value: cuda }
+- op: add
+  path: /spec/template/spec/tolerations
+  value:
+    - { key: nvidia.com/gpu, operator: Exists, effect: NoSchedule }
+- op: add
+  path: /spec/template/spec/nodeSelector
+  value:
+    nvidia.com/gpu.present: "true"     # GKE: cloud.google.com/gke-accelerator: nvidia-l4

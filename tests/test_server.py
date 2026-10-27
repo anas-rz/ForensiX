@@ -474,3 +474,110 @@ def test_ui_server_info_and_benchmarks(tmp_path):
     with client(ui=False, benchmarks_dir="") as c:
         assert c.get("/ui/").status_code == 404
         assert c.get("/v1/benchmarks").json() == {"benchmarks": []}
+
+
+# -- cloud / container runtime -----------------------------------------------------------
+
+def test_metrics_endpoint():
+    with client(preload=["toy-image"]) as c:
+        detect(c, png(10))
+        detect(c, png(10))                                   # cache hit
+        text = c.get("/metrics").text
+        assert "forensix_ready 1" in text and "# TYPE forensix_requests_total counter" in text
+        assert 'forensix_requests_total{model="toy-image",family="image"} 1' in text
+        assert 'forensix_cache_hits_total{model="toy-image",family="image"} 1' in text
+    with client(metrics=False) as c:
+        assert c.get("/metrics").status_code == 404
+
+
+def test_prediction_only_replica_refuses_shared_writes(tmp_path):
+    with client(admin_endpoints=False, calibration_dir=str(tmp_path / "cal")) as c:
+        assert detect(c, png(255)).json()["results"]["toy-image"]["status"] == "ok"
+        r = c.post("/v1/datasets", files={"file": ("x.zip", b"zip")})
+        assert r.status_code == 409 and "predictions only" in r.json()["detail"]
+        assert c.post("/v1/calibrations", json={"models": ["toy-image"], "dataset": "x"}).status_code == 409
+        assert c.put("/v1/calibrations/toy-image/active", json={"version": None}).status_code == 409
+        assert c.post("/v1/identities/alice", files={"files": ("a.png", png(1))}).status_code == 409
+        assert c.get("/v1/calibrations").status_code == 200   # reads still work
+        assert c.get("/v1/server").json()["admin_endpoints"] is False
+
+
+def test_replicas_pick_up_calibrations_from_the_shared_dir(tmp_path):
+    archive = zip_folder(make_dataset(tmp_path / "data"), tmp_path / "data")
+    shared = {"calibration_dir": str(tmp_path / "cal")}
+    with client(**shared) as manager, client(admin_endpoints=False, **shared) as replica:
+        assert replica.post("/v1/detect", files={"file": ("x.png", png(250))}).json()["results"]["toy-image"]["calibration"] is None
+        with open(archive, "rb") as f:
+            ds = manager.post("/v1/datasets", files={"file": ("d.zip", f)}).json()["id"]
+        calibrate(manager, dataset=ds)
+        res = replica.post("/v1/detect", files={"file": ("x.png", png(250))}).json()["results"]["toy-image"]
+        assert res["calibration"] == "v1" and res["confidence"]["verdict"] == "fake"
+
+
+def test_gallery_changes_reach_other_instances(tmp_path, monkeypatch):
+    """An instance reloads an identity gallery that another instance changed on disk."""
+    from forensix.server.manager import Entry, ModelManager
+
+    class FakeVerifier:
+        def __init__(self):
+            self.loaded = 0
+
+        def load_gallery(self, path):
+            self.loaded += 1
+
+    m = ModelManager(ServerConfig(gallery_dir=str(tmp_path)))
+    entry = Entry("id-face", "identity", FakeVerifier())
+    (tmp_path / "id-face.npz").write_bytes(b"v1")
+    m._sync_gallery(entry)
+    assert (entry.detector.loaded, entry.gallery_version) == (1, 1)
+    m._sync_gallery(entry)                                   # unchanged: no reload
+    assert entry.detector.loaded == 1
+    import os
+    os.utime(tmp_path / "id-face.npz", (1, 1))               # another instance saved it
+    m._sync_gallery(entry)
+    assert (entry.detector.loaded, entry.gallery_version) == (2, 2)
+
+
+def test_cli_warm_only_and_environment(tmp_path, monkeypatch):
+    from forensix.server.__main__ import main
+
+    monkeypatch.setenv("FORENSIX_SERVER_CALIBRATION_DIR", str(tmp_path / "cal"))
+    with pytest.raises(SystemExit) as ok:
+        main(["--warm-only", "--preload", "toy-image", "toy-audio"])
+    assert ok.value.code == 0
+    with pytest.raises(SystemExit) as bad:
+        main(["--warm-only", "--preload", "toy-image", "avcons"])   # avcons needs trained weights
+    assert bad.value.code == 1
+
+    seen = {}
+    monkeypatch.setattr("uvicorn.run", lambda app, **kw: seen.update(kw, app=app))
+    monkeypatch.setenv("PORT", "9123")
+    monkeypatch.setenv("FORENSIX_SERVER_PRELOAD", "toy-image toy-audio")
+    main(["--log-format", "json"])
+    assert seen["port"] == 9123 and seen["workers"] == 1 and seen["timeout_graceful_shutdown"] == 30
+    assert seen["app"].state.config.preload == ["toy-image", "toy-audio"]
+
+
+def test_json_log_lines():
+    import logging
+
+    from forensix.server.__main__ import JsonFormatter
+
+    record = logging.LogRecord("forensix.server", logging.WARNING, __file__, 1, "loaded %s", ("x",), None)
+    line = json.loads(JsonFormatter().format(record))
+    assert (line["level"], line["logger"], line["message"]) == ("WARNING", "forensix.server", "loaded x")
+    assert line["time"].endswith("Z")
+
+
+def test_read_only_cache_error_is_actionable(tmp_path, monkeypatch):
+    import os
+
+    cache = tmp_path / "cache"
+    (cache / "weights").mkdir(parents=True)
+    os.chmod(cache / "weights", 0o555)
+    monkeypatch.setenv("FORENSIX_CACHE", str(cache))
+    try:
+        with pytest.raises(RuntimeError, match="isn't writable"):
+            fetch(WeightFile("file:///nonexistent", "0" * 64, "missing.bin"))
+    finally:
+        os.chmod(cache / "weights", 0o755)

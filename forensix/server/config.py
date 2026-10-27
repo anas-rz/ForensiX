@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from dataclasses import dataclass, field, fields
 from pathlib import Path
 
@@ -59,6 +60,12 @@ class ServerConfig:
     benchmarks_dir: str | None = None
     # serve the web manager at /ui
     ui: bool = True
+    # serve endpoints that change shared state (datasets, calibrations, identity galleries). Turn off on
+    # horizontally scaled inference replicas and let one manager instance own those writes; replicas
+    # still pick up activated calibrations and gallery changes from the shared calibration_dir/gallery_dir
+    admin_endpoints: bool = True
+    # Prometheus metrics at /metrics (aggregate counters only, no media or keys)
+    metrics: bool = True
 
     @classmethod
     def load(cls, path: str | Path | None = None, **overrides) -> "ServerConfig":
@@ -81,7 +88,7 @@ def _parse_env(value: str, type_) -> object:
     text = str(type_)
     if text.startswith(("list", "dict")):
         if text.startswith("list") and not value.lstrip().startswith("["):
-            return [v.strip() for v in value.split(",") if v.strip()]
+            return [v for v in re.split(r"[,\s]+", value) if v]  # "a,b" or "a b"
         return json.loads(value)
     if type_ is bool:
         return value.lower() in {"1", "true", "yes", "on"}

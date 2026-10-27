@@ -37,6 +37,7 @@ class Entry:
     load_seconds: float = 0.0
     loaded_at: float = field(default_factory=time.time)
     gallery_version: int = 0
+    gallery_mtime: float | None = None
     calls: int = 0
     errors: int = 0
     cache_hits: int = 0
@@ -190,6 +191,7 @@ class ModelManager:
             gallery = self._gallery_path(name)
             if gallery and gallery.exists():
                 detector.load_gallery(gallery)
+                entry.gallery_mtime = gallery.stat().st_mtime
         if family in BATCHED_FAMILIES and self.config.max_batch > 1:
             entry.batcher = Batcher(entry, self.config.max_batch, self.config.batch_wait_ms)
         if self.config.warmup:
@@ -245,6 +247,9 @@ class ModelManager:
 
     def _predict_raw(self, name: str, path: Path, sha256: str, identity: str | None) -> tuple[Prediction, bool]:
         entry = self.get(name)
+        if entry.family == "identity":
+            with entry.lock:
+                self._sync_gallery(entry)  # before the cache key, which includes the gallery version
         key = (sha256, name, self.config.weights.get(name), identity, entry.gallery_version)
         cached = self._cache_get(key)
         if cached is not None:
@@ -323,6 +328,15 @@ class ModelManager:
         if path:
             path.parent.mkdir(parents=True, exist_ok=True)
             entry.detector.save_gallery(path)
+            entry.gallery_mtime = path.stat().st_mtime
+
+    def _sync_gallery(self, entry: Entry) -> None:
+        """Reload the gallery if another instance changed the shared file (call under entry.lock)."""
+        path = self._gallery_path(entry.name)
+        if path and path.exists() and path.stat().st_mtime != entry.gallery_mtime:
+            entry.detector.load_gallery(path)
+            entry.gallery_mtime = path.stat().st_mtime
+            entry.gallery_version += 1
 
     # -- status ------------------------------------------------------------------
 
@@ -332,5 +346,7 @@ class ModelManager:
         return {e.name: {"family": e.family, "load_seconds": e.load_seconds, "calls": e.calls,
                          "errors": e.errors, "cache_hits": e.cache_hits,
                          "mean_seconds": round(e.busy_seconds / e.calls, 3) if e.calls else None,
-                         "mean_batch_size": round(e.batched_items / e.batches, 2) if e.batches else None}
+                         "mean_batch_size": round(e.batched_items / e.batches, 2) if e.batches else None,
+                         "busy_seconds": round(e.busy_seconds, 3), "batches": e.batches,
+                         "batched_items": e.batched_items}
                 for e in entries}

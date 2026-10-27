@@ -1,0 +1,89 @@
+# Tests and container images.
+# - pull requests and pushes to main: fast tests, and a CPU image build (not pushed)
+# - tags v*: images pushed to ghcr.io/<owner>/forensix:
+#     <version>-cpu, <version>-gpu                    weights download on first use
+#     <version>-cpu-bundled, <version>-gpu-bundled    default models baked in (no egress needed)
+#   plus the same four without the version (cpu, gpu, cpu-bundled, gpu-bundled) as moving tags.
+name: docker
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+env:
+  BUNDLED_MODELS: dfdet-clip commfor nes2net-x-itw syncnet   # = preload in deploy/kubernetes/base/configmap.yaml
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - run: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install -e ".[dev,server]"
+      - run: pytest -q tests/test_server.py tests/test_core.py
+
+  image:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { flavor: cpu, torch_index: "https://download.pytorch.org/whl/cpu", bundled: false }
+          - { flavor: gpu, torch_index: "https://download.pytorch.org/whl/cu124", bundled: false }
+          - { flavor: cpu-bundled, torch_index: "https://download.pytorch.org/whl/cpu", bundled: true }
+          - { flavor: gpu-bundled, torch_index: "https://download.pytorch.org/whl/cu124", bundled: true }
+    steps:
+      - name: Skip all but the CPU image outside tags
+        id: gate
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* || "${{ matrix.flavor }}" == "cpu" ]]; then echo "run=true" >> "$GITHUB_OUTPUT"; fi
+      - name: Free disk space (GPU wheels and baked weights need ~20 GB)
+        if: steps.gate.outputs.run == 'true'
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL && df -h /
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.run == 'true'
+      - uses: docker/setup-buildx-action@v3
+        if: steps.gate.outputs.run == 'true'
+      - uses: docker/login-action@v3
+        if: steps.gate.outputs.run == 'true' && startsWith(github.ref, 'refs/tags/')
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        if: steps.gate.outputs.run == 'true'
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/forensix
+          flavor: |
+            latest=false
+            suffix=-${{ matrix.flavor }},onlatest=true
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=${{ matrix.flavor }},suffix=,enable=${{ startsWith(github.ref, 'refs/tags/') }}
+            type=ref,event=pr
+      - uses: docker/build-push-action@v6
+        if: steps.gate.outputs.run == 'true'
+        with:
+          context: .
+          push: ${{ startsWith(github.ref, 'refs/tags/') }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            TORCH_INDEX=${{ matrix.torch_index }}
+            MODELS=${{ matrix.bundled && env.BUNDLED_MODELS || '' }}
+          cache-from: type=gha,scope=${{ matrix.flavor }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.flavor }},ignore-error=true

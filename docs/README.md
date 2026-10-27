@@ -19,6 +19,7 @@ preprocessing details and parity checks against upstream code.
 | Call the detectors over HTTP | [HTTP server](server.md) |
 | Manage, test and calibrate models in the browser | [Web manager](ui.md) |
 | Calibrate models on your own labelled data, and get predictions with confidence | [Calibration](calibration.md) |
+| Run it in Docker, on Kubernetes or a managed cloud | [Docker, Kubernetes and cloud](cloud.md) |
 | Run ForensiX as a service over large volumes of media | [Deployment at scale](deployment.md) |
 
 ## Guides

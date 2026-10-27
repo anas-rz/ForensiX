@@ -1,0 +1,25 @@
+# Inbound: HTTP on 8000 only. Outbound: DNS only. The pods decode untrusted media, so they
+# get no internet access. This assumes weights are baked into the image (the *-bundled tags);
+# with an unbundled image, allow egress to the weight hosts or fill the cache another way.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: forensix
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: forensix
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - ports:
+        - port: 8000
+          protocol: TCP
+  egress:
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - { port: 53, protocol: UDP }
+        - { port: 53, protocol: TCP }
