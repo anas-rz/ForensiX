@@ -1,0 +1,123 @@
+{
+ "dataset": "ASVspoof 2019 LA (official ASV protocol)",
+ "cm": "aasist",
+ "systems": {
+  "id-voice": {
+   "sv_eer": 0.763,
+   "spf_eer": 28.1,
+   "sasv_eer": 21.265,
+   "at_sasv_eer_threshold": {
+    "genuine_rejected": 0.2127,
+    "other_speakers_accepted": 0.0,
+    "spoofs_accepted": 0.3236,
+    "spoofs_accepted_by_attack": {
+     "A07": 0.4284,
+     "A08": 0.0952,
+     "A09": 0.0,
+     "A10": 0.7261,
+     "A11": 0.708,
+     "A12": 0.3134,
+     "A13": 0.0513,
+     "A14": 0.453,
+     "A15": 0.6317,
+     "A16": 0.7987,
+     "A17": 0.0,
+     "A18": 0.0,
+     "A19": 0.0008
+    }
+   },
+   "at_default_threshold": {
+    "cosine": 0.25,
+    "genuine_rejected": 0.0002,
+    "other_speakers_accepted": 0.1823,
+    "spoofs_accepted": 0.8129
+   }
+  },
+  "organisers_baseline_asv": {
+   "sv_eer": 2.458,
+   "spf_eer": 45.885,
+   "sasv_eer": 34.487,
+   "at_sasv_eer_threshold": {
+    "genuine_rejected": 0.3449,
+    "other_speakers_accepted": 0.0,
+    "spoofs_accepted": 0.5248,
+    "spoofs_accepted_by_attack": {
+     "A07": 0.8162,
+     "A08": 0.5503,
+     "A09": 0.0008,
+     "A10": 0.7818,
+     "A11": 0.8148,
+     "A12": 0.6176,
+     "A13": 0.6323,
+     "A14": 0.8852,
+     "A15": 0.8297,
+     "A16": 0.8612,
+     "A17": 0.0,
+     "A18": 0.001,
+     "A19": 0.0309
+    }
+   }
+  },
+  "aasist": {
+   "sv_eer": 50.298,
+   "spf_eer": 1.378,
+   "sasv_eer": 24.432,
+   "at_sasv_eer_threshold": {
+    "genuine_rejected": 0.2348,
+    "other_speakers_accepted": 0.7205,
+    "spoofs_accepted": 0.0001,
+    "spoofs_accepted_by_attack": {
+     "A07": 0.0,
+     "A08": 0.0,
+     "A09": 0.0,
+     "A10": 0.0004,
+     "A11": 0.0,
+     "A12": 0.0,
+     "A13": 0.0,
+     "A14": 0.0,
+     "A15": 0.0,
+     "A16": 0.0,
+     "A17": 0.0,
+     "A18": 0.001,
+     "A19": 0.0
+    }
+   }
+  },
+  "id-voice + aasist": {
+   "sv_eer": 1.6,
+   "spf_eer": 2.049,
+   "sasv_eer": 1.918,
+   "at_sasv_eer_threshold": {
+    "genuine_rejected": 0.0192,
+    "other_speakers_accepted": 0.0116,
+    "spoofs_accepted": 0.0232,
+    "spoofs_accepted_by_attack": {
+     "A07": 0.0108,
+     "A08": 0.0004,
+     "A09": 0.0,
+     "A10": 0.1903,
+     "A11": 0.001,
+     "A12": 0.0472,
+     "A13": 0.0,
+     "A14": 0.0,
+     "A15": 0.0232,
+     "A16": 0.0279,
+     "A17": 0.0,
+     "A18": 0.0004,
+     "A19": 0.0
+    }
+   },
+   "fusion_weights": {
+    "cosine": 26.7883,
+    "cm_logit": -0.7274,
+    "bias": -19.0617,
+    "fitted_on": "dev"
+   }
+  }
+ },
+ "n_trials": {
+  "target": 5370,
+  "nontarget": 33327,
+  "spoof": 63882
+ }
+}

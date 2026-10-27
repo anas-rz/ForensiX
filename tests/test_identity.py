@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import numpy as np
@@ -166,3 +167,36 @@ def test_id_motion_learns_behaviour_and_checkpoint(tmp_path):
 def test_id_motion_needs_trained_weights():
     with pytest.raises(ValueError, match="train_id_motion"):
         forensix.load("id-motion")
+
+
+def test_voice_segments():
+    from forensix.identity.voice import SAMPLE_RATE, segments
+
+    short = np.ones(4 * SAMPLE_RATE, np.float32)
+    assert len(segments(short)[0]) == 1  # embedded whole
+    long = np.r_[np.ones(6 * SAMPLE_RATE), np.zeros(4 * SAMPLE_RATE)].astype(np.float32)
+    segs, starts = segments(long)
+    assert starts == [0.0, 1.5, 3.0, 4.5] and all(len(s) == 3 * SAMPLE_RATE for s in segs)  # silence skipped
+
+
+@pytest.mark.skipif(not os.environ.get("FORENSIX_TEST_HEAVY"), reason="downloads weights; set FORENSIX_TEST_HEAVY=1")
+def test_id_voice_verifies_rejects_and_localizes(tmp_path):
+    from forensix.audio.io import load_audio, resample
+
+    det = forensix.load("id-voice")
+    speech = load_audio(DATA / "speech_cc0.flac", 16000)  # one reader, 10 s
+    other = resample(speech, 16000, 12000)  # played 1.33x faster: another pitch and vocal tract
+    det.enroll("reader", speech[: 5 * 16000])
+    same = det.predict(speech[5 * 16000 :], identity="reader")
+    shifted = det.predict(other[: 5 * 16000], identity="reader")
+    assert same.is_fake is False and shifted.is_fake is True
+    assert same.details["similarity"] > 0.5 > 0.3 > shifted.details["similarity"]
+    spliced = det.predict(np.r_[speech[5 * 16000 :], other[5 * 16000 :]], identity="reader")
+    sims = spliced.details["segment_similarity"]
+    assert spliced.details["segment_start_s"] == [0.0, 1.5, 3.0, 4.5] and sims[0] > 0.5 > 0.25 > sims[-1]
+    det.enroll("faster", other[: 5 * 16000])
+    assert det.identify(speech[5 * 16000 :])[0][0] == "reader"
+    det.save_gallery(tmp_path / "voices.npz")
+    det.gallery = Gallery("x")
+    det.load_gallery(tmp_path / "voices.npz")
+    assert det.gallery.names() == ["faster", "reader"]

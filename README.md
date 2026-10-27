@@ -74,7 +74,7 @@ Audio is converted to mono and resampled to 16 kHz. Clips longer than the model 
 
 Subset: 1,000 bona fide + 77 trials per attack from the 2019 LA eval set (seed 0, 2,001 trials; `scripts/eval_asvspoof2019_la.py`, results in [results/asvspoof2019_la_subset.json](results/asvspoof2019_la_subset.json)).
 
-¶ Upstream scores only the first 4.04 s of each clip; ForensiX averages over all 4.04 s windows. 415 of the 2,001 subset clips are longer. Scoring `rawgat-st` the upstream way in ForensiX gives 1.30%, the same as upstream's released scores, so the network and scoring match and the gap is the window averaging. The other audio models use the same averaging.
+¶ Upstream scores only the first 4.04 s of each clip; ForensiX averages over all 4.04 s windows. 415 of the 2,001 subset clips are longer. Scoring `rawgat-st` the upstream way in ForensiX gives 1.30%, the same as upstream's released scores, so the network and scoring match and the gap is the window averaging. The other audio models use the same averaging. `aasist` shows the same effect on the full 71,237-trial eval set: 0.82% EER scored the upstream way (published 0.83%), 1.58% with ForensiX's window averaging ([identity_benchmark.md](identity_benchmark.md)). On ASVspoof the averaging roughly doubles the EER; whether it helps on long real-world audio hasn't been measured.
 
 **Image**
 
@@ -121,11 +121,12 @@ Subset: 1,000 bona fide + 77 trials per attack from the 2019 LA eval set (seed 0
 | physics | `phys-room` | ForensiX (no model weights) | ≥ 6 s of speech with pauses | verified on synthetic rooms and microphones; priors anchored on real speech; no false alarms on 10 real excerpts |
 | physics | `physdf` | ForensiX + MediaPipe (Apache-2.0) + ICT-FaceKit (MIT); graph prior trained by you on real media | video with sound, video, or audio | pipeline verified end to end; graph prior verified on synthetic physics; train the real prior on Colab |
 
-**Identity (reference-based)**: enroll a person from their photos or videos, then check whether new media really shows them. See [Identity-based detection](#identity-based-detection).
+**Identity (reference-based)**: enroll a person from their photos, videos or voice recordings, then check whether new media really shows them. See [Identity-based detection](#identity-based-detection).
 
 | Family | Name | License | Params | Checks | Status |
 |---|---|---|---|---|---|
 | identity | `id-face` | Apache-2.0‡ (SFace, OpenCV Zoo) + YuNet (MIT) | MobileFaceNet (39 MB ONNX) + YuNet (0.2 MB) | is the face the enrolled person? (99.40% on LFW, OpenCV Zoo threshold) | pipeline identical to OpenCV Zoo; verified on public-domain photos |
+| identity | `id-voice` | Apache-2.0 (SpeechBrain ECAPA-TDNN) | 20.8M | is the voice the enrolled person's? (EER 0.80% on VoxCeleb1-test, cleaned; SpeechBrain) | ASVspoof 2019 LA eval: SV-EER 0.76%; SASV-EER 1.92% fused with `aasist` ([identity_benchmark.md](identity_benchmark.md)) |
 | identity | `id-motion` | ForensiX (you train it) + MediaPipe (Apache-2.0) | 1.7M | does the person move like the enrolled person? (head motion and expressions; ID-Reveal idea) | verified on synthetic behaviour and a real clip; train on Colab |
 
 ‡ Training data: several image and video models were trained on data with non-commercial terms. UnivFD, RINE and SAFE used ForenSynths (CC BY-NC-SA 4.0), `clipdet` used COCO (mixed Flickr licenses), and Community Forensics used ImageNet, LAION and others. `avad` was trained on LRS2 and `syncnet` on BBC television (research-only terms); `stablesyncnet` on VoxCeleb2 (CC BY 4.0; video copyright stays with the owners) and HDTF (YouTube videos). `id-face` (SFace) was trained on CASIA-WebFace, VGGFace2 or MS-Celeb-1M (the release doesn't say which), all with research-only or non-commercial terms. There is no face-recognition model trained on commercially licensed data; SFace is the one whose weights carry an explicit commercial license (Apache-2.0). The video models were trained on DFDC (`dfdc-selim`, `dfdc-wm`) and FaceForensics++ (`gend`, `gend-pe`, `dfdet-clip`), both of which have research-only terms of use. ForensiX lists the licenses of the code and weights, which are what govern redistribution. Whether a training set's non-commercial terms carry over to the trained weights is legally unsettled; check with counsel for commercial deployment.
@@ -455,6 +456,22 @@ det.identify("unknown.jpg")                  # [("alice", 0.61), ("bob", 0.12)]
   - **InsightFace:** its models are non-commercial.
   - **ICT, the identity-consistency deepfake detector:** has no license.
 
+**`id-voice`**: speaker verification against the enrolled voice.
+
+```python
+det = forensix.load("id-voice", device="cuda")
+det.enroll("alice", ["alice_call1.wav", "alice_interview.mp4"])   # audio files or videos' audio tracks
+pred = det.predict("voicemail.m4a", identity="alice")
+pred.details["similarity"], pred.details["segment_similarity"]  # cosine to alice; per 3 s segment for long audio
+```
+
+- **Pipeline:** ECAPA-TDNN speaker embeddings (SpeechBrain [spkrec-ecapa-voxceleb](https://huggingface.co/speechbrain/spkrec-ecapa-voxceleb), Apache-2.0, trained on VoxCeleb; the same network `avid` uses, checked against SpeechBrain).
+  - Clips up to 6 s are embedded whole.
+  - Longer audio is split into 3 s segments with a 1.5 s hop, skipping near-silent ones.
+  - Each segment is scored by its cosine to the mean of the person's reference embeddings; the clip similarity is the median.
+  - The default threshold is SpeechBrain's (cosine 0.25). It is lenient on short clips: on ASVspoof 2019 LA (2–5 s utterances) it accepts 18% of other speakers. The equal-error threshold measured on that dataset's dev split is 0.42.
+- **A voice clone of the person usually passes.** On ASVspoof 2019 LA, `id-voice` alone accepts 66% of spoofed trials at its equal-error threshold. Fuse it with an audio deepfake detector, which checks how the audio was made: spoofing-aware speaker verification (SASV). `id-voice` + `aasist` gets SASV-EER 1.92% on ASVspoof 2019 LA eval, against 21.3% for `id-voice` alone and 24.4% for `aasist` alone ([identity_benchmark.md](identity_benchmark.md); `scripts/eval_sasv.py`).
+
 **`id-motion`** (ForensiX): does the person move like the enrolled person? A face swap gives the actor the person's face but keeps the actor's head motion and expressions, and a reenactment drives the person's face with someone else's. How someone nods, tilts, blinks and moves their brows and mouth while talking is personal. This follows ID-Reveal (Cozzolino et al., ICCV 2021, [paper](https://arxiv.org/abs/2012.02512)), implemented independently because upstream has no license.
 - **Features, per frame at 25 fps:** head rotation and translation relative to the clip, their velocities, and MediaPipe's 52 expression blendshapes. Like ID-Reveal's 3DMM expression and pose parameters, these describe behaviour, not the face's shape.
 - **Model:** a temporal ID network (dilated residual 1-D convolutions, mean and std pooling, 128-d) embeds every 4 s window. It is trained with a supervised contrastive loss on real videos only, with each person's positives drawn from *different videos* so that it learns the person rather than the recording. ID-Reveal's adversarial 3DMM generator is not included.
@@ -700,6 +717,7 @@ forensix/
 │   └── avid/          # voice-face identity consistency (ForensiX; ECAPA-TDNN + DINOv2)
 ├── identity/          # reference-based: enrollment gallery, frame sampling
 │   ├── face.py        # id-face (SFace + YuNet)
+│   ├── voice.py       # id-voice (ECAPA-TDNN speaker verification)
 │   └── motion/        # id-motion: motion features, temporal ID network, training
 └── physics/           # physdf
     ├── io.py          # full-frame-rate video reading
@@ -721,6 +739,7 @@ scripts/
 ├── eval_asvspoof2019_la.py
 ├── eval_video_folder.py
 ├── eval_lavdf.py
+├── eval_sasv.py
 ├── recalibrate.py
 ├── batch_infer.py
 ├── bench_throughput.py
