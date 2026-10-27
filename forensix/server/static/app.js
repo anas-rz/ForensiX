@@ -614,6 +614,7 @@ async function overviewPage(root) {
   const perModel = card("Requests by model");
   const media = card("Media types");
   const scores = card("Score distribution");
+  const provenance = card("Provenance evidence");
   const memory = card("Memory");
   const cpu = card("CPU");
   const gpu = card("GPU memory");
@@ -622,7 +623,7 @@ async function overviewPage(root) {
     statusStrip, kpis, traffic.node,
     el("div", { class: "grid cols-2" }, latency.node, shares.node),
     el("div", { class: "grid cols-2" }, perModel.node, media.node),
-    scores.node,
+    scores.node, provenance.node,
     el("div", { class: "grid cols-3" }, memory.node, cpu.node, gpu.node),
     loaded, jobsHolder);
   put(root,
@@ -657,7 +658,14 @@ async function overviewPage(root) {
       { label: "Error rate", value: tot.n ? pct(share(tot.error, tot.n)) : "—", note: `${compact(tot.error)} errors`, spark: series.map((b) => (b.n ? b.error / b.n : null)) },
       { label: "Latency p50", value: secs(tot.p50), note: `p95 ${secs(tot.p95)}`, spark: series.map((b) => b.p50) },
       { label: "Cache hit rate", value: tot.n ? pct(share(tot.cached, tot.n)) : "—", note: `${compact(tot.cached)} served from cache` },
+      { label: "Provenance: evidence of fake", value: compact(t.provenance.fake), note: t.provenance.n ? `${compact(t.provenance.n)} checks · ${compact(t.provenance.real)} verified capture` : "no checks yet" },
     ]));
+    provenance.node.style.display = t.provenance.n ? "" : "none";
+    if (t.provenance.n) {
+      const rows = Object.entries(t.provenance.by_verdict);
+      put(provenance.body, hBars(rows.map(([v, n]) => ({ label: verdictName(v), value: n, display: compact(n) })), { valueLabel: "provenance checks" }));
+      put(provenance.actions, el("span", { class: "small muted", text: Object.entries(t.provenance.by_check).map(([c, v]) => `${c} ${Object.values(v).reduce((a, b) => a + b, 0)}`).join(" · ") }));
+    }
     const width = (c) => c.body.clientWidth || 600;
     const empty = (msg) => el("div", { class: "empty", text: msg });
     const noTraffic = tot.n === 0;
@@ -1042,8 +1050,48 @@ function renderDetection(r) {
       media.bounded ? el("span", { class: "badge", text: `bounded: ${media.bounded.trimmed_to_s ? "trimmed to " + media.bounded.trimmed_to_s + " s " : ""}${media.bounded.scaled_to_height ? "scaled to " + media.bounded.scaled_to_height + "p" : ""}` }) : null,
       el("span", { class: "spacer" }),
       el("span", { class: "muted small", text: `${secs(r.seconds)} total · sha256 ${r.sha256.slice(0, 12)}…` })));
+  // the most decisive provenance evidence leads, since it outweighs any detector score
+  const rank = { tampered: 6, ai_generated: 5, watermark_found: 5, verified_capture: 4 };
+  const lead = Object.entries(r.results).filter(([, res]) => res.provenance && rank[res.provenance.verdict])
+    .sort((a, b) => rank[b[1].provenance.verdict] - rank[a[1].provenance.verdict])[0];
+  if (lead) {
+    const [name, res] = lead;
+    summary.append(el("div", { class: "row", style: { marginTop: "10px" } },
+      res.label === "real" ? statusMark("good", verdictName(res.provenance.verdict)) : statusMark("critical", verdictName(res.provenance.verdict)),
+      el("span", { class: "small", text: `${res.provenance.summary} (${name})` })));
+  }
   const cards = Object.entries(r.results).map(([name, res]) => resultCard(name, res));
   return el("div", {}, summary, cards.length ? cards : el("div", { class: "empty", text: "No models ran for this media type." }));
+}
+
+const PROVENANCE_VERDICTS = {
+  tampered: "Tampered after signing", ai_generated: "AI-generated", watermark_found: "Generator watermark found",
+  verified_capture: "Verified capture", partial_watermark: "Partly watermarked", ai_enhanced: "AI-enhanced (declared)",
+  credentials_untrusted: "Unverified credentials", trusted_credentials: "Verified credentials",
+  invalid_credentials: "Invalid credentials", edited: "Signs of editing", re_encoded: "Re-encoded",
+  capture_metadata: "Camera metadata", no_metadata: "No metadata", no_credentials: "No credentials",
+  no_watermark: "No watermark", no_findings: "Nothing notable", not_checked: "Not checked",
+};
+const verdictName = (v) => PROVENANCE_VERDICTS[v] || String(v).replace(/_/g, " ");
+
+/** Provenance evidence: verdict, one-line summary, findings by strength (no score meter: it's not a score). */
+function provenanceCard(card, nameLink, res) {
+  const p = res.provenance;
+  const mark = res.label === "fake" ? statusMark("critical", verdictName(p.verdict))
+    : res.label === "real" ? statusMark("good", verdictName(p.verdict))
+      : el("span", { class: "badge", text: verdictName(p.verdict) });
+  card.append(el("div", { class: "result-head" }, nameLink, mark, el("span", { class: "badge", text: "provenance" }),
+    res.cached ? el("span", { class: "badge", text: "cached" }) : null,
+    el("span", { class: "spacer" }), el("span", { class: "muted small", text: secs(res.seconds) })));
+  card.append(el("div", { class: "small", text: p.summary }));
+  if ((p.findings || []).length) {
+    card.append(el("ul", { class: "findings" }, p.findings.map((f) => el("li", {},
+      el("span", { class: "sev sev-" + f.severity, text: f.severity }), el("span", { text: f.message })))));
+  }
+  if (res.details && Object.keys(res.details).length) {
+    card.append(el("details", {}, el("summary", { text: "Evidence (details)" }), el("pre", { text: JSON.stringify(res.details, null, 2) })));
+  }
+  return card;
 }
 
 function resultCard(name, res) {
@@ -1056,6 +1104,7 @@ function resultCard(name, res) {
       el("div", { class: "small", text: res.reason || res.error || "" }));
     return card;
   }
+  if (res.provenance) return provenanceCard(card, nameLink, res);
   const c = res.confidence;
   const isProb = res.score_type === "probability" || !!c;
   const headBits = [nameLink,

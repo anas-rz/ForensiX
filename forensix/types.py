@@ -11,6 +11,9 @@ class Prediction:
     calibrated across models, so compare thresholds per model). With
     ``score_type="anomaly"`` it is an unbounded anomaly score, ``threshold`` is
     None and ``is_fake``/``label`` are None: pick a threshold on your own data.
+    With ``score_type="provenance"`` (C2PA, watermarks, metadata) the evidence is in
+    ``details`` (``verdict``, ``label``, ``findings``); ``fake_prob`` is 1.0 / 0.0 / 0.5
+    for evidence of fake / real / neither, and ``threshold`` is None.
     """
 
     model: str

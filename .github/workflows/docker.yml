@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 env:
-  BUNDLED_MODELS: dfdet-clip commfor nes2net-x-itw syncnet   # = preload in deploy/kubernetes/base/configmap.yaml
+  BUNDLED_MODELS: dfdet-clip commfor nes2net-x-itw syncnet c2pa watermark-image watermark-audio metadata   # = preload in deploy/kubernetes/base/configmap.yaml
 
 jobs:
   test:

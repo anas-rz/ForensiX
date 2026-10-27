@@ -19,6 +19,7 @@ preprocessing details and parity checks against upstream code.
 | Call the detectors over HTTP | [HTTP server](server.md) |
 | Manage, test and calibrate models in the browser | [Web manager](ui.md) |
 | Calibrate models on your own labelled data, and get predictions with confidence | [Calibration](calibration.md) |
+| Check C2PA credentials, generator watermarks and metadata | [Provenance](provenance.md) |
 | Run it in Docker, on Kubernetes or a managed cloud | [Docker, Kubernetes and cloud](cloud.md) |
 | Run ForensiX as a service over large volumes of media | [Deployment at scale](deployment.md) |
 
@@ -51,6 +52,7 @@ preprocessing details and parity checks against upstream code.
 | physics | `phys-bloodflow`, `phys-motion`, `phys-lighting`, `phys-voice`, `phys-room` | algorithmic; ranges provisional until learned priors are fitted |
 | physics | `physdf` | runs without a graph prior; train the prior for the full system |
 | specialized | `person-detector` | tiny per-person model you train in seconds |
+| provenance | `c2pa`, `watermark-image`, `watermark-audio`, `metadata` | evidence in the file: Content Credentials, SD/SDXL and AudioSeal watermarks, metadata ([Provenance](provenance.md)) |
 | multimodal, graph-based | none yet | planned |
 
 `forensix.list_models()` always gives the current list.

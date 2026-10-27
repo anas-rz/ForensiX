@@ -183,8 +183,11 @@ class ModelManager:
             if name in NEEDS_WEIGHTS and not weights:
                 raise LookupError(f"{name} has no pretrained weights; train it and set weights[{name!r}] "
                                   "in the server config")
-            detector = forensix.load(name, device=self.config.device, weights_path=weights,
-                                     **self.config.options.get(name, {}))
+            try:
+                detector = forensix.load(name, device=self.config.device, weights_path=weights,
+                                         **self.config.options.get(name, {}))
+            except ImportError as e:  # an optional package (e.g. the provenance extra) isn't installed
+                raise LookupError(str(e)) from e
         family = self.family(name)
         entry = Entry(name, family, detector)
         if family == "identity":

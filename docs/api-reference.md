@@ -9,6 +9,7 @@ This covers the public Python API. Anything not listed here is internal and may 
 - [Physics detectors](#physics-detectors)
 - [Person-specialized models: `forensix.specialized`](#person-specialized-models-forensixspecialized)
 - [Calibration](#calibration-forensixcalibrate-forensixcalibration-forensixdataset)
+- [Provenance: `forensix.provenance`](#provenance-forensixprovenance)
 - [Metrics: `forensix.metrics`](#metrics-forensixmetrics)
 - [Media helpers](#media-helpers)
 - [Registry and weights](#registry-and-weights)
@@ -173,6 +174,19 @@ Report helpers in `forensix.physics.report`:
 | `calibration.Calibration.save(path)` / `.load(path)` | The calibration table (JSON, `forensix-calibration/1`) |
 | `dataset.read_dataset(folder)` | Reads the [standard dataset format](calibration.md#the-dataset-format): `Dataset(items, layout, problems)` |
 | `dataset.extract_dataset(zip, dest)` | Safe ZIP extraction (no path escapes, size limits); returns the dataset root |
+
+## Provenance: `forensix.provenance`
+
+| Name | Description |
+|---|---|
+| `forensix.provenance.check(path, models=None, device="cpu", trust_anchors=None)` | Runs every applicable provenance check and combines them: `{media, verdict, label, summary, findings, checks, skipped}` ([Provenance](provenance.md)) |
+| `forensix.load("c2pa", trust_anchors=pem_path)` | C2PA Content Credentials |
+| `forensix.load("watermark-image")`, `forensix.load("watermark-audio")` | SD/SDXL/SVD and AudioSeal watermarks |
+| `forensix.load("metadata")` | EXIF/XMP/PNG chunks and container tags |
+| `provenance.watermark_image.match(bgr)` | Bit accuracy of each known generator message on an image |
+
+Each returns a `Prediction` with `score_type="provenance"`, `threshold=None` and `details`
+holding `verdict`, `label`, `summary` and `findings`.
 
 ## Metrics: `forensix.metrics`
 

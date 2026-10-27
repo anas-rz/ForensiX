@@ -9,7 +9,7 @@ from forensix.hub import WeightFile
 @dataclass(frozen=True)
 class ModelSpec:
     name: str
-    family: str  # audio, video, audiovisual, multimodal, physics, image, id, graph
+    family: str  # audio, video, audiovisual, multimodal, physics, image, identity, provenance, specialized, graph
     builder: Callable[..., object]  # (weights_path, device) -> detector
     weights: WeightFile | None
     license: str

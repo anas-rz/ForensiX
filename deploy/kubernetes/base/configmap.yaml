@@ -8,7 +8,7 @@ metadata:
 data:
   server.json: |
     {
-      "preload": ["dfdet-clip", "commfor", "nes2net-x-itw", "syncnet"],
+      "preload": ["dfdet-clip", "commfor", "nes2net-x-itw", "syncnet", "c2pa", "watermark-image", "watermark-audio", "metadata"],
       "max_loaded": 6,
       "calibration_dir": "/data/calibration",
       "gallery_dir": "/data/galleries",

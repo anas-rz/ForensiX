@@ -30,6 +30,7 @@ def outcome(result: dict) -> str:
 class Telemetry:
     def __init__(self, max_events: int = 50_000, sample_every: float = 10.0, max_samples: int = 8640):
         self.events: deque = deque(maxlen=max_events)
+        self.provenance: deque = deque(maxlen=max_events)  # (t, check, verdict, label): evidence, kept apart
         self.samples: deque = deque(maxlen=max_samples)  # 24 h at 10 s
         self.sample_every = sample_every
         self._lock = threading.Lock()
@@ -42,6 +43,11 @@ class Telemetry:
     def record(self, model: str, family: str, media: str, result: dict) -> None:
         """One scored (or failed) model run; not_applicable/unavailable results aren't runs."""
         if result["status"] not in ("ok", "no_face", "error"):
+            return
+        if family == "provenance":
+            verdict = (result.get("provenance") or {}).get("verdict") or result["status"]
+            with self._lock:
+                self.provenance.append((time.time(), model, verdict, result.get("label")))
             return
         score = result.get("score")
         event = (time.time(), model, family, media, outcome(result), bool(result.get("cached")),
@@ -83,6 +89,7 @@ class Telemetry:
         with self._lock:
             events = [e for e in self.events if e[0] >= start and (model is None or e[1] == model)]
             samples = [s for s in self.samples if s["t"] >= start]
+            evidence = [e for e in self.provenance if e[0] >= start and (model is None or e[1] == model)]
         series = [{"t": start + i * bucket, "n": 0, "cached": 0, **{o: 0 for o in OUTCOMES}, "lat": []}
                   for i in range(n_buckets)]
         by_model: dict[str, dict] = {}
@@ -124,12 +131,24 @@ class Telemetry:
             "by_model": dict(sorted(by_model.items(), key=lambda kv: -kv[1]["n"])),
             "by_media": dict(sorted(by_media.items(), key=lambda kv: -kv[1])),
             "system": samples,
+            "provenance": _provenance_summary(evidence),
         }
         if model is not None:
             out["scores"] = {"values": [round(s, 6) for s in scores[-5000:]],
                              "threshold": float(np.median(thresholds)) if thresholds else None,
                              "calibrated": bool(calibrations)}
         return out
+
+
+def _provenance_summary(evidence: list) -> dict:
+    by_verdict: dict[str, int] = {}
+    by_check: dict[str, dict[str, int]] = {}
+    for _, check, verdict, _ in evidence:
+        by_verdict[verdict] = by_verdict.get(verdict, 0) + 1
+        by_check.setdefault(check, {})[verdict] = by_check.setdefault(check, {}).get(verdict, 0) + 1
+    return {"n": len(evidence), "fake": sum(1 for e in evidence if e[3] == "fake"),
+            "real": sum(1 for e in evidence if e[3] == "real"),
+            "by_verdict": dict(sorted(by_verdict.items(), key=lambda kv: -kv[1])), "by_check": by_check}
 
 
 def _percentiles(values: list[float]) -> dict:

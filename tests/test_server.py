@@ -1,5 +1,6 @@
 import io
 import json
+import shutil
 import time
 
 import numpy as np
@@ -629,3 +630,39 @@ def test_telemetry_endpoint_counts_detections():
         filtered = c.get("/v1/telemetry?window=900&model=toy-image").json()
         assert len(filtered["scores"]["values"]) == 3
         assert c.get("/v1/telemetry?model=nope").status_code == 404
+
+
+# -- provenance through the server ---------------------------------------------------------
+
+def test_provenance_results_and_telemetry():
+    from PIL import PngImagePlugin
+
+    info = PngImagePlugin.PngInfo()
+    info.add_text("parameters", "a cat\nSteps: 20, Sampler: Euler, CFG scale: 7, Seed: 1")
+    buf = io.BytesIO()
+    Image.fromarray(np.full((64, 64, 3), 120, np.uint8)).save(buf, "PNG", pnginfo=info)
+    with client(default_models={"image": ["toy-image", "metadata", "watermark-image"]}) as c:
+        r = detect(c, buf.getvalue(), name="gen.png").json()["results"]
+        meta = r["metadata"]
+        assert (meta["status"], meta["label"], meta["score_type"]) == ("ok", "fake", "provenance")
+        assert meta["provenance"]["verdict"] == "ai_generated" and meta["provenance"]["findings"]
+        assert r["watermark-image"]["provenance"]["verdict"] == "no_watermark" and r["watermark-image"]["label"] is None
+        t = c.get("/v1/telemetry?window=900").json()
+        assert t["totals"]["n"] == 1                                   # the detector run only
+        assert t["provenance"]["n"] == 2 and t["provenance"]["fake"] == 1
+        assert t["provenance"]["by_verdict"] == {"ai_generated": 1, "no_watermark": 1}
+        assert c.post("/v1/calibrations", json={"models": ["metadata"], "dataset": "x"}).status_code in (404, 422)
+
+
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="needs ffmpeg")
+def test_provenance_sees_the_original_upload(tmp_path):
+    """Videos over the size limit are re-encoded for the detectors; provenance must read the original."""
+    import subprocess
+
+    src = tmp_path / "gen.mp4"
+    subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=320x240:rate=25:duration=1",
+                    "-c:v", "libx264", "-metadata", "comment=Created with Sora", str(src)], check=True)
+    with client(max_video_height=120, default_models={"video": ["metadata"]}) as c:
+        r = c.post("/v1/detect", files={"file": ("gen.mp4", src.read_bytes())}).json()
+        assert r["media"]["bounded"]["scaled_to_height"] == 120
+        assert r["results"]["metadata"]["provenance"]["verdict"] == "ai_generated"

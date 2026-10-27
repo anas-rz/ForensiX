@@ -27,8 +27,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest", "httpx"]
-# HTTP server (python -m forensix.server)
-server = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "python-multipart>=0.0.9"]
+# provenance checks: C2PA Content Credentials and the AudioSeal watermark (MIT / Apache-2.0)
+provenance = ["c2pa-python>=0.38", "audioseal>=0.2", "omegaconf>=2.3"]
+# HTTP server (python -m forensix.server), with the provenance checks it runs by default
+server = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "python-multipart>=0.0.9",
+          "c2pa-python>=0.38", "audioseal>=0.2", "omegaconf>=2.3"]
 # building the image evaluation set (scripts/build_image_eval_set.py)
 eval = ["diffusers", "accelerate", "sentencepiece", "protobuf"]
 
@@ -57,4 +60,5 @@ include = ["forensix*"]
 "forensix.physics.face" = ["ict_manifest.json", "LICENSE-ICT-FaceKit"]
 "forensix.physics" = ["learned_priors.json"]
 "forensix.server" = ["static/*"]
+"forensix.provenance.imwatermark" = ["LICENSE"]
 "forensix.video.dfdc_wm.efficientnet_pytorch" = ["LICENSE"]

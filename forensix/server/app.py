@@ -284,8 +284,10 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         return path
 
     async def run_model(name: str, path: Path, sha: str, info: MediaInfo, identity: str | None,
-                        details: bool, segments: bool) -> dict:
+                        details: bool, segments: bool, original: Path | None = None) -> dict:
         family = manager.family(name)
+        if family == "provenance" and original is not None:
+            path = original  # credentials, watermarks and metadata live in the file as uploaded
         checks = members(name) if family == "fusion" else [(name, family)]
         for member, member_family in checks:
             if reason := applicable(member, member_family, info):
@@ -315,6 +317,9 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             result["confidence"] = confidence(pred, calibration)
         if family == "video" and not pred.segment_fake_probs:
             result.update(status="no_face", label=None)  # these models return 0.5 without a face
+        if family == "provenance":  # evidence, not a score: the label is the check's own
+            d = pred.details
+            result.update(label=d.get("label"), provenance={k: to_jsonable(d.get(k)) for k in ("verdict", "summary", "findings")})
         telemetry.record(name, family, info.modality, result)
         if segments:
             result["segments"] = to_jsonable(pred.segment_fake_probs)
@@ -322,28 +327,29 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             result["details"] = to_jsonable(pred.details)
         return result
 
-    async def prepare(upload: UploadFile, tmp: Path) -> tuple[Path, str, MediaInfo, dict | None]:
-        """Save, hash, probe and bound an upload: ``(path, sha256, info, bounded)``."""
+    async def prepare(upload: UploadFile, tmp: Path) -> tuple[Path, str, MediaInfo, dict | None, Path]:
+        """Save, hash, probe and bound an upload: ``(path, sha256, info, bounded, original)``; ``original``
+        is the file as uploaded, ``path`` the one models score (re-encoded if it was too long or large)."""
         raw = await save_upload(upload, tmp)
         sha = await run_in_threadpool(sha256_file, raw)
         try:
             info = await run_in_threadpool(probe, raw)
         except ValueError as e:
             raise HTTPException(415, str(e)) from None
-        path = raw.rename(raw.with_suffix(info.suffix(Path(upload.filename or "").suffix)))
+        original = path = raw.rename(raw.with_suffix(info.suffix(Path(upload.filename or "").suffix)))
         bounded = None
         if info.kind == "video":
             path, bounded = await run_in_threadpool(bound_video, path, info, config.max_video_seconds,
                                                     config.max_video_height, tmp)
-        return path, sha, info, bounded
+        return path, sha, info, bounded, original
 
     async def detect_one(upload: UploadFile, models: list[str] | None, identity: str | None,
                          details: bool, segments: bool) -> dict:
         start = time.perf_counter()
         with tempfile.TemporaryDirectory(dir=config.tmp_dir) as tmp:
-            path, sha, info, bounded = await prepare(upload, Path(tmp))
+            path, sha, info, bounded, original = await prepare(upload, Path(tmp))
             names = models or config.default_models.get(info.modality, [])
-            results = await asyncio.gather(*(run_model(n, path, sha, info, identity, details, segments)
+            results = await asyncio.gather(*(run_model(n, path, sha, info, identity, details, segments, original)
                                              for n in names))
         return {
             "id": uuid.uuid4().hex, "filename": upload.filename, "sha256": sha,
@@ -473,7 +479,8 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
             if manager.store.dataset_info(d) is None:
                 raise HTTPException(404, f"Unknown dataset {d!r}")
         for m in models:
-            model_or_404(m)
+            if model_or_404(m) == "provenance":
+                raise HTTPException(422, f"{m} reads evidence in the file; provenance checks aren't calibrated")
 
     @app.post("/v1/calibrations", tags=["calibration"], status_code=202, dependencies=[Depends(shared_writer)])
     async def start_calibration(req: CalibrateRequest):

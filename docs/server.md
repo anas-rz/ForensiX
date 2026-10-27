@@ -84,10 +84,13 @@ Without `models`, the server runs the defaults for the media type:
 
 | Media | Default models |
 |---|---|
-| image | `commfor` |
-| video without sound | `dfdet-clip` |
-| video with sound | `dfdet-clip`, `nes2net-x-itw`, `syncnet` |
-| audio | `nes2net-x-itw` |
+| image | `commfor`, `c2pa`, `watermark-image`, `metadata` |
+| video without sound | `dfdet-clip`, `c2pa`, `watermark-image`, `metadata` |
+| video with sound | `dfdet-clip`, `nes2net-x-itw`, `syncnet`, `c2pa`, `watermark-audio`, `metadata` |
+| audio | `nes2net-x-itw`, `c2pa`, `watermark-audio`, `metadata` |
+
+The provenance checks (`c2pa`, `watermark-*`, `metadata`) read the file as uploaded and return
+`provenance: {verdict, summary, findings}`. See [Provenance](provenance.md).
 
 Change them with `default_models` in the config.
 

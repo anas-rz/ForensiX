@@ -39,6 +39,7 @@ a link can carry them, e.g. `/ui/#/overview?window=900&model=dfdc-wm`.
 | Outcomes by model | Each model's share of real, fake, uncertain and error |
 | Requests by model, Media types | Volume per model and per media type (hidden when one model is selected) |
 | Score distribution | With one model selected: its live scores (calibrated probabilities when calibrated) and its threshold |
+| Provenance evidence | Verdicts of the provenance checks (C2PA, watermarks, metadata), with a tile counting files that carry AI evidence. Kept apart from the detector outcomes |
 | Memory, CPU, GPU memory | Resident memory, CPU (100% = one core) and, on GPU servers, allocated and reserved GPU memory, sampled every 10 s |
 | Models in memory, Recent jobs | As before, with unload buttons |
 

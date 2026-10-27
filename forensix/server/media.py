@@ -123,6 +123,12 @@ def applicable(name: str, family: str, info: MediaInfo) -> str | None:
         ok = kind == "video" and info.has_audio
     elif name == "physdf":
         ok = kind != "image"
+    elif name == "watermark-image":
+        ok = kind in {"image", "video"}
+    elif name == "watermark-audio":
+        ok = sound
+    elif family == "provenance":  # c2pa, metadata: any media
+        ok = True
     elif name == "id-motion":
         ok = kind == "video"
     elif family == "identity":

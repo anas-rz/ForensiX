@@ -3,7 +3,7 @@
 #
 #   docker build -t forensix:cpu .
 #   docker build -t forensix:gpu --build-arg TORCH_INDEX=https://download.pytorch.org/whl/cu124 .
-#   docker build -t forensix:cpu-bundled --build-arg MODELS="commfor dfdet-clip nes2net-x-itw syncnet" .
+#   docker build -t forensix:cpu-bundled --build-arg MODELS="commfor dfdet-clip nes2net-x-itw syncnet c2pa watermark-image watermark-audio metadata" .
 #
 # MODELS bakes those models' weights into the image (no downloads at startup; runs with no
 # network). Without it, weights download on first use into $FORENSIX_CACHE: mount a volume there.

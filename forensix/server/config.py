@@ -8,10 +8,10 @@ from pathlib import Path
 
 # models run when a request doesn't name any, by what the uploaded media contains
 DEFAULT_MODELS = {
-    "image": ["commfor"],
-    "video": ["dfdet-clip"],
-    "video+audio": ["dfdet-clip", "nes2net-x-itw", "syncnet"],
-    "audio": ["nes2net-x-itw"],
+    "image": ["commfor", "c2pa", "watermark-image", "metadata"],
+    "video": ["dfdet-clip", "c2pa", "watermark-image", "metadata"],
+    "video+audio": ["dfdet-clip", "nes2net-x-itw", "syncnet", "c2pa", "watermark-audio", "metadata"],
+    "audio": ["nes2net-x-itw", "c2pa", "watermark-audio", "metadata"],
 }
 
 

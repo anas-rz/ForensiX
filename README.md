@@ -17,6 +17,17 @@ Weights are cached in `~/.cache/forensix` (override with `FORENSIX_CACHE`) and c
 
 [docs/](docs/README.md) has the [concepts](docs/concepts.md), the [API reference](docs/api-reference.md), [recipes](docs/recipes.md) for common tasks, [guides](docs/README.md#guides) (choosing detectors, interpreting scores, evaluation, identity, physics, training, Colab, extending, licensing), the [HTTP server](docs/server.md), and [deployment at scale](docs/deployment.md).
 
+## Provenance
+
+Next to the detectors, ForensiX reads the evidence a file carries: C2PA Content Credentials (tampering after signing, declared AI generation, trusted capture), the invisible watermarks of Stable Diffusion 1.x/2.x/SDXL/SVD and Meta's AudioSeal, and generator, editing and re-encoding traces in metadata. A found watermark or signed AI declaration is stronger evidence than any score; its absence proves nothing.
+
+```python
+report = forensix.provenance.check("upload.jpg")   # pip install -e ".[provenance]"
+report["verdict"], report["label"], report["summary"]
+```
+
+See [docs/provenance.md](docs/provenance.md).
+
 ## HTTP server
 
 ```bash

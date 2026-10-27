@@ -256,6 +256,12 @@ details summary { cursor: pointer; color: var(--ink-2); font-size: 12.5px; margi
 .meter .tick { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); border-radius: 1px; }
 .meter .tick-label { position: absolute; top: 12px; transform: translateX(-50%); font-size: 11px; color: var(--muted); white-space: nowrap; }
 
+/* provenance findings */
+.findings { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.findings li { display: flex; gap: 8px; align-items: baseline; }
+.sev { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; padding: 1px 7px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); flex: none; }
+.sev-strong { color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink-2); }
+
 /* toasts, empty states */
 .toasts { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 60; }
 .toast {

@@ -49,6 +49,14 @@ your training data:
 - **Frozen components:** SyncNet (MIT*), ECAPA-TDNN (Apache-2.0), DINOv2 (Apache-2.0),
   MediaPipe (Apache-2.0), ICT-FaceKit (MIT).
 
+## Provenance components
+
+| Component | License |
+|---|---|
+| `c2pa-python` (C2PA SDK) | MIT OR Apache-2.0 |
+| invisible-watermark dwtDct code (vendored in `forensix/provenance/imwatermark/`) | MIT |
+| AudioSeal code and detector weights | MIT (weights MIT since 2024-04-02) |
+
 ## Evaluation datasets
 
 Evaluating on a dataset is a use of it too. ForensiX's benchmarks use commercially usable data:
