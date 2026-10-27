@@ -1,0 +1,35 @@
+{
+ "members": [
+  {
+   "model": "stablesyncnet",
+   "options": {
+    "clip_score": "max-window"
+   },
+   "score_type": "probability"
+  },
+  {
+   "model": "syncnet",
+   "options": {
+    "clip_score": "max-window"
+   },
+   "score_type": "raw"
+  }
+ ],
+ "weights": [
+  1.1578871749572885,
+  1.8667989992896938
+ ],
+ "bias": 1.1030936891597611,
+ "mean": [
+  1.397390385636893,
+  0.5351537499368715
+ ],
+ "std": [
+  1.6876750169973742,
+  2.444614051467671
+ ],
+ "l2": 1.0,
+ "source": "results/lavdf/lavdf_dev_scores.csv",
+ "created": "2026-10-27",
+ "format": "forensix-fusion/1"
+}

@@ -594,6 +594,30 @@ To recalibrate as fakes change, score each new batch of labelled media (e.g. wee
 
 **Limits.** Calibration can't fix ranking: AUC is unchanged by any monotone map. When a new generator's fakes score like reals, `check` reports the drop in detection rate, but `update` can only trade false alarms for detections. That needs a retrained or different detector. Small calibration sets give noisy tables: the conformal threshold needs at least 1/`alpha` − 1 real scores (19 for `alpha` = 0.05), and more for a stable one.
 
+## Fusion
+
+`forensix.fusion` combines several detectors into one, using a logistic regression on their scores. Detectors from different families look for different traces, so one often catches what another misses. Fit the fusion on score CSVs from one split, test it on another, then load it as a single detector:
+
+```bash
+python scripts/fit_fusion.py --fit results/lavdf/lavdf_dev_scores.csv --test results/lavdf/lavdf_test_scores.csv \
+    --members stablesyncnet:clip_score=max-window syncnet:clip_score=max-window --out fusions/lavdf_av.json
+```
+
+```python
+det = forensix.load_fusion("fusions/lavdf_av.json", device="cuda")
+pred = det.predict("clip.mp4")
+pred.details["members"]   # each member's score and its contribution to the fused logit
+```
+
+- **Inputs:** probabilities enter as their logit and anomaly scores as they are, all standardized on the fitting data. A member that fails on an input (no face, too short) is treated as average and listed in `details`.
+- **Output:** classes are weighted equally, so 0.5 is the balanced threshold; `predict(x, fake_prior=...)` moves it to another base rate.
+- **LAV-DF** (fitted on dev, tested on the 1,200 test clips): `stablesyncnet` + `syncnet`, both scored by their worst window, reach AUC 0.871 [0.850, 0.891]. The best single model gets 0.853, a paired gain of +0.028 [+0.005, +0.048]. The fusion also scores the 87 clips `stablesyncnet` skips.
+
+**Clip scores.** Window-based detectors take `clip_score` in `forensix.load`:
+- `syncnet`, `stablesyncnet`: `"mean"` (default, upstream) or `"max-window"` (the most suspicious window; better on short local edits, see [av_benchmark.md](av_benchmark.md)).
+- `avad`: `"first"` (default, upstream: the first 50 windows, about 2.2 s), `"mean"` or `"max-window"` over 50-window segments that cover the whole clip, one every second. The per-segment scores are in `details`. The whole-clip rules haven't been benchmarked yet.
+- Audio detectors: `"mean"` over 4 s windows (default), `"first"` (upstream's ASVspoof scoring) or `"max-window"`.
+
 ## Batch inference
 
 `detector.predict` scores one input at a time and is fine for interactive use. For large volumes, `forensix.batch.BatchRunner` and `scripts/batch_infer.py` keep the GPU busy. They change neither weights nor preprocessing.
@@ -678,6 +702,7 @@ forensix/
 ├── hub.py             # weight download, cache, checksum
 ├── metrics.py         # EER (ASVspoof-compatible), ROC-AUC, AP
 ├── calibration.py     # Platt scaling, conformal thresholds and prediction sets, drift checks
+├── fusion.py          # fuse several detectors' scores into one (logistic regression)
 ├── batch.py           # BatchRunner: batched, multi-worker GPU inference (image, audio, GenD; others via predict)
 ├── kernels.py         # fused uint8 -> normalized CHW kernel (Triton, bit-exact to torchvision)
 ├── types.py           # Prediction
@@ -741,6 +766,7 @@ scripts/
 ├── eval_lavdf.py
 ├── eval_sasv.py
 ├── recalibrate.py
+├── fit_fusion.py
 ├── batch_infer.py
 ├── bench_throughput.py
 ├── eval_deepfake_eval_2024.py

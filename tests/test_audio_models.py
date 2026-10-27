@@ -74,3 +74,14 @@ def test_deterministic(detector):
     p1 = detector.predict(x[0], sample_rate=16000).fake_prob
     p2 = detector.predict(x[0], sample_rate=16000).fake_prob
     assert p1 == p2
+
+
+def test_clip_score_rules():
+    rng = np.random.default_rng(2)
+    x = (rng.standard_normal(64600 * 2 + 5000) * 0.05).astype(np.float32)
+    seg = np.array(forensix.load("aasist").predict(x, sample_rate=16000).segment_fake_probs)
+    for rule, expect in (("first", seg[0]), ("max-window", seg.max())):
+        det = forensix.load("aasist", clip_score=rule)
+        assert det.predict(x, sample_rate=16000).fake_prob == pytest.approx(expect, abs=1e-6)
+    with pytest.raises(ValueError, match="clip_score"):
+        forensix.load("aasist", clip_score="median")

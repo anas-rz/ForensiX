@@ -30,13 +30,13 @@ class RawGATSTDetector(AudioDetector):
         return logits.softmax(dim=-1)[:, 0]
 
 
-def build(weights_path: Path, device: str = "cpu") -> RawGATSTDetector:
+def build(weights_path: Path, device: str = "cpu", clip_score: str = "mean") -> RawGATSTDetector:
     # the sinc layer moves its filters to this device on every forward pass
     network = RawGAT_ST(RAWGAT_ST_CONFIG, torch.device(device))
     state = torch.load(weights_path, map_location="cpu", weights_only=True)
     network.load_state_dict(state)
     return RawGATSTDetector(
-        "rawgat-st", network, window=RAWGAT_ST_CONFIG["nb_samp"], device=device
+        "rawgat-st", network, window=RAWGAT_ST_CONFIG["nb_samp"], device=device, clip_score=clip_score
     )
 
 

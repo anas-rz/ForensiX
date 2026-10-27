@@ -23,6 +23,7 @@ __all__ = [
     "info",
     "list_models",
     "load",
+    "load_fusion",
     "person",
     "specialized",
 ]
@@ -46,15 +47,22 @@ def download(name: str, force: bool = False) -> Path | None:
 
 
 def load(name: str, device: str = "cpu", weights_path: str | Path | None = None,
-         calibration: str | Path | None = None):
+         calibration: str | Path | None = None, **options):
     """Build a detector with pretrained weights, downloading them if needed.
 
     Pass ``weights_path`` to use a local checkpoint (e.g. one you trained), and
     ``calibration`` to apply a calibration table (see ``forensix.calibration``).
+    Other keyword arguments are model options, e.g. ``clip_score="max-window"``
+    for the window-based audio-visual detectors.
     """
     spec = get_spec(name)
     path = Path(weights_path) if weights_path else download(name)
-    detector = spec.builder(path, device=device)
+    try:
+        detector = spec.builder(path, device=device, **options)
+    except TypeError as e:
+        if options and "unexpected keyword" in str(e):
+            raise TypeError(f"{name} doesn't take options {sorted(options)}") from e
+        raise
     if calibration is None:
         return detector
     from forensix.calibration import Calibration, CalibratedDetector
@@ -63,3 +71,12 @@ def load(name: str, device: str = "cpu", weights_path: str | Path | None = None,
     if table.model != name:
         raise ValueError(f"Calibration {calibration} is for {table.model!r}, not {name!r}")
     return CalibratedDetector(detector, table)
+
+
+def load_fusion(path: str | Path, device: str = "cpu"):
+    """Load every member of a fusion table (see ``forensix.fusion``) as one detector."""
+    from forensix.fusion import FusedDetector, Fusion
+
+    fusion = Fusion.load(path)
+    detectors = [load(m.model, device=device, **m.options) for m in fusion.members]
+    return FusedDetector(detectors, fusion, name=f"fusion:{Path(path).stem}")

@@ -24,14 +24,14 @@ class XLSRAASISTDetector(AudioDetector):
 
 
 def _builder(name: str):
-    def build(weights_path: Path, device: str = "cpu") -> XLSRAASISTDetector:
+    def build(weights_path: Path, device: str = "cpu", clip_score: str = "mean") -> XLSRAASISTDetector:
         # imported lazily: pulls in transformers
         from forensix.audio.xlsr_aasist.network import Model
 
         network = Model(None, device)
         state = torch.load(weights_path, map_location="cpu", weights_only=True, mmap=True)
         network.load_state_dict(convert_fairseq_state_dict(state))
-        return XLSRAASISTDetector(name, network, window=64600, device=device)
+        return XLSRAASISTDetector(name, network, window=64600, device=device, clip_score=clip_score)
 
     return build
 

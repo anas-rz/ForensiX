@@ -21,6 +21,7 @@ import torch
 from scipy.fft import dct
 from scipy.signal import medfilt
 
+from forensix.audiovisual.clipscore import check_clip_score
 from forensix.hub import WeightFile, fetch, torch_load
 from forensix.registry import ModelSpec, register
 from forensix.types import Prediction
@@ -71,8 +72,10 @@ def mfcc(signal: np.ndarray, samplerate: int = SAMPLE_RATE) -> np.ndarray:
 class SyncNetDetector:
     """Lip-sync anomaly score for a talking-face video (higher = worse sync)."""
 
-    def __init__(self, net: torch.nn.Module, face_detector, device: str = "cpu", vshift: int = VSHIFT):
+    def __init__(self, net: torch.nn.Module, face_detector, device: str = "cpu", vshift: int = VSHIFT,
+                 clip_score: str = "mean"):
         self.name = "syncnet"
+        self.clip_score = check_clip_score(clip_score)
         self.threshold = None  # anomaly score
         self.device = torch.device(device)
         self.net = net.to(self.device).eval()
@@ -156,14 +159,15 @@ class SyncNetDetector:
         speaker = max(results, key=lambda r: r["confidence"])
         details = {k: v for k, v in speaker.items()}
         details["tracks"] = results
-        return Prediction(model=self.name, fake_prob=-speaker["confidence"], threshold=None,
+        score = -speaker["confidence"] if self.clip_score == "mean" else -min(speaker["framewise_confidence"])
+        return Prediction(model=self.name, fake_prob=score, threshold=None,
                           score_type="anomaly", details=details)
 
     def predict_batch(self, videos) -> list[Prediction]:
         return [self.predict(v) for v in videos]
 
 
-def build(weights_path: Path, device: str = "cpu") -> SyncNetDetector:
+def build(weights_path: Path, device: str = "cpu", clip_score: str = "mean") -> SyncNetDetector:
     from forensix.audiovisual.syncnet.model import S
     from forensix.video.retinaface import RetinaFaceDetector
 
@@ -172,7 +176,7 @@ def build(weights_path: Path, device: str = "cpu") -> SyncNetDetector:
     for name, param in torch_load(weights_path).items():  # upstream loadParameters: copy by name
         state[name].copy_(param)
     face_detector = RetinaFaceDetector(fetch(_WM_WEIGHTS["retinaface"]), device=device, nms_threshold=0.4)
-    return SyncNetDetector(net, face_detector, device=device)
+    return SyncNetDetector(net, face_detector, device=device, clip_score=clip_score)
 
 
 register(

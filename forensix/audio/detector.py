@@ -7,6 +7,8 @@ from torch import nn
 from forensix.audio.io import AudioInput, load_audio
 from forensix.types import Prediction
 
+CLIP_SCORES = ("mean", "first", "max-window")
+
 
 def split_windows(x: np.ndarray, window: int, pad_short: bool = True) -> np.ndarray:
     """Split a waveform into fixed-length windows, shape ``(n, window)``.
@@ -31,7 +33,10 @@ class AudioDetector:
     """Base class for raw-waveform audio deepfake detectors.
 
     Subclasses implement ``_fake_probs`` for a batch of equal-length windows.
-    A clip's score is the mean fake probability over its windows. With
+    A clip's score is the mean fake probability over its windows by default.
+    ``clip_score="first"`` scores only the first window, as the upstream
+    ASVspoof evaluation code does (on ASVspoof 2019 LA it halves ``aasist``'s
+    EER, 1.58% -> 0.82%); ``"max-window"`` takes the most suspicious window. With
     ``pad_short=False`` (models scored on whole utterances), clips up to
     ``window`` samples are scored as they are and batched one clip at a time.
     """
@@ -46,8 +51,12 @@ class AudioDetector:
         device: str | torch.device = "cpu",
         threshold: float = 0.5,
         pad_short: bool = True,
+        clip_score: str = "mean",
     ):
+        if clip_score not in CLIP_SCORES:
+            raise ValueError(f"clip_score must be one of {CLIP_SCORES}, not {clip_score!r}")
         self.name = name
+        self.clip_score = clip_score
         self.window = window
         self.pad_short = pad_short
         self.threshold = threshold
@@ -56,6 +65,10 @@ class AudioDetector:
 
     def _fake_probs(self, windows: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError
+
+    def reduce(self, window_probs: np.ndarray) -> float:
+        """The clip score from its windows' fake probabilities (see ``clip_score``)."""
+        return float({"mean": np.mean, "first": lambda p: p[0], "max-window": np.max}[self.clip_score](window_probs))
 
     def predict(self, audio: AudioInput, sample_rate: int | None = None) -> Prediction:
         """Score one clip: a file path, or a waveform array plus ``sample_rate``."""
@@ -90,7 +103,7 @@ class AudioDetector:
             preds.append(
                 Prediction(
                     model=self.name,
-                    fake_prob=float(seg.mean()),
+                    fake_prob=self.reduce(seg),
                     threshold=self.threshold,
                     segment_fake_probs=tuple(float(p) for p in seg),
                 )

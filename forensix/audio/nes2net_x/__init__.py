@@ -26,7 +26,7 @@ class Nes2NetXDetector(AudioDetector):
 
 
 def _builder(name: str, window: int, pad_short: bool):
-    def build(weights_path: Path, device: str = "cpu") -> Nes2NetXDetector:
+    def build(weights_path: Path, device: str = "cpu", clip_score: str = "mean") -> Nes2NetXDetector:
         # imported lazily: pulls in transformers
         from forensix.audio.nes2net_x.network import wav2vec2_Nes2Net_no_Res_w_allT
 
@@ -34,7 +34,7 @@ def _builder(name: str, window: int, pad_short: bool):
         state = torch.load(weights_path, map_location="cpu", weights_only=True, mmap=True)
         network.load_state_dict(convert_fairseq_state_dict(state))
         return Nes2NetXDetector(
-            name, network, window=window, device=device, pad_short=pad_short
+            name, network, window=window, device=device, pad_short=pad_short, clip_score=clip_score
         )
 
     return build

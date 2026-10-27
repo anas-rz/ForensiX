@@ -1,0 +1,97 @@
+{
+ "fit": "results/lavdf/lavdf_dev_scores.csv",
+ "members": [
+  "stablesyncnet-max-window",
+  "syncnet-max-window"
+ ],
+ "fusion": {
+  "members": [
+   {
+    "model": "stablesyncnet",
+    "options": {
+     "clip_score": "max-window"
+    },
+    "score_type": "probability"
+   },
+   {
+    "model": "syncnet",
+    "options": {
+     "clip_score": "max-window"
+    },
+    "score_type": "raw"
+   }
+  ],
+  "weights": [
+   1.1578871749572885,
+   1.8667989992896938
+  ],
+  "bias": 1.1030936891597611,
+  "mean": [
+   1.397390385636893,
+   0.5351537499368715
+  ],
+  "std": [
+   1.6876750169973742,
+   2.444614051467671
+  ],
+  "l2": 1.0,
+  "source": "results/lavdf/lavdf_dev_scores.csv",
+  "created": "2026-10-27",
+  "format": "forensix-fusion/1"
+ },
+ "test": {
+  "file": "results/lavdf/lavdf_test_scores.csv",
+  "n": 1200,
+  "fusion": {
+   "auc": 0.8705,
+   "ap": 0.9553,
+   "n_fake": 900,
+   "n_real": 300,
+   "eer": 0.2172,
+   "auc_ci95": [
+    0.8504,
+    0.8909
+   ]
+  },
+  "members": {
+   "stablesyncnet-max-window": {
+    "auc": 0.8534,
+    "ap": 0.9431,
+    "n_fake": 836,
+    "n_real": 277,
+    "eer": 0.2202,
+    "auc_ci95": [
+     0.828,
+     0.8765
+    ],
+    "n": 1113,
+    "fusion_gain_paired": {
+     "gain": 0.0275,
+     "ci95": [
+      0.0055,
+      0.0478
+     ]
+    }
+   },
+   "syncnet-max-window": {
+    "auc": 0.8325,
+    "ap": 0.9388,
+    "n_fake": 900,
+    "n_real": 300,
+    "eer": 0.3067,
+    "auc_ci95": [
+     0.8099,
+     0.8551
+    ],
+    "n": 1200,
+    "fusion_gain_paired": {
+     "gain": 0.0379,
+     "ci95": [
+      0.0264,
+      0.0495
+     ]
+    }
+   }
+  }
+ }
+}

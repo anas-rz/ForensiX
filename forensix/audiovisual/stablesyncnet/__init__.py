@@ -26,6 +26,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from forensix.audiovisual.clipscore import check_clip_score
 from forensix.hub import WeightFile, torch_load
 from forensix.registry import ModelSpec, register
 from forensix.types import Prediction
@@ -170,8 +171,10 @@ def window_starts(n_frames: int, n_mel: int, offsets) -> list[int]:
 class StableSyncNetDetector:
     """Probability that a talking face's audio doesn't belong to it (lip-sync)."""
 
-    def __init__(self, net: torch.nn.Module, device: str = "cpu", max_offset: int = MAX_OFFSET):
+    def __init__(self, net: torch.nn.Module, device: str = "cpu", max_offset: int = MAX_OFFSET,
+                 clip_score: str = "mean"):
         self.name = "stablesyncnet"
+        self.clip_score = check_clip_score(clip_score)
         self.threshold = 0.5
         self.device = torch.device(device)
         self.net = net.to(self.device).eval()
@@ -234,19 +237,20 @@ class StableSyncNetDetector:
         n = min(len(frames), len(audio) // (SAMPLE_RATE // FPS))
         frames, wav = frames[:n], audio[: n * (SAMPLE_RATE // FPS)] / 32768.0
         result = self.analyze(frames, wav)
-        return Prediction(model=self.name, fake_prob=1.0 - result["sync_probability"], threshold=self.threshold,
+        sync = result["sync_probability"] if self.clip_score == "mean" else min(result["window_sync_probability"])
+        return Prediction(model=self.name, fake_prob=1.0 - sync, threshold=self.threshold,
                           details=result)
 
     def predict_batch(self, videos) -> list[Prediction]:
         return [self.predict(v) for v in videos]
 
 
-def build(weights_path: Path, device: str = "cpu") -> StableSyncNetDetector:
+def build(weights_path: Path, device: str = "cpu", clip_score: str = "mean") -> StableSyncNetDetector:
     from forensix.audiovisual.stablesyncnet.model import StableSyncNet
 
     net = StableSyncNet(CONFIG)
     net.load_state_dict(torch_load(weights_path)["state_dict"])
-    return StableSyncNetDetector(net, device=device)
+    return StableSyncNetDetector(net, device=device, clip_score=clip_score)
 
 
 def _face_landmarker():

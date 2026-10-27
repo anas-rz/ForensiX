@@ -69,6 +69,8 @@ def windows(model: str, pred) -> list[list[float]] | None:
     if model == "stablesyncnet" and "window_start_s" in d:
         return [[s, round(s + d["window_s"], 3), round(1 - p, 4)]
                 for s, p in zip(d["window_start_s"], d["window_sync_probability"])]
+    if model == "avad" and "segment_score" in d:  # overlapping 50-step segments, every 1 s
+        return [[s, round(s + w, 3), v] for s, w, v in zip(d["segment_start_s"], d["segment_s"], d["segment_score"])]
     return None
 
 
@@ -199,10 +201,17 @@ def cmd_report(args) -> None:
         variants = {model: (fake, real, {r["file"]: r["score"] for r in ok})}
         if with_windows:
             variants[f"{model}-max-window"] = (pf, pr, peak)
+        if model == "avad" and with_windows:  # avad's other clip scores (forensix.load("avad", clip_score=...))
+            for name, rule in (("first", lambda w: w[0][2]), ("mean", lambda w: float(np.mean([x[2] for x in w])))):
+                by_file = {r["file"]: rule(r["windows"]) for r in with_windows}
+                vf = np.array([by_file[r["file"]] for r in with_windows if r["category"] != "real"])
+                vr = np.array([by_file[r["file"]] for r in with_windows if r["category"] == "real"])
+                entry[f"clip_{name}_segment"] = auc_ci(vf, vr)
+                variants[f"avad-{name}"] = (vf, vr, by_file)
         for name, (vf, vr, by_file) in variants.items():
             path = args.calibration_dir / f"{name}.json" if args.calibration_dir else None
             if path and path.exists():
-                key = "calibration" if name == model else "calibration_max_window"
+                key = "calibration" if name == model else "calibration_" + name[len(model) + 1 :].replace("-", "_")
                 entry[key] = calibration_check(path, vf, vr)
             columns.append(name)
             for file, score in by_file.items():
@@ -213,8 +222,11 @@ def cmd_report(args) -> None:
             f"{k} {v['auc']:.3f}" for k, v in entry["clip_by_category"].items())
         if "window" in entry:
             line += f"  | window AUC {entry['window']['auc']:.3f}, max-window clip AUC {entry['clip_max_window']['auc']:.3f}"
+        for name in ("first", "mean"):
+            if f"clip_{name}_segment" in entry:
+                line += f", {name}-segment clip AUC {entry[f'clip_{name}_segment']['auc']:.3f}"
         print(line)
-        for key in ("calibration", "calibration_max_window"):
+        for key in [k for k in entry if k.startswith("calibration")]:
             if key in entry:
                 k = entry[key]
                 print(f"{'':14} {key} ({k['source']}): false alarms {k['false_alarm_rate']:.1%} at alpha "

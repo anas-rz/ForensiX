@@ -39,11 +39,11 @@ class AASISTDetector(AudioDetector):
 
 
 def _builder(name: str, config: dict):
-    def build(weights_path: Path, device: str = "cpu") -> AASISTDetector:
+    def build(weights_path: Path, device: str = "cpu", clip_score: str = "mean") -> AASISTDetector:
         network = Model(config)
         state = torch.load(weights_path, map_location="cpu", weights_only=True)
         network.load_state_dict(state)
-        return AASISTDetector(name, network, window=config["nb_samp"], device=device)
+        return AASISTDetector(name, network, window=config["nb_samp"], device=device, clip_score=clip_score)
 
     return build
 

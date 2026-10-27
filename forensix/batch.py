@@ -136,7 +136,7 @@ class _AudioAdapter(_Adapter):
         return self.det._fake_probs(batch).float().cpu().numpy()
 
     def reduce(self, probs):
-        return float(probs.mean()), tuple(float(p) for p in probs)
+        return self.det.reduce(probs), tuple(float(p) for p in probs)
 
 
 class _GenDAdapter(_Adapter):
