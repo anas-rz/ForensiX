@@ -50,6 +50,7 @@ photos/alice_01.jpg,real,,alice
 | `label` | yes | `real` or `fake`. Also accepted: `bonafide`, `genuine`, `authentic`, `0` / `spoof`, `deepfake`, `synthetic`, `manipulated`, `1` |
 | `group` | no | Files that belong together: a real clip and fakes made from it, or one recording session. Cross-validation keeps a group in one fold, so near-duplicates can't flatter the report. Default: each file alone |
 | `identity` | no | The enrolled person the media claims to be, for identity models |
+| `skin_tone`, `age`, `gender`, `attr_<name>` | no | Demographic attributes for [fairness reports](fairness.md) |
 
 **Folders:** no manifest. Every file under `real/` is real and every file under `fake/` is fake
 (subfolders allowed).

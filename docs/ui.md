@@ -23,6 +23,7 @@ comes from the [HTTP API](server.md), so anything you do in the UI can be script
 | **Model** (click a model) | Description, license and paper; runtime statistics; every calibration version (mode, what it was built on, datasets, counts, AUC) with activate, roll back and turn off; the performance of the selected version; benchmark results |
 | **Test** | Drop an image, video or audio file, pick models (or use the server's defaults for the media type), optionally an identity, then score it. Each model shows its score on a meter with the threshold, the decision, the confidence verdict when calibrated, per-segment scores, and optionally the full evidence |
 | **Calibration** | Upload labelled datasets (with progress) and see their validation; start full, incremental or refit calibrations; start drift checks; follow jobs live, with progress and per-model reports |
+| **Fairness** | Start a [fairness report](fairness.md) on a dataset with demographic columns; per model and attribute, each group's false-alarm rate with its interval against the overall rate, disparity verdicts and warnings; download as Markdown or JSON |
 | **Settings** | API and admin keys (kept in this browser only), theme (system, light, dark), and the server's configuration |
 
 ## The overview dashboard

@@ -81,6 +81,20 @@ class CheckRequest(BaseModel):
         return list(dict.fromkeys(self.datasets + ([self.dataset] if self.dataset else [])))
 
 
+class FairnessRequest(BaseModel):
+    datasets: list[str] = Field(default_factory=list, description="Datasets with demographic columns "
+                                "(skin_tone, age, gender, attr_*); real media at least")
+    dataset: str | None = None
+    models: list[str] = Field(min_length=1)
+    estimate_skin_tone: bool = Field(True, description="Estimate skin tone from photos (ITA thirds) when the "
+                                     "dataset has no skin_tone column")
+    min_group: int = Field(30, ge=5, description="Smallest group compared in disparity tests")
+    attributes: list[str] | None = Field(None, description="Default: skin_tone, age, gender, race")
+
+    def dataset_ids(self) -> list[str]:
+        return list(dict.fromkeys(self.datasets + ([self.dataset] if self.dataset else [])))
+
+
 class ActiveRequest(BaseModel):
     version: int | None = Field(description="Version to use for predictions; null for uncalibrated scores")
 
@@ -571,6 +585,36 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         if (found := manager.store.version(model, version)) is None:
             raise HTTPException(404, f"{model} has no calibration version {version}")
         return to_jsonable({"table": found[0].to_dict(), "report": found[1]})
+
+    @app.post("/v1/fairness", tags=["fairness"], status_code=202, dependencies=[Depends(shared_writer)])
+    async def start_fairness(req: FairnessRequest):
+        """Error rates by demographic group for the given models on the given datasets, in the background."""
+        datasets = req.dataset_ids()
+        if not datasets:
+            raise HTTPException(422, "Give at least one dataset")
+        for d in datasets:
+            if manager.store.dataset_info(d) is None:
+                raise HTTPException(404, f"Unknown dataset {d!r}")
+        for m in req.models:
+            if model_or_404(m) == "provenance":
+                raise HTTPException(422, f"{m} reads evidence in the file; fairness reports are for detectors")
+        return jobs.submit("fairness", {**req.model_dump(exclude={"dataset"}), "datasets": datasets})
+
+    @app.get("/v1/fairness", tags=["fairness"], dependencies=[Depends(user)])
+    async def list_fairness():
+        return {"reports": to_jsonable(manager.store.fairness_reports())}
+
+    @app.get("/v1/fairness/{report_id}", tags=["fairness"], dependencies=[Depends(user)])
+    async def get_fairness(report_id: str, format: Literal["json", "markdown"] = "json"):
+        if (rep := manager.store.fairness(report_id)) is None:
+            raise HTTPException(404, f"Unknown fairness report {report_id!r}")
+        if format == "markdown":
+            from forensix.fairness import to_markdown
+
+            names = ", ".join(d.get("name") or d["id"] for d in rep.get("datasets", []))
+            return PlainTextResponse(to_markdown(rep, f"Fairness report {report_id} ({names}, {rep.get('created')})"),
+                                     media_type="text/markdown")
+        return to_jsonable(rep)
 
     @app.put("/v1/calibrations/{model}/active", tags=["calibration"], dependencies=[Depends(shared_writer)])
     async def set_active_calibration(model: str, req: ActiveRequest):

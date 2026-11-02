@@ -17,6 +17,9 @@ A dataset is a folder, or a ZIP archive of one, in either layout:
      report isn't flattered by near-duplicates. Optional; default: each file alone.
    - ``identity``: the enrolled person the media claims to show, for identity
      models. Optional.
+   - ``skin_tone``, ``age``, ``gender`` and any ``attr_<name>`` column: demographic
+     attributes for fairness reports (``forensix.fairness``). Optional. Skin tone as
+     Monk 1-10 or Fitzpatrick I-VI; age in years or as a band ("20-29").
 
 2. **Folders**: no manifest; every file under ``real/`` is real and every file
    under ``fake/`` is fake (subfolders allowed). Each file is its own group.
@@ -45,6 +48,7 @@ class Item:
     label: str  # "real" or "fake"
     group: str
     identity: str | None = None
+    attributes: dict = field(default_factory=dict, hash=False, compare=False)  # skin_tone, age, gender, attr_*
 
     @property
     def is_fake(self) -> bool:
@@ -70,6 +74,7 @@ class Dataset:
         return {"layout": self.layout, "n_items": len(self.items), "n_real": self.n_real, "n_fake": self.n_fake,
                 "n_groups": len({i.group for i in self.items}),
                 "with_identity": sum(i.identity is not None for i in self.items),
+                "attributes": sorted({k for i in self.items for k, v in i.attributes.items() if v}),
                 "problems": self.problems[:50], "n_problems": len(self.problems)}
 
 
@@ -114,7 +119,9 @@ def _read_manifest(root: Path, manifest: Path) -> Dataset:
                 problems.append(f"line {n}: {rel} listed twice")
             else:
                 seen.add(path)
-                items.append(Item(path, label, row.get("group") or rel, row.get("identity") or None))
+                attrs = {k.removeprefix("attr_"): v for k, v in row.items()
+                         if (k in ("skin_tone", "age", "gender") or k.startswith("attr_")) and v}
+                items.append(Item(path, label, row.get("group") or rel, row.get("identity") or None, attrs))
     return Dataset(root, items, "manifest", problems)
 
 

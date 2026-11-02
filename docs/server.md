@@ -68,6 +68,8 @@ Interactive API docs (OpenAPI) are at `http://localhost:8000/docs`, and the
 | `GET /v1/calibrations`, `GET /v1/calibrations/{model}` | user | Calibration versions per model and the one in use |
 | `GET /v1/calibrations/{model}/versions/{n}` | user | A fitted table and its report |
 | `PUT /v1/calibrations/{model}/active` | admin | Switch, roll back or turn off a model's calibration |
+| `POST /v1/fairness` | admin | Start a [fairness report](fairness.md): false-alarm rates by skin tone, age and gender on a dataset |
+| `GET /v1/fairness`, `GET /v1/fairness/{id}[?format=markdown]` | user | Saved fairness reports |
 
 ### `POST /v1/detect`
 

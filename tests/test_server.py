@@ -680,3 +680,32 @@ def test_leaderboard_is_public_and_falls_back_to_the_snapshot(tmp_path, monkeypa
     monkeypatch.setattr(forensix.leaderboard, "default_root", lambda: tmp_path)   # no results/ (a container)
     with client() as c:
         assert c.get("/v1/leaderboard").json()["source"] == "packaged snapshot"
+
+
+def test_fairness_report_end_to_end(tmp_path):
+    """Toy-image flags bright images; make one gender's real photos brighter, so it gets more false alarms."""
+    root = tmp_path / "fair"
+    (root / "media").mkdir(parents=True)
+    rows = ["file,label,group,gender,age"]
+    for i in range(40):
+        for gender, value in (("female", 200 if i % 2 else 60), ("male", 60)):  # half the women's photos bright
+            rel = f"media/{gender}_{i}.png"
+            (root / rel).write_bytes(png(value))
+            rows.append(f"{rel},real,{gender}{i},{gender},{20 + i}")
+    (root / "manifest.csv").write_text("\n".join(rows) + "\n")
+    with client(calibration_dir=str(tmp_path / "cal")) as c:
+        with open(zip_folder(root, tmp_path / "fair"), "rb") as f:
+            ds = c.post("/v1/datasets", files={"file": ("fair.zip", f)}).json()
+        assert set(ds["attributes"]) >= {"gender", "age"}
+        job = c.post("/v1/fairness", json={"dataset": ds["id"], "models": ["toy-image"], "estimate_skin_tone": False,
+                                           "min_group": 20})
+        assert job.status_code == 202, job.text
+        assert wait_for(c, job.json()["id"])["status"] == "done"
+        rep = c.get(f"/v1/fairness/{job.json()['id']}").json()
+        gender = rep["models"]["toy-image"]["by_attribute"]["gender"]
+        assert {g["group"]: g["false_alarm_rate"]["value"] for g in gender["groups"]} == {"female": 0.5, "male": 0.0}
+        assert gender["disparity"]["significant"] and rep["headline"]["attribute"] == "gender"
+        assert rep["models"]["toy-image"]["threshold_source"] == "model default"
+        assert "Fairness report" in c.get(f"/v1/fairness/{job.json()['id']}?format=markdown").text
+        assert c.get("/v1/fairness").json()["reports"][0]["id"] == job.json()["id"]
+        assert c.post("/v1/fairness", json={"dataset": ds["id"], "models": ["metadata"]}).status_code == 422

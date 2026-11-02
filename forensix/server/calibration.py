@@ -182,6 +182,56 @@ class CalibrationStore:
     def models(self) -> list[str]:
         return sorted(p.name for p in (self.root / "models").iterdir() if p.is_dir())
 
+    # -- fairness reports ------------------------------------------------------------
+
+    def save_fairness(self, report_id: str, report: dict) -> None:
+        d = self.root / "fairness"
+        d.mkdir(exist_ok=True)
+        (d / f"{report_id}.json").write_text(json.dumps(report, indent=1, default=str))
+
+    def fairness(self, report_id: str) -> dict | None:
+        p = self.root / "fairness" / f"{report_id}.json"
+        return json.loads(p.read_text()) if report_id.isalnum() and p.exists() else None
+
+    def fairness_reports(self) -> list[dict]:
+        d = self.root / "fairness"
+        if not d.exists():
+            return []
+        out = []
+        for p in d.glob("*.json"):
+            r = json.loads(p.read_text())
+            out.append({k: r.get(k) for k in ("id", "created", "datasets", "models_run", "n_items", "headline")})
+        return sorted(out, key=lambda r: r["created"] or "", reverse=True)
+
+    def skin_tone_estimates(self, dataset_id: str, dataset: Dataset) -> dict:
+        """ITA per item (None when it can't be estimated), cached with the dataset."""
+        cache = self.root / "datasets" / dataset_id / "skin_tone_ita.json"
+        if cache.exists():
+            return json.loads(cache.read_text())
+        from forensix.fairness import _yunet, estimate_skin_tone
+        from forensix.image.io import load_image
+        from forensix.video.io import read_frames
+
+        detector, out = _yunet(), {}
+        for item in dataset.items:
+            rel = str(item.path.relative_to(dataset.root))
+            try:
+                kind = probe(item.path).kind
+                if kind == "image":
+                    frame = np.array(load_image(item.path))
+                elif kind == "video":
+                    frames, _ = read_frames(item.path, 3)
+                    frame = frames[len(frames) // 2]
+                else:
+                    out[rel] = None
+                    continue
+                est = estimate_skin_tone(frame, detector)
+                out[rel] = est["ita"] if est else None
+            except Exception:
+                out[rel] = None
+        cache.write_text(json.dumps(out))
+        return out
+
 
 class Jobs:
     """Background calibration and drift-check jobs, run one at a time."""
@@ -224,6 +274,8 @@ class Jobs:
 
     def _execute(self, job: dict) -> None:
         p = job["params"]
+        if job["kind"] == "fairness":
+            return self._fairness(job)
         with tempfile.TemporaryDirectory(dir=self.config.tmp_dir) as tmp:
             prepared: dict[str, list[dict]] = {}  # per dataset, probed once for all models
             for model in p["models"]:
@@ -381,6 +433,67 @@ class Jobs:
         return {"status": "done", "version": version, "activated": p.get("activate", True), **report,
                 "n_skipped": len(new["skipped"]), "skipped": new["skipped"][:100]}
 
+    def _fairness(self, job: dict) -> None:
+        """Score the datasets with each model, then error rates by demographic group."""
+        from forensix.fairness import ita_terciles, report
+
+        p = job["params"]
+        items: dict[tuple, dict] = {}  # (dataset, file) -> item with attributes and scores
+        for dataset_id in p["datasets"]:
+            data = self.store.dataset(dataset_id)
+            itas = {}
+            if p.get("estimate_skin_tone") and not any(i.attributes.get("skin_tone") for i in data.items):
+                job["progress"] = {"stage": "estimating skin tone", "dataset": dataset_id}
+                itas = ita_terciles(self.store.skin_tone_estimates(dataset_id, data))
+            for item in data.items:
+                rel = str(item.path.relative_to(data.root))
+                attrs = dict(item.attributes)
+                if rel in itas:
+                    attrs["skin_tone"] = itas[rel]
+                items[(dataset_id, rel)] = {"label": item.label, "attributes": attrs, "scores": {},
+                                            "identity": item.identity}
+        models, skipped = {}, {}
+        with tempfile.TemporaryDirectory(dir=self.config.tmp_dir) as tmp:
+            prepared: dict[str, list[dict]] = {}
+            for model in p["models"]:
+                try:
+                    new = self._dataset_items(model, self.manager.fingerprint(model), p["datasets"], prepared,
+                                              Path(tmp), job)
+                except Exception as e:
+                    skipped[model] = f"{type(e).__name__}: {e}"
+                    continue
+                for r in new["rows"]:
+                    if (key := (r["dataset"], r["file"])) in items:
+                        items[key]["scores"][model] = r["score"]
+                models[model] = self._operating_point(model, new)
+                if new["skipped"]:
+                    models[model]["items_not_scored"] = len(new["skipped"])
+        job["progress"] = {"stage": "computing"}
+        rep = report(list(items.values()), models, attributes=p.get("attributes") or ("skin_tone", "age", "gender", "race"),
+                     min_group=p.get("min_group", 30))
+        infos = [self.store.dataset_info(d) or {"id": d} for d in p["datasets"]]
+        headline = _headline(rep)
+        full = {"id": job["id"], "created": _now(), "datasets": [{"id": i["id"], "name": i.get("name")} for i in infos],
+                "models_run": list(models), "models_skipped": skipped, "skin_tone_estimated": bool(p.get("estimate_skin_tone")),
+                "headline": headline, **rep}
+        self.store.save_fairness(job["id"], full)
+        job["results"] = {"report": job["id"], "headline": headline, "skipped": skipped}
+
+    def _operating_point(self, model: str, new: dict) -> dict:
+        """The threshold the model really runs at: its active calibration's, else the server's, else its own."""
+        family = self.manager.family(model)
+        kind = "identity" if family == "identity" else "detector"
+        if (active := self.store.active(model)) and math.isfinite(active[1].threshold):
+            # calibrated decisions flag scores strictly above the conformal threshold
+            return {"threshold": float(np.nextafter(active[1].threshold, np.inf)),
+                    "threshold_source": f"calibration v{active[0]}", "kind": kind,
+                    "family": family}
+        if model in self.config.thresholds:
+            return {"threshold": self.config.thresholds[model], "threshold_source": "server config", "kind": kind,
+                    "family": family}
+        return {"threshold": new["threshold"], "threshold_source": "model default" if new["threshold"] is not None
+                else "none (anomaly score)", "kind": kind, "family": family}
+
     def _check(self, model: str, new: dict, p: dict) -> dict:
         active = self.store.active(model)
         if active is None:
@@ -414,6 +527,17 @@ def _drift(cal: Calibration, rows: list[dict], level: float) -> dict:
         result["auc"] = binary_summary(scores[is_fake], scores[~is_fake], None)["auc"]
     result["threshold"] = None if math.isinf(result["threshold"]) else result["threshold"]
     return result
+
+
+def _headline(rep: dict) -> dict | None:
+    """The largest significant disparity across models and attributes, for the report list."""
+    worst = None
+    for model, m in rep["models"].items():
+        for attr, a in m.get("by_attribute", {}).items():
+            d = a.get("disparity")
+            if d and (worst is None or d["difference"] > worst["difference"]):
+                worst = {"model": model, "attribute": attr, **d}
+    return worst
 
 
 def fingerprint_of(parts: dict) -> str:

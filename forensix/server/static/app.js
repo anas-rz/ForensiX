@@ -361,7 +361,7 @@ let cleanups = [];
 function every(ms, fn) { const id = setInterval(fn, ms); cleanups.push(() => clearInterval(id)); }
 const page = () => document.getElementById("page");
 
-const ROUTES = { overview: overviewPage, leaderboard: leaderboardPage, models: modelsPage, model: modelPage, test: testPage, calibration: calibrationPage, settings: settingsPage };
+const ROUTES = { overview: overviewPage, leaderboard: leaderboardPage, fairness: fairnessPage, models: modelsPage, model: modelPage, test: testPage, calibration: calibrationPage, settings: settingsPage };
 
 function route() {
   cleanups.forEach((f) => f());
@@ -760,8 +760,8 @@ function loadedCard(models, inUse, refresh) {
 }
 
 function jobRow(j) {
-  const kinds = { calibrate: "Calibration", check: "Drift check" };
-  return [el("a", { href: `#/calibration/${j.id}`, text: j.id }), kinds[j.kind] || j.kind, jobStatus(j.status), when(j.created)];
+  const kinds = { calibrate: "Calibration", check: "Drift check", fairness: "Fairness report" };
+  return [el("a", { href: `#/${j.kind === "fairness" ? "fairness" : "calibration"}/${j.id}`, text: j.id }), kinds[j.kind] || j.kind, jobStatus(j.status), when(j.created)];
 }
 
 function jobStatus(status) {
@@ -965,6 +965,176 @@ function excludedCard(excluded) {
   if (!excluded || !excluded.length) return null;
   return el("div", { class: "card" }, el("h2", { text: "Not on this leaderboard" }),
     el("ul", { class: "warn-list" }, excluded.map((e) => el("li", {}, el("strong", { text: e.name }), ` (${e.license}): ${e.reason}`))));
+}
+
+// -- fairness --------------------------------------------------------------------------------------
+
+/** False-alarm rate per group (dot + 95% interval) against the model's overall rate. */
+function groupRates(groups, overall, width, metric = "false_alarm_rate") {
+  const rows = groups.filter((g) => g[metric] && isNum(g[metric].value));
+  const row = 30, m = { l: 170, r: 70, t: 18, b: 28 };
+  const W = Math.max(320, width), H = m.t + rows.length * row + m.b, pw = W - m.l - m.r;
+  const hi = Math.max(0.05, ...rows.map((g) => g[metric].ci[1]), overall || 0) * 1.08;
+  const xs = (v) => m.l + (v / hi) * pw;
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img", "aria-label": `${metric.replace(/_/g, " ")} by group with 95% intervals` });
+  niceTicks(hi, 4).filter((t) => t <= hi).forEach((t) => {
+    svg.append(sv("line", { class: "gridline", x1: xs(t), x2: xs(t), y1: m.t - 6, y2: H - m.b }));
+    svg.append(sv("text", { class: "axis-label", x: xs(t), y: H - 8, "text-anchor": "middle" }, pct(t, 0)));
+  });
+  if (isNum(overall)) {
+    svg.append(sv("line", { x1: xs(overall), x2: xs(overall), y1: m.t - 8, y2: H - m.b, stroke: "var(--ink-2)", "stroke-width": 1.5 }));
+    svg.append(sv("text", { class: "axis-label", x: xs(overall) + 4, y: m.t - 6 }, `overall ${pct(overall)}`));
+  }
+  rows.forEach((g, i) => {
+    const y = m.t + i * row + row / 2, r = g[metric], [a, b] = r.ci;
+    svg.append(sv("text", { class: "value-label", x: m.l - 10, y: y + 4, "text-anchor": "end" }, `${g.group} (n=${r.n})`));
+    svg.append(sv("line", { x1: xs(a), x2: xs(b), y1: y, y2: y, stroke: "var(--series-1)", "stroke-width": 2, "stroke-linecap": "round", opacity: g.reliable ? 1 : 0.5 }));
+    svg.append(sv("circle", { cx: xs(r.value), cy: y, r: 5, fill: g.reliable ? "var(--series-1)" : "var(--surface)", stroke: g.reliable ? "var(--surface)" : "var(--series-1)", "stroke-width": 2 }));
+    svg.append(sv("text", { class: "value-label", x: W - m.r + 8, y: y + 4 }, pct(r.value)));
+    svg.append(sv("rect", { x: 0, y: y - row / 2, width: W, height: row, fill: "transparent",
+      onpointermove: (e) => showTip(e, [
+        { value: pct(r.value), label: `${g.group} · ${metric === "false_alarm_rate" ? "false alarms" : "detection"}`, color: "var(--series-1)", key: "line" },
+        { value: `[${pct(a)}, ${pct(b)}]`, label: "95% interval" },
+        { value: `${r.k} of ${r.n}`, label: g.reliable ? "" : "too few to compare" }]),
+      onpointerleave: hideTip }));
+  });
+  return el("div", { class: "chart" }, svg);
+}
+
+const ATTR_LABEL = { skin_tone: "Skin tone", age: "Age", gender: "Gender", race: "Race (as annotated)" };
+
+async function fairnessPage(root, param) {
+  const reportId = param || null;
+  const [list, datasets, models] = await Promise.all([api("/v1/fairness"), api("/v1/datasets"), api("/v1/models")]);
+  const reportHolder = el("div");
+  put(root,
+    head("Fairness", "False-alarm rates by skin tone, age and gender at each model's operating threshold: does a detector wrongly flag real media of some groups more than others?"),
+    el("div", { class: "stack" },
+      el("div", { class: "grid cols-2" }, newFairnessCard(datasets.datasets, models.models), reportsCard(list.reports, reportId)),
+      reportHolder, methodologyCard()));
+  const id = reportId || (list.reports[0] && list.reports[0].id);
+  if (id) {
+    const showJob = async () => {
+      const rep = await api(`/v1/fairness/${encodeURIComponent(id)}`).catch(() => null);
+      if (rep) { renderFairness(reportHolder, rep); return true; }
+      const job = await api(`/v1/jobs/${encodeURIComponent(id)}`).catch(() => null);
+      if (!job) { put(reportHolder, el("div", { class: "banner", text: `No report ${id}.` })); return true; }
+      const p = job.progress || {};
+      put(reportHolder, el("div", { class: "card" }, el("div", { class: "card-head" }, el("h2", { text: `Report ${id}` }), jobStatus(job.status)),
+        job.error ? el("div", { class: "banner", text: job.error }) : null,
+        el("div", { class: "small", text: p.stage ? `${p.stage}${p.model ? " · " + p.model : ""}${p.total ? ` · ${p.scored ?? p.done ?? 0} / ${p.total}` : ""}` : "Queued" }),
+        p.total ? el("div", { class: "progress", style: { marginTop: "8px" } }, el("div", { style: { width: `${(((p.scored ?? p.done ?? 0) / p.total) * 100).toFixed(0)}%` } })) : null));
+      return job.status === "failed";
+    };
+    if (!(await showJob())) {
+      const t = setInterval(async () => { try { if (await showJob()) clearInterval(t); } catch (e) { clearInterval(t); } }, 2000);
+      cleanups.push(() => clearInterval(t));
+    }
+  } else {
+    put(reportHolder, el("div", { class: "card" }, el("div", { class: "empty", text: "No fairness report yet. Upload a dataset with demographic columns (or FairFace via scripts/build_fairface_set.py) and start one." })));
+  }
+}
+
+function newFairnessCard(datasets, models) {
+  const chosenData = new Set(), chosenModels = new Set();
+  const eligible = models.filter((m) => m.available && ["video", "image", "identity", "specialized", "audiovisual", "fusion"].includes(m.family));
+  const estimate = el("input", { type: "checkbox", checked: true });
+  const minGroup = el("input", { type: "number", min: "5", value: "30" });
+  const go = el("button", { class: "primary", type: "button", text: "Start report" });
+  go.onclick = guard(async () => {
+    if (!chosenData.size || !chosenModels.size) { toast("Choose a dataset and at least one model", "error"); return; }
+    const job = await api("/v1/fairness", { method: "POST", admin: true, json: { datasets: [...chosenData], models: [...chosenModels], estimate_skin_tone: estimate.checked, min_group: +minGroup.value || 30 } });
+    toast(`Started fairness report ${job.id}`, "ok");
+    location.hash = `#/fairness/${job.id}`;
+  });
+  return el("div", { class: "card" }, el("h2", { text: "New report" }),
+    el("div", { class: "stack", style: { gap: "12px" } },
+      el("div", {}, el("div", { class: "small muted", text: "Datasets (attributes in brackets)" }),
+        datasets.length ? choiceList(datasets.map((d) => ({ value: d.id, label: `${d.name} (${d.n_real} real${(d.attributes || []).length ? "; " + d.attributes.join(", ") : "; no attributes"})` })), chosenData)
+          : el("div", { class: "small muted", text: "Upload a dataset on the Calibration page first." })),
+      el("div", {}, el("div", { class: "small muted", text: "Face and identity models" }), choiceList(eligible.map((m) => ({ value: m.name, label: m.name })), chosenModels)),
+      el("div", { class: "form-grid" },
+        el("label", { class: "check" }, estimate, "Estimate skin tone when not labelled"),
+        el("label", { class: "field" }, "Smallest group compared", minGroup)),
+      el("div", { class: "row" }, go)));
+}
+
+function reportsCard(reports, current) {
+  return el("div", { class: "card" }, el("h2", { text: "Reports" }),
+    reports.length ? simpleTable(["Report", "Created", "Datasets", "Largest disparity"], reports.map((r) => {
+      const h = r.headline;
+      return [el("a", { href: `#/fairness/${r.id}`, text: r.id + (r.id === current ? " ●" : "") }), when(r.created),
+        (r.datasets || []).map((d) => d.name || d.id).join(", "),
+        h ? el("span", {}, h.significant ? statusMark("warning", `${(h.difference * 100).toFixed(1)} pts`) : el("span", { text: `${(h.difference * 100).toFixed(1)} pts` }),
+          el("span", { class: "small muted", text: ` ${h.model} · ${h.attribute}` })) : el("span", { class: "muted", text: "—" })];
+    })) : el("div", { class: "empty", text: "None yet." }));
+}
+
+function renderFairness(holder, rep) {
+  const models = Object.entries(rep.models);
+  const sig = [];
+  models.forEach(([m, d]) => Object.entries(d.by_attribute || {}).forEach(([a, x]) => { if (x.disparity && x.disparity.significant) sig.push([m, a, x.disparity]); }));
+  const h = rep.headline;
+  const dl = (fmt) => el("button", { class: "small", type: "button", text: fmt === "json" ? "Download JSON" : "Download report (Markdown)", onclick: guard(async () => {
+    const r = await fetch(`/v1/fairness/${rep.id}${fmt === "json" ? "" : "?format=markdown"}`, { headers: authHeaders(false) });
+    const blob = new Blob([await r.text()], { type: fmt === "json" ? "application/json" : "text/markdown" });
+    const a = el("a", { href: URL.createObjectURL(blob), download: `fairness-${rep.id}.${fmt === "json" ? "json" : "md"}` });
+    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }) });
+  put(holder, el("div", { class: "stack" },
+    el("div", { class: "card" },
+      el("div", { class: "card-head" }, el("h2", { text: `Report ${rep.id}` }), el("div", { class: "row" }, dl("json"), dl("markdown"))),
+      el("p", { class: "sub small", style: { marginTop: "-6px" }, text: `${(rep.datasets || []).map((d) => d.name || d.id).join(", ")} · ${rep.n_items} items · created ${when(rep.created)}${rep.skin_tone_estimated ? " · skin tone estimated from photos where not labelled" : ""}` }),
+      tiles([
+        { label: "Models audited", value: String(models.length), note: Object.keys(rep.models_skipped || {}).length ? `${Object.keys(rep.models_skipped).length} skipped` : null },
+        { label: "Significant disparities", value: sig.length ? statusMark("warning", String(sig.length)) : statusMark("good", "0"), note: `p < 0.05, groups of ${rep.min_group}+` },
+        { label: "Largest gap", value: h ? `${(h.difference * 100).toFixed(1)} pts` : "—", note: h ? `${h.model} · ${ATTR_LABEL[h.attribute] || h.attribute}: ${h.highest} vs ${h.lowest}` : null },
+        { label: "Largest ratio", value: h && isNum(h.ratio) ? `${h.ratio.toFixed(2)}×` : "—", note: h ? `${pct(h.highest_rate)} vs ${pct(h.lowest_rate)}` : null },
+      ]),
+      Object.keys(rep.models_skipped || {}).length ? el("ul", { class: "warn-list" }, Object.entries(rep.models_skipped).map(([m, e]) => el("li", { text: `${m}: ${e}` }))) : null),
+    models.map(([name, d]) => modelFairnessCard(name, d, rep.min_group))));
+}
+
+function modelFairnessCard(name, d, minGroup) {
+  const card = el("div", { class: "card" });
+  const o = d.overall;
+  card.append(el("div", { class: "card-head" },
+    el("h2", {}, el("a", { href: `#/model/${encodeURIComponent(name)}`, text: name })),
+    el("span", { class: "small muted", text: isNum(d.threshold) ? `threshold ${num(d.threshold, 4)} · ${d.threshold_source}${d.kind === "identity" ? " · false alarm = genuine person flagged" : ""}` : (d.threshold_source || "") })));
+  if (o) card.append(el("div", { class: "small", style: { marginBottom: "8px" } }, "Overall false alarms ", rateCell(o.false_alarm_rate),
+    o.detection_rate ? el("span", {}, " · detections ", rateCell(o.detection_rate)) : null));
+  const attrs = Object.entries(d.by_attribute || {});
+  if (!attrs.length) card.append(el("div", { class: "empty", text: "No demographic attributes to report." }));
+  const grid = el("div", { class: "grid cols-2" });
+  attrs.forEach(([attr, a]) => {
+    const box = el("div", {});
+    const dis = a.disparity;
+    const holder = el("div");
+    const table = simpleTable(["Group", "Real", "False alarms", "Fake", "Detection"], a.groups.map((g) => [
+      g.reliable ? g.group : el("span", { title: `fewer than ${minGroup} real items`, text: `${g.group} ⚠` }), String(g.n_real), rateCell(g.false_alarm_rate), String(g.n_fake), rateCell(g.detection_rate)]), [1, 2, 3, 4]);
+    const view = withTableView(holder, table);
+    box.append(el("div", { class: "card-head", style: { marginBottom: "4px" } },
+      el("h3", { style: { margin: 0 }, text: (ATTR_LABEL[attr] || attr) + (a.estimated ? " (estimated)" : "") }), view.toggle), view.node,
+      dis ? el("div", { class: "small", style: { marginTop: "4px" } },
+        dis.significant ? statusMark("warning", "Significant disparity") : statusMark("good", "No significant disparity"),
+        el("span", { class: "muted", text: ` ${dis.highest} ${pct(dis.highest_rate)} vs ${dis.lowest} ${pct(dis.lowest_rate)} · ${(dis.difference * 100).toFixed(1)} pts${isNum(dis.ratio) ? ` · ${dis.ratio.toFixed(2)}×` : ""} · p = ${dis.p_value < 0.001 ? "<0.001" : dis.p_value.toFixed(3)}` }))
+        : el("div", { class: "small muted", text: `Not enough groups with ${minGroup}+ real items to compare.` }));
+    grid.append(box);
+    requestAnimationFrame(() => put(holder, groupRates(a.groups, o && o.false_alarm_rate.value, holder.clientWidth || 480)));
+  });
+  card.append(grid);
+  if ((d.warnings || []).length) card.append(el("ul", { class: "warn-list" }, d.warnings.map((w) => el("li", { text: w }))));
+  return card;
+}
+
+function methodologyCard() {
+  return el("div", { class: "card" }, el("h2", { text: "How to read this" }),
+    el("ul", { class: "warn-list" },
+      el("li", { text: "False alarm: real media flagged as fake, at the threshold the model actually runs at (its active calibration, else the server's threshold, else its default). For identity models: a genuine person flagged as not themselves." }),
+      el("li", { text: "Intervals are 95% (Wilson). Disparity compares the groups with the highest and lowest rate among groups with enough real items, with a two-sided Fisher exact test; significant means p < 0.05." }),
+      el("li", { text: "Hollow dots and ⚠ mark groups too small to compare: their rates are reported but too uncertain to draw conclusions from." }),
+      el("li", { text: "Estimated skin tone splits the dataset into lighter, middle and darker thirds by the Individual Typology Angle of facial skin. It's sensitive to lighting and white balance; for audits, annotate skin tone (Monk 1-10) in the dataset's skin_tone column." }),
+      el("li", { text: "Results describe this dataset. Use real media representative of the people your deployment will see." })));
 }
 
 // -- models ----------------------------------------------------------------------------
