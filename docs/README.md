@@ -12,6 +12,7 @@ preprocessing details and parity checks against upstream code.
 
 | If you want to… | Read |
 |---|---|
+| Go from a fresh checkout to the running server and web manager in ten minutes | [Quickstart](getting-started.md) |
 | Install ForensiX and score your first file | [Installation](guides/installation.md) |
 | Understand the building blocks (registry, `Prediction`, score types, families) | [Concepts](concepts.md) |
 | Look up a function, class or field | [API reference](api-reference.md) |

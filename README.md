@@ -4,6 +4,25 @@ A PyTorch model zoo for **deepfake detection and multimodal media forensics**: a
 
 All bundled models and weights are under **commercially usable licenses**.
 
+It ships with an HTTP server and a web manager for testing, calibrating and monitoring the detectors:
+
+![The ForensiX web manager: overview dashboard](docs/images/ui/overview.png)
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/ui/test.png" alt="Scoring a file with detectors and provenance checks"><br><b>Test</b>: score an image, video or audio file with any models; provenance checks show what the file itself proves.</td>
+    <td width="50%"><img src="docs/images/ui/leaderboard.png" alt="Leaderboard with AUC confidence intervals"><br><b>Leaderboard</b>: every model on commercially usable benchmarks, with 95% confidence intervals.</td>
+  </tr>
+  <tr>
+    <td><img src="docs/images/ui/model.png" alt="A calibrated model's versions and performance"><br><b>Models and calibration</b>: calibrate a model on your own labelled data and see how each version performs.</td>
+    <td><img src="docs/images/ui/fairness.png" alt="Fairness report by skin tone, age and gender"><br><b>Fairness</b>: false-alarm rates by skin tone, age and gender, with intervals and significance tests.</td>
+  </tr>
+  <tr>
+    <td><img src="docs/images/ui/models.png" alt="Model registry"><br><b>Models</b>: every registered detector, its license and state; load or unload it.</td>
+    <td><img src="docs/images/ui/calibration.png" alt="A calibration job report"><br><b>Calibration jobs</b>: full, incremental and refit calibrations with before/after reports.</td>
+  </tr>
+</table>
+
 ## Install
 
 ```bash
@@ -19,7 +38,14 @@ Every model on commercially usable benchmarks (SDFVD face swaps, ASVspoof 2019 L
 
 ## Documentation
 
-[docs/](docs/README.md) has the [concepts](docs/concepts.md), the [API reference](docs/api-reference.md), [recipes](docs/recipes.md) for common tasks, [guides](docs/README.md#guides) (choosing detectors, interpreting scores, evaluation, identity, physics, training, Colab, extending, licensing), the [HTTP server](docs/server.md), and [deployment at scale](docs/deployment.md).
+Start with the [Quickstart](docs/getting-started.md): install, score a file in Python, run the server and use the web manager. [docs/](docs/README.md) also has the [concepts](docs/concepts.md), the [API reference](docs/api-reference.md), [recipes](docs/recipes.md) for common tasks, [guides](docs/README.md#guides) (choosing detectors, interpreting scores, evaluation, identity, physics, training, Colab, extending, licensing), the [HTTP server](docs/server.md), [calibration](docs/calibration.md), [provenance](docs/provenance.md), [fairness reports](docs/fairness.md), and [deployment at scale](docs/deployment.md).
+
+The same pages build into a searchable documentation site with [MkDocs](https://www.mkdocs.org/):
+
+```bash
+pip install -e ".[docs]"
+mkdocs serve        # http://127.0.0.1:8000 (add -a 127.0.0.1:8001 if the ForensiX server is on 8000)
+```
 
 ## Provenance
 

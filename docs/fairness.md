@@ -76,6 +76,8 @@ script's docstring has the download command. Race is FairFace's annotation and i
 model and attribute, each group's false-alarm rate and interval against the overall rate, with
 disparity verdicts, and downloads as Markdown or JSON.
 
+![A fairness report in the web manager](images/ui/fairness.png)
+
 **HTTP:**
 
 ```bash

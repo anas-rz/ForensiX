@@ -13,6 +13,8 @@ It's a static page served by the server (`forensix/server/static/`). It has no b
 loads nothing from the internet, so it also works on air-gapped deployments. Everything it shows
 comes from the [HTTP API](server.md), so anything you do in the UI can be scripted.
 
+![The overview dashboard](images/ui/overview.png)
+
 ## Pages
 
 | Page | What you can do |
@@ -60,6 +62,8 @@ Every chart has a tooltip on hover, and the main ones have a **Table view**.
 
 One tab per benchmark, plus **Speed**. Links can open a tab: `/ui/#/leaderboard?b=asvspoof2019-la`.
 
+![The leaderboard](images/ui/leaderboard.png)
+
 - **Forest plot:** each model's AUC (dot) and 95% interval (line). The shaded band is the
   leader's interval: a model whose line reaches into it is **tied** with the leader, because the
   data can't separate them. The line at 0.5 is chance. Benchmarks without saved per-item scores
@@ -76,6 +80,8 @@ The same data is in [LEADERBOARD.md](../LEADERBOARD.md) and at `GET /v1/leaderbo
 ([Evaluation: the leaderboard](guides/evaluation.md#the-leaderboard)).
 
 ## Reading model performance
+
+![A calibrated model's page](images/ui/model.png)
 
 A model's page shows the performance of a calibration version on its own calibration data,
 measured out of fold (each item scored by a calibration fitted without it):
