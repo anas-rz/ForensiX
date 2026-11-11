@@ -1010,12 +1010,32 @@ scripts/
 
 ## Why ForensiX exists
 
-> *Draft for the maintainer to edit:* When I looked for deepfake detection to build into products,
-> the strongest research models were often released for research use only, and the commercial
-> options gave me a score without the evidence or the numbers behind it. ForensiX brings together
-> the models that *can* be used commercially, measures them in the open, and adds what a real
-> deployment needs: provenance checks, calibration, fairness reports and a way to run it all on
-> your own infrastructure. — Muhammad Anas Raza
+> I worked on deepfakes for my master's research, which led to papers at CVPR Workshops,
+> *Information Sciences* and IJCB, where one received a best paper award. When I looked for
+> tools to use beyond research, I found open-source detectors, but nothing that could quantify
+> its own uncertainty or stay calibrated as the data and the generators keep changing. A detector
+> that is confident and wrong on next month's generator is worse than one that says "I'm not
+> sure".
+>
+> So I started building the tool I wished I'd had. It detects fakes across images, video and voice,
+> and it also looks for the things generators still get wrong in the physical world, like a pulse
+> that doesn't show in the skin, shadows that don't agree with the light, or a voice that doesn't
+> belong in the room it was recorded in. When the evidence is mixed, it says it isn't sure. When a
+> new generator shows up, you can teach it on your own media with a small fine-tune or a LoRA
+> adapter of a few megabytes, and recalibrate as things drift. I wanted the evidence a file carries
+> about itself, like Content Credentials and watermarks, to sit next to the scores. And I wanted the
+> numbers, including how fair the detectors are across skin tones, ages and genders, to be out in
+> the open where anyone can check them.
+>
+> Most of all, I wanted it to leave the notebook. That meant an API, a web console, and documented,
+> one-command deployments to AWS, Google Cloud and Azure, because a detector only helps if people
+> can actually run it.
+>
+> I build it on weekends.
+>
+> — Muhammad Anas Raza
+>
+> *ForensiX is a personal project. It isn't affiliated with, and doesn't represent, my employer.*
 
 ## Community
 
