@@ -672,6 +672,8 @@
       
         
       
+        
+      
     
     
     
@@ -984,6 +986,34 @@
     
   
     Licensing and compliance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/buyers-checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Buyer's checklist
   
 
     
@@ -1588,10 +1618,32 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#try-it-on-sample-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Try it on sample files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#why-teams-choose-forensix" class="md-nav__link">
     <span class="md-ellipsis">
       
         Why teams choose ForensiX
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-we-measure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How we measure
       
     </span>
   </a>
@@ -1643,10 +1695,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#get-started" class="md-nav__link">
+  <a href="#get-started-one-step-at-a-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Get started
+        Get started, one step at a time
       
     </span>
   </a>
@@ -1851,6 +1903,28 @@
     <span class="md-ellipsis">
       
         Adding a model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-forensix-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why ForensiX exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#community" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Community
       
     </span>
   </a>
@@ -2124,10 +2198,32 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#try-it-on-sample-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Try it on sample files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#why-teams-choose-forensix" class="md-nav__link">
     <span class="md-ellipsis">
       
         Why teams choose ForensiX
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-we-measure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How we measure
       
     </span>
   </a>
@@ -2179,10 +2275,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#get-started" class="md-nav__link">
+  <a href="#get-started-one-step-at-a-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Get started
+        Get started, one step at a time
       
     </span>
   </a>
@@ -2394,6 +2490,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#why-forensix-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why ForensiX exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#community" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Community
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#license" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2429,13 +2547,26 @@
 generator watermarks and metadata. It <strong>adapts to your own media</strong> and runs as an <strong>API and web
 console</strong> on your laptop, your Kubernetes cluster, or <strong>AWS, Google Cloud and Azure</strong>. Every bundled
 model and weight is under a commercially usable license.</p>
+<h3 id="try-it-on-sample-files">Try it on sample files<a class="headerlink" href="#try-it-on-sample-files" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/anas-rz/ForensiX.git<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>ForensiX
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[provenance]"</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>python<span class="w"> </span>scripts/fetch_samples.py<span class="w">         </span><span class="c1"># a small, labelled test kit of real and fake media</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>python<span class="w"> </span>-m<span class="w"> </span>forensix<span class="w"> </span>forensix-samples/images/fake/dalle3_angry_man.jpg<span class="w"> </span>forensix-samples/provenance/c2pa_tampered.jpg
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>dalle3_angry_man.jpg (image)
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  commfor          FAKE   0.976  (threshold 0.5)
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  c2pa             no_credentials         No Content Credentials (C2PA) in this file.
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>c2pa_tampered.jpg (image)
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  c2pa             tampered               Content Credentials signed by C2PA Test Signing Cert no longer match the content: it was modified after signing.
+</code></pre></div>
+<p>(Output abridged. The first run downloads model weights.)</p>
 <p><strong><a href="https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb">Try it in Colab: no install</a></strong> · <strong><a href="https://anas-rz.github.io/ForensiX/">Read the docs</a></strong> · <strong><a href="../../cloud/#managed-clouds">Deploy to your cloud</a></strong></p>
 <h2 id="why-teams-choose-forensix">Why teams choose ForensiX<a class="headerlink" href="#why-teams-choose-forensix" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Built for commercial use.</strong> Every bundled model and weight is under a commercially usable
   license, documented model by model, with the conditions to check before you ship in the
-  <a href="../../guides/licensing/">licensing guide</a>. Research weights with non-commercial terms are left
-  out.</li>
+  <a href="../../guides/licensing/">licensing guide</a>. Many published deepfake detectors release weights for
+  research use only; those are left out, so what's here can go into a product.</li>
 <li><strong>Every modality, one API.</strong> Image generators, face swaps, cloned voices, lip-sync mismatches,
   physical and physiological inconsistencies, identity and provenance: 38 detectors in 8 families
   behind <code>forensix.load(name).predict(file)</code> and a single <code>/v1/detect</code> endpoint.</li>
@@ -2444,9 +2575,7 @@ model and weight is under a commercially usable license.</p>
   "can't tell" when the evidence is mixed. Provenance adds proof that no score can: a signed
   AI-generation declaration, an edit after signing, a generator's watermark.</li>
 <li><strong>Proof, not promises.</strong> A public, reproducible <a href="../leaderboard/">leaderboard</a> with 95% confidence
-  intervals, recomputed from raw result files. For example, <code>gend-pe</code> reaches <strong>AUC 0.956
-  [0.919–0.983]</strong> on SDFVD face swaps, and <code>xlsr-aasist-df</code> <strong>0.0% EER</strong> on an ASVspoof 2019 LA
-  subset.</li>
+  intervals, recomputed from raw result files (<a href="#how-we-measure">excerpt below</a>).</li>
 <li><strong>Fairness you can show.</strong> <a href="../../fairness/">Fairness reports</a> give false-alarm rates by skin
   tone, age and gender, with confidence intervals and significance tests: the evidence buyers and
   regulators ask for.</li>
@@ -2457,6 +2586,44 @@ model and weight is under a commercially usable license.</p>
   results, and comes with a web console, Prometheus metrics, Docker and Kubernetes manifests, and
   <a href="../../cloud/#managed-clouds">one-command or one-click deployment</a> to AWS, Google Cloud and Azure.</li>
 </ul>
+<h2 id="how-we-measure">How we measure<a class="headerlink" href="#how-we-measure" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Top models (AUC or EER, 95% interval)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SDFVD face swaps</strong>: 53 real and 53 face-swapped videos</td>
+<td><code>gend-pe</code> AUC 0.956 [0.919, 0.983] · <code>gend</code> 0.919 [0.864, 0.961] · <code>dfdet-clip</code> 0.916 [0.861, 0.963]</td>
+</tr>
+<tr>
+<td><strong>ASVspoof 2019 LA subset</strong>: 2,001 trials</td>
+<td><code>xlsr-aasist-df</code> EER 0.0% [0.0, 0.2] · <code>nes2net-x-itw</code> 0.1% [0.0, 0.2] · <code>nes2net-x</code> 0.2% [0.0, 0.4]</td>
+</tr>
+</tbody>
+</table>
+<p>These are small public benchmarks, and the ASVspoof attacks are older ones, so treat them as a
+starting point, not a promise for your media. At the default threshold of 0.5, <code>gend-pe</code> also
+flags 24.5% of the real SDFVD videos, which is why ForensiX
+<a href="../../calibration/">calibrates</a> the threshold on your own data.</p>
+<ul>
+<li><strong>Intervals, not single numbers:</strong> bootstrap intervals for AUC and Wilson intervals for rates,
+  with dataset sizes stated.</li>
+<li><strong>Recomputable:</strong> every number is rebuilt from saved per-item scores by
+  <code>python scripts/build_leaderboard.py</code>, and each benchmark lists the command that produced it.</li>
+<li><strong>Faithful ports:</strong> each ported model is checked for parity against its upstream implementation
+  (<a href="#verification">verification</a>).</li>
+<li><strong>Licensed test data:</strong> only benchmarks whose license allows commercial use.</li>
+</ul>
+<p>The work lines up with public standards and practice, without claiming certification:
+<a href="https://c2pa.org/specifications/">C2PA</a> Content Credentials for provenance; transparency duties
+for AI-generated content such as Article 50 of the
+<a href="https://eur-lex.europa.eu/eli/reg/2024/1689/oj">EU AI Act</a>; and per-group error reporting, as in
+NIST's <a href="https://pages.nist.gov/frvt/html/frvt_demographics.html">face recognition evaluations</a>,
+for fairness.</p>
 <h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
 <p><picture>
   <source media="(prefers-color-scheme: dark)" srcset="../../images/diagrams/architecture-dark.svg">
@@ -2538,23 +2705,23 @@ not just a number.</p>
 <tbody>
 <tr>
 <td><strong>Trust &amp; safety, marketplaces, social platforms</strong></td>
-<td>Flag AI-generated images and face-swapped video at upload, and read signed AI declarations</td>
+<td>Catch AI-generated profile photos, fake listings and face-swapped videos at upload, and honor signed "made with AI" labels</td>
 </tr>
 <tr>
 <td><strong>Identity verification and KYC</strong></td>
-<td>Check selfie videos for face swaps and lip-sync, and confirm the face matches the enrolled person</td>
+<td>Stop face-swap and replayed selfie videos during onboarding, and confirm the face belongs to the account holder</td>
 </tr>
 <tr>
 <td><strong>Fraud teams and contact centers</strong></td>
-<td>Detect cloned voices in calls and voicemails</td>
+<td>Spot cloned voices in calls and voicemails: "it's me, approve the wire transfer"</td>
 </tr>
 <tr>
 <td><strong>Newsrooms and fact-checkers</strong></td>
-<td>Verify Content Credentials, spot edits after signing, and explain the evidence</td>
+<td>Check where an image came from, whether it was edited after signing, and show readers the evidence</td>
 </tr>
 <tr>
 <td><strong>Compliance and procurement</strong></td>
-<td>Show licenses, reproducible benchmarks and fairness reports</td>
+<td>Answer due-diligence questions with licenses, reproducible benchmarks and fairness reports (<a href="../../guides/buyers-checklist/">buyer's checklist</a>)</td>
 </tr>
 </tbody>
 </table>
@@ -2576,38 +2743,43 @@ not just a number.</p>
   </tr>
 </table>
 
-<h2 id="get-started">Get started<a class="headerlink" href="#get-started" title="Permanent link">&para;</a></h2>
-<p><strong>No install:</strong> the <a href="https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb">Colab notebook</a>
-detects, calibrates, evaluates and runs the web console on a free GPU, with sample media.</p>
-<p><strong>On your machine:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/anas-rz/ForensiX.git<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>ForensiX
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[server]"</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>python<span class="w"> </span>-m<span class="w"> </span>forensix.server<span class="w"> </span>--preload<span class="w"> </span>commfor<span class="w"> </span>nes2net-x-itw<span class="w">      </span><span class="c1"># then open http://localhost:8000/ui/</span>
-</code></pre></div>
-<p><strong>In containers:</strong> <code>docker compose up -d --build</code>, or deploy to <a href="../../aws/">AWS</a>,
-<a href="../../gcp/">Google Cloud</a> or <a href="../../azure/">Azure</a> with one command.</p>
+<h2 id="get-started-one-step-at-a-time">Get started, one step at a time<a class="headerlink" href="#get-started-one-step-at-a-time" title="Permanent link">&para;</a></h2>
+<p>Each step builds on the last, and you can stop at any of them.</p>
+<ol>
+<li><strong>Score a file.</strong> Run the <a href="#try-it-on-sample-files">sample commands above</a> on the test kit or
+   your own files, or open the <a href="https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb">Colab notebook</a> with nothing installed.</li>
+<li><strong>Run the web console.</strong> <code>pip install -e ".[server]"</code>, then
+   <code>python -m forensix.server --preload commfor nes2net-x-itw</code> and open http://localhost:8000/ui/.
+   The <a href="../../getting-started/">Quickstart</a> walks through it.</li>
+<li><strong>Measure and calibrate on your media.</strong> Upload a labelled set in the console, or follow
+   <a href="../../calibration/">Calibration</a>, to see how the models do on <em>your</em> data and set your
+   false-alarm budget.</li>
+<li><strong>Adapt if needed.</strong> If accuracy on your data isn't enough, <a href="../../guides/finetuning/">fine-tune</a>,
+   including with <a href="../../guides/peft/">LoRA</a>.</li>
+<li><strong>Deploy.</strong> Run <code>docker compose up -d --build</code>, or deploy to <a href="../../aws/">AWS</a>,
+   <a href="../../gcp/">Google Cloud</a> or <a href="../../azure/">Azure</a> with one command.</li>
+</ol>
 <p>Weights download on first use into <code>~/.cache/forensix</code> (override with <code>FORENSIX_CACHE</code>) and are
-checked against SHA-256 hashes. To fetch them ahead of time, run <code>python scripts/download_weights.py</code>.
-The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
+checked against SHA-256 hashes. To fetch them ahead of time, run <code>python scripts/download_weights.py</code>.</p>
 <h2 id="leaderboard">Leaderboard<a class="headerlink" href="#leaderboard" title="Permanent link">&para;</a></h2>
 <p>Every model on commercially usable benchmarks (SDFVD face swaps, ASVspoof 2019 LA; Deepfake-Eval-2024 and the ForensiX image set pending), with AUC 95% confidence intervals, false-alarm and detection rates at a fixed threshold, and speed: <a href="../leaderboard/">LEADERBOARD.md</a>. It's recomputed from the raw results by <code>python scripts/build_leaderboard.py</code>, and also shown in the web manager.</p>
 <h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
 <p>The documentation is published at <strong><a href="https://anas-rz.github.io/ForensiX/">anas-rz.github.io/ForensiX</a></strong>. To try everything without installing, use the <a href="https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb">Colab notebook</a>.</p>
 <p>Start with the <a href="../../getting-started/">Quickstart</a>: install, score a file in Python, run the server and use the web manager. <a href="../../">docs/</a> also has the <a href="../../concepts/">concepts</a>, the <a href="../../api-reference/">API reference</a>, <a href="../../recipes/">recipes</a> for common tasks, <a href="../../#guides">guides</a> (choosing detectors, interpreting scores, evaluation, identity, physics, training, Colab, extending, licensing), the <a href="../../server/">HTTP server</a>, <a href="../../calibration/">calibration</a>, <a href="../../provenance/">provenance</a>, <a href="../../fairness/">fairness reports</a>, and <a href="../../deployment/">deployment at scale</a>.</p>
 <p>The site is built from these pages with <a href="https://www.mkdocs.org/">MkDocs</a> and deployed by <code>.github/workflows/docs.yml</code> on every push to <code>main</code>. To preview it locally:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[docs]"</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>mkdocs<span class="w"> </span>serve<span class="w">        </span><span class="c1"># http://127.0.0.1:8000 (add -a 127.0.0.1:8001 if the ForensiX server is on 8000)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[docs]"</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>mkdocs<span class="w"> </span>serve<span class="w">        </span><span class="c1"># http://127.0.0.1:8000 (add -a 127.0.0.1:8001 if the ForensiX server is on 8000)</span>
 </code></pre></div>
 <h2 id="provenance">Provenance<a class="headerlink" href="#provenance" title="Permanent link">&para;</a></h2>
 <p>Next to the detectors, ForensiX reads the evidence a file carries: C2PA Content Credentials (tampering after signing, declared AI generation, trusted capture), the invisible watermarks of Stable Diffusion 1.x/2.x/SDXL/SVD and Meta's AudioSeal, and generator, editing and re-encoding traces in metadata. A found watermark or signed AI declaration is stronger evidence than any score; its absence proves nothing.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">report</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="s2">"upload.jpg"</span><span class="p">)</span>   <span class="c1"># pip install -e ".[provenance]"</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">report</span><span class="p">[</span><span class="s2">"verdict"</span><span class="p">],</span> <span class="n">report</span><span class="p">[</span><span class="s2">"label"</span><span class="p">],</span> <span class="n">report</span><span class="p">[</span><span class="s2">"summary"</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">report</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="s2">"upload.jpg"</span><span class="p">)</span>   <span class="c1"># pip install -e ".[provenance]"</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">report</span><span class="p">[</span><span class="s2">"verdict"</span><span class="p">],</span> <span class="n">report</span><span class="p">[</span><span class="s2">"label"</span><span class="p">],</span> <span class="n">report</span><span class="p">[</span><span class="s2">"summary"</span><span class="p">]</span>
 </code></pre></div>
 <p>See <a href="../../provenance/">docs/provenance.md</a>.</p>
 <h2 id="http-server">HTTP server<a class="headerlink" href="#http-server" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[server]"</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>python<span class="w"> </span>-m<span class="w"> </span>forensix.server<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span>--preload<span class="w"> </span>dfdet-clip<span class="w"> </span>commfor<span class="w"> </span>nes2net-x-itw<span class="w"> </span>syncnet
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>curl<span class="w"> </span>-F<span class="w"> </span><span class="nv">file</span><span class="o">=</span>@clip.mp4<span class="w"> </span>-F<span class="w"> </span><span class="nv">models</span><span class="o">=</span>dfdet-clip,syncnet<span class="w"> </span>http://localhost:8000/v1/detect
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[server]"</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>python<span class="w"> </span>-m<span class="w"> </span>forensix.server<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span>--preload<span class="w"> </span>dfdet-clip<span class="w"> </span>commfor<span class="w"> </span>nes2net-x-itw<span class="w"> </span>syncnet
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>curl<span class="w"> </span>-F<span class="w"> </span><span class="nv">file</span><span class="o">=</span>@clip.mp4<span class="w"> </span>-F<span class="w"> </span><span class="nv">models</span><span class="o">=</span>dfdet-clip,syncnet<span class="w"> </span>http://localhost:8000/v1/detect
 </code></pre></div>
 <p>Models stay loaded between requests, concurrent image and audio requests are batched, and results are cached by file hash. See <a href="../../server/">docs/server.md</a>. The server also hosts a web manager at <code>http://localhost:8000/ui/</code> for testing, loading, calibrating and monitoring models (<a href="../../ui/">docs/ui.md</a>).</p>
 <p>Containers: <code>docker compose up -d --build</code> runs the server and manager locally, and <code>kubectl apply -k deploy/kubernetes/overlays/cpu</code> (or <code>gpu</code>) deploys a manager plus autoscaled inference replicas. See <a href="../../cloud/">docs/cloud.md</a>.</p>
@@ -2644,36 +2816,36 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 </table>
 <p>Benchmark results are in <a href="../benchmark-video-image/">benchmark.md</a>.</p>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">forensix</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">forensix</span><span class="o">.</span><span class="n">list_models</span><span class="p">()</span>                 <span class="c1"># ['aasist', 'aasist-l', 'nes2net-x', 'nes2net-x-itw', 'rawgat-st', ...]</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">forensix</span><span class="o">.</span><span class="n">list_models</span><span class="p">(</span><span class="s2">"audio"</span><span class="p">)</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">forensix</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"aasist"</span><span class="p">)</span>                <span class="c1"># license, source, paper, description</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"aasist"</span><span class="p">)</span>     <span class="c1"># device="cuda" for GPU</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.flac"</span><span class="p">)</span>   <span class="c1"># any format libsndfile reads (wav, flac, ogg, mp3)</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">label</span>             <span class="c1"># 0.97, 'fake'</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="n">pred</span><span class="o">.</span><span class="n">segment_fake_probs</span>                <span class="c1"># per-4s-window scores for long clips</span>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="o">=</span><span class="mi">44100</span><span class="p">)</span>       <span class="c1"># numpy array input</span>
-<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="n">detector</span><span class="o">.</span><span class="n">predict_batch</span><span class="p">([</span><span class="s2">"a.wav"</span><span class="p">,</span> <span class="s2">"b.wav"</span><span class="p">])</span>
-<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"aasist"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"my_finetuned.pth"</span><span class="p">)</span>  <span class="c1"># your own checkpoint</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">forensix</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">forensix</span><span class="o">.</span><span class="n">list_models</span><span class="p">()</span>                 <span class="c1"># ['aasist', 'aasist-l', 'nes2net-x', 'nes2net-x-itw', 'rawgat-st', ...]</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">forensix</span><span class="o">.</span><span class="n">list_models</span><span class="p">(</span><span class="s2">"audio"</span><span class="p">)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">forensix</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"aasist"</span><span class="p">)</span>                <span class="c1"># license, source, paper, description</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"aasist"</span><span class="p">)</span>     <span class="c1"># device="cuda" for GPU</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.flac"</span><span class="p">)</span>   <span class="c1"># any format libsndfile reads (wav, flac, ogg, mp3)</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">label</span>             <span class="c1"># 0.97, 'fake'</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="n">pred</span><span class="o">.</span><span class="n">segment_fake_probs</span>                <span class="c1"># per-4s-window scores for long clips</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="o">=</span><span class="mi">44100</span><span class="p">)</span>       <span class="c1"># numpy array input</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="n">detector</span><span class="o">.</span><span class="n">predict_batch</span><span class="p">([</span><span class="s2">"a.wav"</span><span class="p">,</span> <span class="s2">"b.wav"</span><span class="p">])</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"aasist"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"my_finetuned.pth"</span><span class="p">)</span>  <span class="c1"># your own checkpoint</span>
 </code></pre></div>
 <p>Image detectors work the same way:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"univfd"</span><span class="p">)</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"photo.png"</span><span class="p">)</span><span class="o">.</span><span class="n">fake_prob</span>     <span class="c1"># path, PIL image or (H, W, 3) uint8 array</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">detector</span><span class="o">.</span><span class="n">predict_batch</span><span class="p">([</span><span class="s2">"a.jpg"</span><span class="p">,</span> <span class="s2">"b.png"</span><span class="p">])</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"univfd"</span><span class="p">)</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"photo.png"</span><span class="p">)</span><span class="o">.</span><span class="n">fake_prob</span>     <span class="c1"># path, PIL image or (H, W, 3) uint8 array</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">detector</span><span class="o">.</span><span class="n">predict_batch</span><span class="p">([</span><span class="s2">"a.jpg"</span><span class="p">,</span> <span class="s2">"b.png"</span><span class="p">])</span>
 </code></pre></div>
 <p>Images are never resized or re-encoded before the model's own preprocessing, because the traces these detectors look for don't survive resampling or compression.</p>
 <p>Video detectors take a file path:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"dfdc-selim"</span><span class="p">)</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">segment_fake_probs</span>    <span class="c1"># video score, per-face scores</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"dfdc-selim"</span><span class="p">)</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">segment_fake_probs</span>    <span class="c1"># video score, per-face scores</span>
 </code></pre></div>
 <p>Audio-visual detectors take a video with an audio track (requires ffmpeg):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"avad"</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"talking_head.mp4"</span><span class="p">)</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">score_type</span>     <span class="c1"># 0.14, "anomaly" (higher = more likely fake)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"avad"</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"talking_head.mp4"</span><span class="p">)</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">score_type</span>     <span class="c1"># 0.14, "anomaly" (higher = more likely fake)</span>
 </code></pre></div>
 <p>Audio is converted to mono and resampled to 16 kHz. Clips longer than the model window (4.04 s) are split into windows and the window scores are averaged. <code>fake_prob</code> is the softmax output and is <strong>not calibrated</strong>, so pick thresholds per model.</p>
 <h2 id="models">Models<a class="headerlink" href="#models" title="Permanent link">&para;</a></h2>
@@ -3129,10 +3301,10 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 <p>Positives keep up to 3 frames of lag, which real encodes often have. No generator output is used, so it learns what matching speech and lips look like, not a generator's fingerprints.
   - <strong>Score:</strong> <code>fake_prob</code> is the probability that audio and face don't belong together (threshold 0.5). <code>segment_fake_probs</code> holds the per-window probabilities, and <code>details</code> holds the inconsistent segments in seconds and the results for every face track. The most in-sync track is taken as the speaker.
   - <strong>Train it</strong> on Colab, e.g. on VoxCeleb2 test (CC BY 4.0). <code>train</code> prints AUC per manipulation on held-out speakers:</p>
-<p><div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>python<span class="w"> </span>scripts/train_avcons.py<span class="w"> </span>extract<span class="w"> </span>--media<span class="w"> </span>/content/voxceleb2_test/mp4<span class="w"> </span>--out<span class="w"> </span>/content/avcons_cache<span class="w"> </span>--max-files<span class="w"> </span><span class="m">5000</span><span class="w"> </span>--device<span class="w"> </span>cuda
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>python<span class="w"> </span>scripts/train_avcons.py<span class="w"> </span>train<span class="w"> </span>--cache<span class="w"> </span>/content/avcons_cache<span class="w"> </span>--out<span class="w"> </span>avcons.safetensors<span class="w"> </span>--steps<span class="w"> </span><span class="m">20000</span><span class="w"> </span>--device<span class="w"> </span>cuda
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>python<span class="w"> </span>scripts/eval_deepfake_eval_2024.py<span class="w"> </span>--data<span class="w"> </span>/content/de2024<span class="w"> </span>--modality<span class="w"> </span>video<span class="w"> </span>--models<span class="w"> </span>avcons<span class="w"> </span>syncnet<span class="w"> </span>avad<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span>--weights<span class="w"> </span><span class="nv">avcons</span><span class="o">=</span>avcons.safetensors<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span>--max-per-class<span class="w"> </span><span class="m">250</span><span class="w"> </span>--out<span class="w"> </span>results/de2024_av.json
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>python<span class="w"> </span>scripts/train_avcons.py<span class="w"> </span>extract<span class="w"> </span>--media<span class="w"> </span>/content/voxceleb2_test/mp4<span class="w"> </span>--out<span class="w"> </span>/content/avcons_cache<span class="w"> </span>--max-files<span class="w"> </span><span class="m">5000</span><span class="w"> </span>--device<span class="w"> </span>cuda
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>python<span class="w"> </span>scripts/train_avcons.py<span class="w"> </span>train<span class="w"> </span>--cache<span class="w"> </span>/content/avcons_cache<span class="w"> </span>--out<span class="w"> </span>avcons.safetensors<span class="w"> </span>--steps<span class="w"> </span><span class="m">20000</span><span class="w"> </span>--device<span class="w"> </span>cuda
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>python<span class="w"> </span>scripts/eval_deepfake_eval_2024.py<span class="w"> </span>--data<span class="w"> </span>/content/de2024<span class="w"> </span>--modality<span class="w"> </span>video<span class="w"> </span>--models<span class="w"> </span>avcons<span class="w"> </span>syncnet<span class="w"> </span>avad<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span>--weights<span class="w"> </span><span class="nv">avcons</span><span class="o">=</span>avcons.safetensors<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span>--max-per-class<span class="w"> </span><span class="m">250</span><span class="w"> </span>--out<span class="w"> </span>results/de2024_av.json
 </code></pre></div>
   - <strong>Checked here:</strong>
 - <strong>Manipulations:</strong> on a real clip's SyncNet embeddings, each manipulation does what its label says. A 5% speed change drifts about 2.5 frames per 2 s. A shift moves SyncNet's best offset by the shift.
@@ -3148,8 +3320,8 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 - <strong>Scorer:</strong> a logistic scorer over these features, fitted on unseen speakers against voice swaps, voice splices and face splices made from real clips.
   - <strong>Score:</strong> <code>fake_prob</code> is the probability that voice and face aren't the same person (threshold 0.5). <code>details</code> has the features, the per-segment voice–face match (for localization) and every face track. The best-matching face is taken as the speaker.
   - <strong>Train it</strong> on Colab. Speakers are split three ways: heads, scorer, and a report with AUC per negative kind and 1:2 voice-to-face matching accuracy. The number of speakers matters more than hours, so use (part of) VoxCeleb2 dev, which has 5,994 speakers.</p>
-<p><div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>python<span class="w"> </span>scripts/train_avid.py<span class="w"> </span>extract<span class="w"> </span>--media<span class="w"> </span>/content/voxceleb2/mp4<span class="w"> </span>--out<span class="w"> </span>/content/avid_cache<span class="w"> </span>--max-files<span class="w"> </span><span class="m">20000</span><span class="w"> </span>--device<span class="w"> </span>cuda
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>python<span class="w"> </span>scripts/train_avid.py<span class="w"> </span>train<span class="w"> </span>--cache<span class="w"> </span>/content/avid_cache<span class="w"> </span>--out<span class="w"> </span>avid.safetensors<span class="w"> </span>--device<span class="w"> </span>cuda
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python<span class="w"> </span>scripts/train_avid.py<span class="w"> </span>extract<span class="w"> </span>--media<span class="w"> </span>/content/voxceleb2/mp4<span class="w"> </span>--out<span class="w"> </span>/content/avid_cache<span class="w"> </span>--max-files<span class="w"> </span><span class="m">20000</span><span class="w"> </span>--device<span class="w"> </span>cuda
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>python<span class="w"> </span>scripts/train_avid.py<span class="w"> </span>train<span class="w"> </span>--cache<span class="w"> </span>/content/avid_cache<span class="w"> </span>--out<span class="w"> </span>avid.safetensors<span class="w"> </span>--device<span class="w"> </span>cuda
 </code></pre></div>
   - <strong>Checked here:</strong>
 - <strong>Speaker embeddings:</strong> identical to SpeechBrain (Fbank and embedding diff 0 on two real recordings).
@@ -3217,10 +3389,10 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 </tbody>
 </table>
 <p>Physics detectors return an anomaly score in [0, 1] (<code>score_type="anomaly"</code>). It is the violation of the <strong>most-violated constraint</strong>, because one clearly broken physical law is evidence on its own. <code>Prediction.details</code> holds the evidence for every constraint: the measured value, where the expected range ends, and the violation. Constraints that don't apply to a clip are listed but left out of the score, e.g. jaw coupling when the mouth never moves.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"phys-bloodflow"</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span>                      <span class="c1"># 0.0 (nothing violated)</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"heart_rate_bpm"</span><span class="p">]</span>      <span class="c1"># 72.1</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"constraints"</span><span class="p">]</span>         <span class="c1"># {"mean_coherence": {"measured": 0.986, ...}, ...}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"phys-bloodflow"</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span>                      <span class="c1"># 0.0 (nothing violated)</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"heart_rate_bpm"</span><span class="p">]</span>      <span class="c1"># 72.1</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"constraints"</span><span class="p">]</span>         <span class="c1"># {"mean_coherence": {"measured": 0.986, ...}, ...}</span>
 </code></pre></div>
 <p><strong><code>phys-bloodflow</code>.</strong>
 - <strong>Pipeline:</strong> rPPG pulse signals from 5 skin regions on the MediaPipe mesh (forehead, cheeks, nose, chin) via POS (Wang et al., 2017), with heart rate and SNR from the 42 to 180 bpm band.
@@ -3320,10 +3492,10 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 - <strong>Score:</strong> the most-violated constraint over everything.
 - <strong>Localization:</strong> where and when a constraint was violated.
 - <strong>Forensic report:</strong> built only from the measured evidence.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"physdf"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"physdf_graph.safetensors"</span><span class="p">)</span>   <span class="c1"># the graph prior you trained</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>          <span class="c1"># video with sound; a video or an audio file alone also works</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"report"</span><span class="p">][</span><span class="s2">"markdown"</span><span class="p">])</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"localization"</span><span class="p">][</span><span class="s2">"segments"</span><span class="p">]</span>  <span class="c1"># [{"start_s": 4.0, "end_s": 6.0, "constraint": "graph_av_mouth_from_audio", "modality": "audio-visual", "node": "lips", ...}]</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"physdf"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"physdf_graph.safetensors"</span><span class="p">)</span>   <span class="c1"># the graph prior you trained</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>          <span class="c1"># video with sound; a video or an audio file alone also works</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"report"</span><span class="p">][</span><span class="s2">"markdown"</span><span class="p">])</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"localization"</span><span class="p">][</span><span class="s2">"segments"</span><span class="p">]</span>  <span class="c1"># [{"start_s": 4.0, "end_s": 6.0, "constraint": "graph_av_mouth_from_audio", "modality": "audio-visual", "node": "lips", ...}]</span>
 </code></pre></div>
 <p><strong>The graph</strong> has one set of nodes per 40 ms step, with typed edges that encode physical structure:</p>
 <table>
@@ -3372,8 +3544,8 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 - <strong>What couldn't be checked or run.</strong></p>
 <p><code>verify_report</code> re-derives every claim, the score and the verdict from the evidence. A report that fails is marked inconclusive. The report abstains (inconclusive) when fewer than 5 checks apply or the strongest violation is weak. It says "low confidence" when only provisional ranges are violated. <code>forensix.physics.report.render_figures</code> draws the residual timeline (needs matplotlib). There is no generator attribution: the priors know real media only.</p>
 <p><strong>Training (Colab).</strong> Extract graph states from real talking-face videos, e.g. VoxCeleb2 test (CC BY 4.0), then train and calibrate on held-out speakers:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>python<span class="w"> </span>scripts/train_physdf.py<span class="w"> </span>extract<span class="w"> </span>--media<span class="w"> </span>/content/voxceleb2_test/mp4<span class="w"> </span>--out<span class="w"> </span>/content/physdf_cache<span class="w"> </span>--max-files<span class="w"> </span><span class="m">3000</span><span class="w"> </span>--workers<span class="w"> </span><span class="m">8</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>python<span class="w"> </span>scripts/train_physdf.py<span class="w"> </span>train<span class="w"> </span>--cache<span class="w"> </span>/content/physdf_cache<span class="w"> </span>--out<span class="w"> </span>physdf_graph.safetensors<span class="w"> </span>--steps<span class="w"> </span><span class="m">20000</span><span class="w"> </span>--device<span class="w"> </span>cuda
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>python<span class="w"> </span>scripts/train_physdf.py<span class="w"> </span>extract<span class="w"> </span>--media<span class="w"> </span>/content/voxceleb2_test/mp4<span class="w"> </span>--out<span class="w"> </span>/content/physdf_cache<span class="w"> </span>--max-files<span class="w"> </span><span class="m">3000</span><span class="w"> </span>--workers<span class="w"> </span><span class="m">8</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>python<span class="w"> </span>scripts/train_physdf.py<span class="w"> </span>train<span class="w"> </span>--cache<span class="w"> </span>/content/physdf_cache<span class="w"> </span>--out<span class="w"> </span>physdf_graph.safetensors<span class="w"> </span>--steps<span class="w"> </span><span class="m">20000</span><span class="w"> </span>--device<span class="w"> </span>cuda
 </code></pre></div>
 <p><strong>Verified here:</strong>
 - <strong>Masking:</strong> hidden nodes can't see their own values (a test).
@@ -3386,8 +3558,8 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 - <strong>End of the range (violation 1):</strong> two more excursions (start − median) beyond the start. It is never shorter than a quarter of the provisional range, and never past a provisional physical limit (e.g. jitter 0.1%) unless real data already reaches it.
 - <strong>Too little data:</strong> a constraint with fewer than 100 applicable real clips keeps its provisional range.</p>
 <p><code>details["constraints"][k]["prior"]</code> says which kind of range each constraint used.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"phys-room"</span><span class="p">)</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">det</span><span class="o">.</span><span class="n">load_priors</span><span class="p">(</span><span class="s2">"learned_priors.json"</span><span class="p">)</span>   <span class="c1"># or ship it as forensix/physics/learned_priors.json (the default)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"phys-room"</span><span class="p">)</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">det</span><span class="o">.</span><span class="n">load_priors</span><span class="p">(</span><span class="s2">"learned_priors.json"</span><span class="p">)</span>   <span class="c1"># or ship it as forensix/physics/learned_priors.json (the default)</span>
 </code></pre></div>
 <p><code>scripts/calibrate_physics.py</code> has three steps:
 1. <strong><code>measure</code>:</strong> run the detectors once per clip and store the raw constraint values (JSONL, resumable). Video is tracked once, and its sound track goes to the audio detectors.
@@ -3397,28 +3569,28 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 - <strong>Audio:</strong> LibriSpeech (CC BY 4.0).
 - <strong>Video with sound:</strong> VoxCeleb2 test (CC BY 4.0; video copyright stays with the owners).</p>
 <p>Calibrate on media like the media you'll check. Evaluate with real clips that weren't used for fitting, e.g. the real half of Deepfake-Eval-2024.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/content/LibriSpeech/test-clean<span class="w"> </span>--kind<span class="w"> </span>audio<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span>--label<span class="w"> </span>real<span class="w"> </span>--source<span class="w"> </span>librispeech-test-clean<span class="w"> </span>--max-files<span class="w"> </span><span class="m">2000</span><span class="w"> </span>--out<span class="w"> </span>m/librispeech.jsonl
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/content/voxceleb2_test/mp4<span class="w"> </span>--kind<span class="w"> </span>video<span class="w"> </span>--with-audio<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span>--label<span class="w"> </span>real<span class="w"> </span>--source<span class="w"> </span>voxceleb2-test<span class="w"> </span>--max-files<span class="w"> </span><span class="m">1000</span><span class="w"> </span>--out<span class="w"> </span>m/voxceleb2.jsonl
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>fit<span class="w"> </span>--measurements<span class="w"> </span>m/librispeech.jsonl<span class="w"> </span>m/voxceleb2.jsonl<span class="w"> </span>--out<span class="w"> </span>learned_priors.json
-<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/content/de2024/video-data<span class="w"> </span>--kind<span class="w"> </span>video<span class="w"> </span>--with-audio<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">    </span>--labels-csv<span class="w"> </span>/content/de2024/video-metadata-publish.csv<span class="w"> </span>--source<span class="w"> </span>de2024<span class="w"> </span>--out<span class="w"> </span>m/de2024.jsonl
-<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>m/de2024.jsonl<span class="w"> </span>--priors<span class="w"> </span>learned_priors.json<span class="w"> </span>--out<span class="w"> </span>results/physics_de2024.json
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/content/LibriSpeech/test-clean<span class="w"> </span>--kind<span class="w"> </span>audio<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">    </span>--label<span class="w"> </span>real<span class="w"> </span>--source<span class="w"> </span>librispeech-test-clean<span class="w"> </span>--max-files<span class="w"> </span><span class="m">2000</span><span class="w"> </span>--out<span class="w"> </span>m/librispeech.jsonl
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/content/voxceleb2_test/mp4<span class="w"> </span>--kind<span class="w"> </span>video<span class="w"> </span>--with-audio<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span>--label<span class="w"> </span>real<span class="w"> </span>--source<span class="w"> </span>voxceleb2-test<span class="w"> </span>--max-files<span class="w"> </span><span class="m">1000</span><span class="w"> </span>--out<span class="w"> </span>m/voxceleb2.jsonl
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>fit<span class="w"> </span>--measurements<span class="w"> </span>m/librispeech.jsonl<span class="w"> </span>m/voxceleb2.jsonl<span class="w"> </span>--out<span class="w"> </span>learned_priors.json
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/content/de2024/video-data<span class="w"> </span>--kind<span class="w"> </span>video<span class="w"> </span>--with-audio<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">    </span>--labels-csv<span class="w"> </span>/content/de2024/video-metadata-publish.csv<span class="w"> </span>--source<span class="w"> </span>de2024<span class="w"> </span>--out<span class="w"> </span>m/de2024.jsonl
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>m/de2024.jsonl<span class="w"> </span>--priors<span class="w"> </span>learned_priors.json<span class="w"> </span>--out<span class="w"> </span>results/physics_de2024.json
 </code></pre></div>
 <p><strong>Checked here</strong> on synthetic audio: 120 "real" clips in varied rooms, and 40 with physical violations. On held-out speakers, learned priors cut phys-voice false alarms from 37.5% (provisional) to 6.2%. Constraints with too few applicable clips kept their provisional ranges. A smoke test on a slowly rotating photo encoded as MP4 also showed why real video is needed: the provisional bloodflow and lighting ranges flagged it.</p>
 <h2 id="identity-based-detection">Identity-based detection<a class="headerlink" href="#identity-based-detection" title="Permanent link">&para;</a></h2>
 <p>Most detectors decide from the media alone. Identity-based detectors also get reference media of the person the video claims to show, and check it against them. This is the setting of person-of-interest protection: a politician, an executive, a customer who enrolled. It needs nothing about how the fake was made.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"id-face"</span><span class="p">)</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">det</span><span class="o">.</span><span class="n">enroll</span><span class="p">(</span><span class="s2">"alice"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"alice_passport.jpg"</span><span class="p">,</span> <span class="s2">"alice_interview.mp4"</span><span class="p">])</span>   <span class="c1"># photos and/or videos</span>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">det</span><span class="o">.</span><span class="n">save_gallery</span><span class="p">(</span><span class="s2">"people.npz"</span><span class="p">)</span>                                        <span class="c1"># det.load_gallery("people.npz") later</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"new_video.mp4"</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="s2">"alice"</span><span class="p">)</span>
-<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="n">pred</span><span class="o">.</span><span class="n">is_fake</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span>                 <span class="c1"># False, 0.39  (1 - similarity; flagged at 0.637)</span>
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"similarity"</span><span class="p">]</span>                   <span class="c1"># 0.61  median over frames of the best face's similarity</span>
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"frame_similarity"</span><span class="p">]</span>             <span class="c1"># per sampled frame (2 per second): where the face stops being alice</span>
-<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"other_enrolled_similarity"</span><span class="p">]</span>    <span class="c1"># {"bob": 0.72}: the face looks more like someone else enrolled</span>
-<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="n">det</span><span class="o">.</span><span class="n">identify</span><span class="p">(</span><span class="s2">"unknown.jpg"</span><span class="p">)</span>                  <span class="c1"># [("alice", 0.61), ("bob", 0.12)]</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"id-face"</span><span class="p">)</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">det</span><span class="o">.</span><span class="n">enroll</span><span class="p">(</span><span class="s2">"alice"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"alice_passport.jpg"</span><span class="p">,</span> <span class="s2">"alice_interview.mp4"</span><span class="p">])</span>   <span class="c1"># photos and/or videos</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">det</span><span class="o">.</span><span class="n">save_gallery</span><span class="p">(</span><span class="s2">"people.npz"</span><span class="p">)</span>                                        <span class="c1"># det.load_gallery("people.npz") later</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"new_video.mp4"</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="s2">"alice"</span><span class="p">)</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="n">pred</span><span class="o">.</span><span class="n">is_fake</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span>                 <span class="c1"># False, 0.39  (1 - similarity; flagged at 0.637)</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"similarity"</span><span class="p">]</span>                   <span class="c1"># 0.61  median over frames of the best face's similarity</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"frame_similarity"</span><span class="p">]</span>             <span class="c1"># per sampled frame (2 per second): where the face stops being alice</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"other_enrolled_similarity"</span><span class="p">]</span>    <span class="c1"># {"bob": 0.72}: the face looks more like someone else enrolled</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="n">det</span><span class="o">.</span><span class="n">identify</span><span class="p">(</span><span class="s2">"unknown.jpg"</span><span class="p">)</span>                  <span class="c1"># [("alice", 0.61), ("bob", 0.12)]</span>
 </code></pre></div>
 <p><strong><code>id-face</code></strong>: face verification against the enrolled references.
 - <strong>Pipeline:</strong> YuNet (OpenCV Zoo, MIT) detects faces and 5 landmarks. OpenCV's <code>FaceRecognizerSF</code> aligns each face to 112×112, and SFace (Zhong et al., 2021; MobileFaceNet; OpenCV Zoo, Apache-2.0) embeds it. The threshold is OpenCV Zoo's (cosine 0.363, 99.40% on LFW).
@@ -3431,10 +3603,10 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
   - <strong>InsightFace:</strong> its models are non-commercial.
   - <strong>ICT, the identity-consistency deepfake detector:</strong> has no license.</p>
 <p><strong><code>id-voice</code></strong>: speaker verification against the enrolled voice.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"id-voice"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">det</span><span class="o">.</span><span class="n">enroll</span><span class="p">(</span><span class="s2">"alice"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"alice_call1.wav"</span><span class="p">,</span> <span class="s2">"alice_interview.mp4"</span><span class="p">])</span>   <span class="c1"># audio files or videos' audio tracks</span>
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"voicemail.m4a"</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="s2">"alice"</span><span class="p">)</span>
-<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"similarity"</span><span class="p">],</span> <span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"segment_similarity"</span><span class="p">]</span>  <span class="c1"># cosine to alice; per 3 s segment for long audio</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"id-voice"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">det</span><span class="o">.</span><span class="n">enroll</span><span class="p">(</span><span class="s2">"alice"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"alice_call1.wav"</span><span class="p">,</span> <span class="s2">"alice_interview.mp4"</span><span class="p">])</span>   <span class="c1"># audio files or videos' audio tracks</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"voicemail.m4a"</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="s2">"alice"</span><span class="p">)</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"similarity"</span><span class="p">],</span> <span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"segment_similarity"</span><span class="p">]</span>  <span class="c1"># cosine to alice; per 3 s segment for long audio</span>
 </code></pre></div>
 <ul>
 <li><strong>Pipeline:</strong> ECAPA-TDNN speaker embeddings (SpeechBrain <a href="https://huggingface.co/speechbrain/spkrec-ecapa-voxceleb">spkrec-ecapa-voxceleb</a>, Apache-2.0, trained on VoxCeleb; the same network <code>avid</code> uses, checked against SpeechBrain).</li>
@@ -3449,31 +3621,31 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 - <strong>Model:</strong> a temporal ID network (dilated residual 1-D convolutions, mean and std pooling, 128-d) embeds every 4 s window. It is trained with a supervised contrastive loss on real videos only, with each person's positives drawn from <em>different videos</em> so that it learns the person rather than the recording. ID-Reveal's adversarial 3DMM generator is not included.
 - <strong>Verification:</strong> each window of the new video gets the mean of its top-5 similarities to the person's enrolled windows. The clip score is the median, and <code>fake_prob</code> = 1 − similarity, flagged at the equal-error threshold measured on held-out people during training. The per-window similarity localizes in time.
 - <strong>Enrollment:</strong> from videos only, since motion needs time. Several videos of the person, in different settings, work best.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"id-motion"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"id_motion.safetensors"</span><span class="p">)</span>
-<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">det</span><span class="o">.</span><span class="n">enroll</span><span class="p">(</span><span class="s2">"alice"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"alice_interview1.mp4"</span><span class="p">,</span> <span class="s2">"alice_interview2.mp4"</span><span class="p">])</span>
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"new.mp4"</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="s2">"alice"</span><span class="p">)</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"window_similarity"</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"id-motion"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"id_motion.safetensors"</span><span class="p">)</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">det</span><span class="o">.</span><span class="n">enroll</span><span class="p">(</span><span class="s2">"alice"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"alice_interview1.mp4"</span><span class="p">,</span> <span class="s2">"alice_interview2.mp4"</span><span class="p">])</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"new.mp4"</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="s2">"alice"</span><span class="p">)</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"window_similarity"</span><span class="p">]</span>
 </code></pre></div>
 <ul>
 <li><strong>Train it</strong> on Colab on real videos from many people with several videos each. VoxCeleb2 dev (CC BY 4.0) has 5,994 people laid out as <code>&lt;person&gt;/&lt;video&gt;/&lt;clip&gt;.mp4</code>. <code>train</code> reports verification EER on held-out people:</li>
 </ul>
-<p><div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>python<span class="w"> </span>scripts/train_id_motion.py<span class="w"> </span>extract<span class="w"> </span>--media<span class="w"> </span>/content/voxceleb2/mp4<span class="w"> </span>--out<span class="w"> </span>/content/idmotion_cache<span class="w"> </span>--max-files<span class="w"> </span><span class="m">30000</span><span class="w"> </span>--workers<span class="w"> </span><span class="m">8</span>
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>python<span class="w"> </span>scripts/train_id_motion.py<span class="w"> </span>train<span class="w"> </span>--cache<span class="w"> </span>/content/idmotion_cache<span class="w"> </span>--out<span class="w"> </span>id_motion.safetensors<span class="w"> </span>--steps<span class="w"> </span><span class="m">20000</span><span class="w"> </span>--device<span class="w"> </span>cuda
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>python<span class="w"> </span>scripts/train_id_motion.py<span class="w"> </span>extract<span class="w"> </span>--media<span class="w"> </span>/content/voxceleb2/mp4<span class="w"> </span>--out<span class="w"> </span>/content/idmotion_cache<span class="w"> </span>--max-files<span class="w"> </span><span class="m">30000</span><span class="w"> </span>--workers<span class="w"> </span><span class="m">8</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>python<span class="w"> </span>scripts/train_id_motion.py<span class="w"> </span>train<span class="w"> </span>--cache<span class="w"> </span>/content/idmotion_cache<span class="w"> </span>--out<span class="w"> </span>id_motion.safetensors<span class="w"> </span>--steps<span class="w"> </span><span class="m">20000</span><span class="w"> </span>--device<span class="w"> </span>cuda
 </code></pre></div>
 - <strong>Checked here:</strong>
   - <strong>Synthetic people:</strong> each has a personal motion style, and each video adds session effects. After 300 steps, held-out people verify at EER 7.5% (AUC 0.97; genuine similarity 0.53 vs 0.09 for impostors).
   - <strong>Real clip:</strong> on a real talking-face clip, features are plausible (head rotation varying by 2–3°, jaw opening 0–0.42), and enrollment and verification run end to end.
 - <strong>Limits:</strong> motion identity needs a few seconds of natural, talking behaviour in both references and query. Short clips, or a person who hardly moves, give weak evidence. ID-Reveal reported strong results on its benchmarks; ForensiX's own numbers will come from your Colab run.</p>
 <p><strong>Evaluation</strong> (<code>scripts/eval_identity.py</code>, any data you have the rights to use): enroll from <code>references/&lt;person&gt;/</code>, then score <code>queries/&lt;person&gt;/real/</code> (should pass), <code>queries/&lt;person&gt;/fake/</code> (deepfakes of them) and other people's real queries (impostors). Reports AUC, AP, EER and accuracy for real vs fake and real vs impostor. There's no commercially usable deepfake benchmark with per-person references; VoxCeleb2 test (CC BY 4.0) alone already measures the impostor rate.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>python<span class="w"> </span>scripts/eval_identity.py<span class="w"> </span>--data<span class="w"> </span>/content/id_eval<span class="w"> </span>--models<span class="w"> </span>id-face<span class="w"> </span>id-motion<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">    </span>--weights<span class="w"> </span>id-motion<span class="o">=</span>id_motion.safetensors<span class="w"> </span>--out<span class="w"> </span>results/identity.json
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>python<span class="w"> </span>scripts/eval_identity.py<span class="w"> </span>--data<span class="w"> </span>/content/id_eval<span class="w"> </span>--models<span class="w"> </span>id-face<span class="w"> </span>id-motion<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span>--weights<span class="w"> </span>id-motion<span class="o">=</span>id_motion.safetensors<span class="w"> </span>--out<span class="w"> </span>results/identity.json
 </code></pre></div>
 <h2 id="evaluation">Evaluation<a class="headerlink" href="#evaluation" title="Permanent link">&para;</a></h2>
 <p>Each model is evaluated on a fixed, reproducible subset of a benchmark with a commercially usable license.</p>
 <p><strong>Audio: ASVspoof 2019 LA eval</strong> (<a href="https://opendatacommons.org/licenses/by/1-0/">ODC-By 1.0</a>, <a href="https://datashare.ed.ac.uk/handle/10283/3336">download</a>). The subset is 1,000 bona fide trials plus 77 trials from each of the 13 attacks A07–A19 (2,001 total, seed 0). The script reports pooled EER and per-attack EER.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>python<span class="w"> </span>scripts/eval_asvspoof2019_la.py<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span>--protocol<span class="w"> </span>LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">    </span>--audio-dir<span class="w"> </span>LA/ASVspoof2019_LA_eval/flac<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">    </span>--models<span class="w"> </span>aasist<span class="w"> </span>aasist-l<span class="w"> </span>rawgat-st<span class="w"> </span>xlsr-aasist<span class="w"> </span>xlsr-aasist-df<span class="w"> </span>nes2net-x<span class="w"> </span>nes2net-x-itw<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span>--out<span class="w"> </span>results/asvspoof2019_la_subset.json
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>python<span class="w"> </span>scripts/eval_asvspoof2019_la.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">    </span>--protocol<span class="w"> </span>LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span>--audio-dir<span class="w"> </span>LA/ASVspoof2019_LA_eval/flac<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span>--models<span class="w"> </span>aasist<span class="w"> </span>aasist-l<span class="w"> </span>rawgat-st<span class="w"> </span>xlsr-aasist<span class="w"> </span>xlsr-aasist-df<span class="w"> </span>nes2net-x<span class="w"> </span>nes2net-x-itw<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span>--out<span class="w"> </span>results/asvspoof2019_la_subset.json
 </code></pre></div>
 <p>The dataset is not downloaded by this repo. Run the script wherever the data lives (e.g. Google Colab).</p>
 <p><strong>Image: ForensiX image eval set (self-built, commercially usable).</strong> No existing real-vs-generated benchmark we found has a commercially usable license: most use real photos from ImageNet, FFHQ or LAION, or carry NC terms. So ForensiX builds its own set:</p>
@@ -3484,34 +3656,34 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 <li><strong>Format bias:</strong> the reals are JPEG and the fakes PNG, and detectors can learn "not JPEG means fake". So every fake also gets a JPEG copy at the reals' median quality (estimated from their quantization tables). The <code>jpeg</code> condition is the headline number, and <code>png</code> is reported alongside.</li>
 </ul>
 <p>None of these generators is in the training data of the current image models, except where noted in the Models table.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># on a GPU runtime (e.g. Colab); resumable if the session drops</span>
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[eval]"</span>
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>huggingface-cli<span class="w"> </span>login<span class="w">     </span><span class="c1"># FLUX.1-schnell requires accepting its terms once</span>
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>python<span class="w"> </span>scripts/build_image_eval_set.py<span class="w"> </span>--out<span class="w"> </span>/content/forensix_image_eval
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>python<span class="w"> </span>scripts/eval_image.py<span class="w"> </span>--data<span class="w"> </span>/content/forensix_image_eval<span class="w"> </span>--models<span class="w"> </span>univfd<span class="w"> </span>rine<span class="w"> </span>rine-ldm<span class="w"> </span>commfor<span class="w"> </span>commfor-224<span class="w"> </span>safe<span class="w"> </span>clipdet<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">    </span>--device<span class="w"> </span>cuda<span class="w"> </span>--out<span class="w"> </span>results/image_eval.json<span class="w"> </span>--scores-out<span class="w"> </span>results/image_scores.csv
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># on a GPU runtime (e.g. Colab); resumable if the session drops</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[eval]"</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>huggingface-cli<span class="w"> </span>login<span class="w">     </span><span class="c1"># FLUX.1-schnell requires accepting its terms once</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>python<span class="w"> </span>scripts/build_image_eval_set.py<span class="w"> </span>--out<span class="w"> </span>/content/forensix_image_eval
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>python<span class="w"> </span>scripts/eval_image.py<span class="w"> </span>--data<span class="w"> </span>/content/forensix_image_eval<span class="w"> </span>--models<span class="w"> </span>univfd<span class="w"> </span>rine<span class="w"> </span>rine-ldm<span class="w"> </span>commfor<span class="w"> </span>commfor-224<span class="w"> </span>safe<span class="w"> </span>clipdet<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">    </span>--device<span class="w"> </span>cuda<span class="w"> </span>--out<span class="w"> </span>results/image_eval.json<span class="w"> </span>--scores-out<span class="w"> </span>results/image_scores.csv
 </code></pre></div>
 <p>The eval script reports ROC-AUC, AP and balanced accuracy at the default threshold, pooled and per generator, for both conditions. On GPUs with less than 24 GB (e.g. a Colab T4), pipelines run with CPU offload. FLUX.1-schnell is the slowest there, and a T4 has no bfloat16, which FLUX may need. Use <code>--generators</code> to build the set in parts, or build FLUX on a larger GPU.</p>
 <p><strong>Video: any folder of real and fake videos</strong>, e.g. SDFVD (CC BY 4.0, 53 face swaps and their 53 source clips). Results and analysis: <a href="../benchmark-video-image/">benchmark.md</a> for the learned detectors, <a href="../benchmark-physics/">physics_benchmark.md</a> for the physics ones. Image detectors score 8 frames per video, either whole frames or, with <code>--face-crop</code>, a crop around the largest face (MTCNN, 1.3x the box). On SDFVD, face crops raise the AUC of five of the seven image detectors by 0.10–0.21.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>python<span class="w"> </span>scripts/eval_video_folder.py<span class="w"> </span>--real<span class="w"> </span>videos_real<span class="w"> </span>--fake<span class="w"> </span>videos_fake<span class="w"> </span>--dataset<span class="w"> </span>SDFVD<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">    </span>--out<span class="w"> </span>results/sdfvd.json<span class="w"> </span>--scores-out<span class="w"> </span>results/sdfvd_scores.csv<span class="w">     </span><span class="c1"># add --face-crop for image detectors on faces</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>python<span class="w"> </span>scripts/eval_video_folder.py<span class="w"> </span>--real<span class="w"> </span>videos_real<span class="w"> </span>--fake<span class="w"> </span>videos_fake<span class="w"> </span>--dataset<span class="w"> </span>SDFVD<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span>--out<span class="w"> </span>results/sdfvd.json<span class="w"> </span>--scores-out<span class="w"> </span>results/sdfvd_scores.csv<span class="w">     </span><span class="c1"># add --face-crop for image detectors on faces</span>
 </code></pre></div>
 <p><strong>Audio-visual: LAV-DF</strong> (<a href="https://huggingface.co/datasets/ControlNet/LAV-DF">dataset</a>, CC BY-NC 4.0, gated; built from VoxCeleb2). Fakes replace a word or two in the audio, the video or both. The script samples equal numbers of each class, scores clips and windows, and reports clip AUC, AUC per edited modality, localization, and calibration fitted on another split. Results: <a href="../benchmark-audiovisual/">av_benchmark.md</a>. <code>avad</code> scores only the first ~2.2 s of a face track (upstream's <code>max_len=50</code>), so it misses later edits.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>python<span class="w"> </span>scripts/eval_lavdf.py<span class="w"> </span>score<span class="w"> </span>--data<span class="w"> </span>/content/lavdf/LAV-DF<span class="w"> </span>--split<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--per-class<span class="w"> </span><span class="m">300</span><span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span>--out-dir<span class="w"> </span>results/lavdf
-<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>python<span class="w"> </span>scripts/eval_lavdf.py<span class="w"> </span>report<span class="w"> </span>--data<span class="w"> </span>/content/lavdf/LAV-DF<span class="w"> </span>--split<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--out-dir<span class="w"> </span>results/lavdf
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>python<span class="w"> </span>scripts/eval_lavdf.py<span class="w"> </span>score<span class="w"> </span>--data<span class="w"> </span>/content/lavdf/LAV-DF<span class="w"> </span>--split<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--per-class<span class="w"> </span><span class="m">300</span><span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span>--out-dir<span class="w"> </span>results/lavdf
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>python<span class="w"> </span>scripts/eval_lavdf.py<span class="w"> </span>report<span class="w"> </span>--data<span class="w"> </span>/content/lavdf/LAV-DF<span class="w"> </span>--split<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--out-dir<span class="w"> </span>results/lavdf
 </code></pre></div>
 <p><strong>Real-world data: Deepfake-Eval-2024</strong> (<a href="https://huggingface.co/datasets/nuriachandra/Deepfake-Eval-2024">dataset</a>, <a href="https://arxiv.org/abs/2503.02857">paper</a>). It holds 2024 in-the-wild deepfakes and real media collected from social media and fact-checking reports: 44 h of video, 56.5 h of audio and 1,975 images. It is CC BY-SA 4.0, for evaluation only, and gated, so you request access on Hugging Face. This is the benchmark for video models, and a real-world check for the audio and image models alongside the benchmarks above.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>huggingface-cli<span class="w"> </span>download<span class="w"> </span>nuriachandra/Deepfake-Eval-2024<span class="w"> </span>--repo-type<span class="w"> </span>dataset<span class="w"> </span>--local-dir<span class="w"> </span>/content/de2024
-<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>python<span class="w"> </span>scripts/eval_deepfake_eval_2024.py<span class="w"> </span>--data<span class="w"> </span>/content/de2024<span class="w"> </span>--modality<span class="w"> </span>video<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">    </span>--device<span class="w"> </span>cuda<span class="w"> </span>--max-per-class<span class="w"> </span><span class="m">250</span><span class="w"> </span>--out<span class="w"> </span>results/de2024_video.json
-<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="c1"># likewise --modality audio / --modality image</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>huggingface-cli<span class="w"> </span>download<span class="w"> </span>nuriachandra/Deepfake-Eval-2024<span class="w"> </span>--repo-type<span class="w"> </span>dataset<span class="w"> </span>--local-dir<span class="w"> </span>/content/de2024
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>python<span class="w"> </span>scripts/eval_deepfake_eval_2024.py<span class="w"> </span>--data<span class="w"> </span>/content/de2024<span class="w"> </span>--modality<span class="w"> </span>video<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">    </span>--device<span class="w"> </span>cuda<span class="w"> </span>--max-per-class<span class="w"> </span><span class="m">250</span><span class="w"> </span>--out<span class="w"> </span>results/de2024_video.json
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="c1"># likewise --modality audio / --modality image</span>
 </code></pre></div>
 <p>The script finds the metadata CSV's file and label columns by itself and prints them; <code>--file-col</code> and <code>--label-col</code> override that. Media a model can't decode is skipped and counted. Audio formats libsndfile can't read (e.g. m4a) are decoded with ffmpeg.</p>
 <h2 id="fine-tuning">Fine-tuning<a class="headerlink" href="#fine-tuning" title="Permanent link">&para;</a></h2>
 <p>Adapt a pretrained detector to your media, then calibrate, package and deploy it to AWS, Google Cloud or Azure (<a href="../../guides/finetuning/">guide</a>):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>python<span class="w"> </span>-m<span class="w"> </span>forensix.finetuning<span class="w"> </span>dfdet-clip<span class="w"> </span>--dataset<span class="w"> </span>train.zip<span class="w"> </span>--out<span class="w"> </span>models/dfdet-clip-ft.safetensors<span class="w"> </span>--mode<span class="w"> </span>norm<span class="w"> </span>--device<span class="w"> </span>cuda
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>python<span class="w"> </span>-m<span class="w"> </span>forensix.finetuning<span class="w"> </span>dfdet-clip<span class="w"> </span>--dataset<span class="w"> </span>train.zip<span class="w"> </span>--out<span class="w"> </span>models/dfdet-clip-ft.safetensors<span class="w"> </span>--mode<span class="w"> </span>norm<span class="w"> </span>--device<span class="w"> </span>cuda
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"dfdet-clip"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"models/dfdet-clip-ft.safetensors"</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"dfdet-clip"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"models/dfdet-clip-ft.safetensors"</span><span class="p">)</span>
 </code></pre></div>
 <p>For the large CLIP/ViT models, <code>--mode lora</code> trains LoRA adapters with Hugging Face PEFT (<code>pip install peft</code>): about 1% of the parameters, a checkpoint of a few MB, merged at load so serving needs no PEFT and runs at full speed (<a href="../../guides/peft/">PEFT guide</a>).</p>
 <h2 id="calibration">Calibration<a class="headerlink" href="#calibration" title="Permanent link">&para;</a></h2>
@@ -3521,31 +3693,31 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 <li><strong>Conformal threshold:</strong> fitted on real media only. A new real input is flagged with probability at most <code>alpha</code>, as long as it's like the calibration reals (exchangeable). It needs no fakes, so the guarantee holds against new generators.</li>
 <li><strong>Conformal p-values and prediction sets:</strong> <code>{"fake"}</code>, <code>{"real"}</code>, both (uncertain) or neither (unlike either class). Each class is covered with probability at least 1 − <code>alpha</code>.</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"gend"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="n">calibration</span><span class="o">=</span><span class="s2">"calibrations/sdfvd/gend.json"</span><span class="p">)</span>
-<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">is_fake</span>               <span class="c1"># calibrated probability; conformal decision (rule="probability" for &gt;= 0.5)</span>
-<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"prediction_set"</span><span class="p">],</span> <span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"p_real"</span><span class="p">],</span> <span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"raw_score"</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"gend"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="n">calibration</span><span class="o">=</span><span class="s2">"calibrations/sdfvd/gend.json"</span><span class="p">)</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">is_fake</span>               <span class="c1"># calibrated probability; conformal decision (rule="probability" for &gt;= 0.5)</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"prediction_set"</span><span class="p">],</span> <span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"p_real"</span><span class="p">],</span> <span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"raw_score"</span><span class="p">]</span>
 </code></pre></div>
 <p><strong>Pipeline.</strong> <code>scripts/recalibrate.py</code> works on per-file score CSVs, such as the <code>--scores-out</code> of <code>eval_video_folder.py</code>, so models are never re-run:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># 1. fit: cross-validated before/after report, then one table per model</span>
-<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>python<span class="w"> </span>scripts/recalibrate.py<span class="w"> </span>fit<span class="w"> </span>--scores<span class="w"> </span>results/sdfvd_scores.csv<span class="w"> </span>--group-regex<span class="w"> </span><span class="s1">'(\d+)'</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span>--alpha<span class="w"> </span><span class="m">0</span>.05<span class="w"> </span>--out-dir<span class="w"> </span>calibrations/sdfvd<span class="w"> </span>--report<span class="w"> </span>results/calibration_sdfvd.json
-<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="c1"># 2. check new labelled media for drift (exit status 3 if any model needs recalibrating)</span>
-<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>python<span class="w"> </span>scripts/recalibrate.py<span class="w"> </span>check<span class="w"> </span>--calibration-dir<span class="w"> </span>calibrations/sdfvd<span class="w"> </span>--scores<span class="w"> </span>new_scores.csv
-<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="c1"># 3. refit on stored + new scores, newest first, at most --window per class; old tables go to history/</span>
-<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>python<span class="w"> </span>scripts/recalibrate.py<span class="w"> </span>update<span class="w"> </span>--calibration-dir<span class="w"> </span>calibrations/sdfvd<span class="w"> </span>--scores<span class="w"> </span>new_scores.csv<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="w">    </span>--window<span class="w"> </span><span class="m">2000</span><span class="w"> </span>--only-if-drift
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># 1. fit: cross-validated before/after report, then one table per model</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>python<span class="w"> </span>scripts/recalibrate.py<span class="w"> </span>fit<span class="w"> </span>--scores<span class="w"> </span>results/sdfvd_scores.csv<span class="w"> </span>--group-regex<span class="w"> </span><span class="s1">'(\d+)'</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">    </span>--alpha<span class="w"> </span><span class="m">0</span>.05<span class="w"> </span>--out-dir<span class="w"> </span>calibrations/sdfvd<span class="w"> </span>--report<span class="w"> </span>results/calibration_sdfvd.json
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="c1"># 2. check new labelled media for drift (exit status 3 if any model needs recalibrating)</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>python<span class="w"> </span>scripts/recalibrate.py<span class="w"> </span>check<span class="w"> </span>--calibration-dir<span class="w"> </span>calibrations/sdfvd<span class="w"> </span>--scores<span class="w"> </span>new_scores.csv
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="c1"># 3. refit on stored + new scores, newest first, at most --window per class; old tables go to history/</span>
+<a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>python<span class="w"> </span>scripts/recalibrate.py<span class="w"> </span>update<span class="w"> </span>--calibration-dir<span class="w"> </span>calibrations/sdfvd<span class="w"> </span>--scores<span class="w"> </span>new_scores.csv<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="w">    </span>--window<span class="w"> </span><span class="m">2000</span><span class="w"> </span>--only-if-drift
 </code></pre></div>
 <p>To recalibrate as fakes change, score each new batch of labelled media (e.g. weekly) with <code>eval_video_folder.py</code> and run <code>update --only-if-drift</code> on it. Do this from a scheduler, CI job or notebook. The drift check tests the false-alarm rate on new reals against <code>alpha</code> (binomial), the detection rate on new fakes against the calibration fakes (Fisher exact) and both score distributions (KS). <code>--group-regex</code> keeps related files, such as a real clip and its face swap, in the same fold.</p>
 <p><strong>Limits.</strong> Calibration can't fix ranking: AUC is unchanged by any monotone map. When a new generator's fakes score like reals, <code>check</code> reports the drop in detection rate, but <code>update</code> can only trade false alarms for detections. That needs a retrained or different detector. Small calibration sets give noisy tables: the conformal threshold needs at least 1/<code>alpha</code> − 1 real scores (19 for <code>alpha</code> = 0.05), and more for a stable one.</p>
 <h2 id="fusion">Fusion<a class="headerlink" href="#fusion" title="Permanent link">&para;</a></h2>
 <p><code>forensix.fusion</code> combines several detectors into one, using a logistic regression on their scores. Detectors from different families look for different traces, so one often catches what another misses. Fit the fusion on score CSVs from one split, test it on another, then load it as a single detector:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>python<span class="w"> </span>scripts/fit_fusion.py<span class="w"> </span>--fit<span class="w"> </span>results/lavdf/lavdf_dev_scores.csv<span class="w"> </span>--test<span class="w"> </span>results/lavdf/lavdf_test_scores.csv<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">    </span>--members<span class="w"> </span>stablesyncnet:clip_score<span class="o">=</span>max-window<span class="w"> </span>syncnet:clip_score<span class="o">=</span>max-window<span class="w"> </span>--out<span class="w"> </span>fusions/lavdf_av.json
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>python<span class="w"> </span>scripts/fit_fusion.py<span class="w"> </span>--fit<span class="w"> </span>results/lavdf/lavdf_dev_scores.csv<span class="w"> </span>--test<span class="w"> </span>results/lavdf/lavdf_test_scores.csv<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">    </span>--members<span class="w"> </span>stablesyncnet:clip_score<span class="o">=</span>max-window<span class="w"> </span>syncnet:clip_score<span class="o">=</span>max-window<span class="w"> </span>--out<span class="w"> </span>fusions/lavdf_av.json
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load_fusion</span><span class="p">(</span><span class="s2">"fusions/lavdf_av.json"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
-<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>
-<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"members"</span><span class="p">]</span>   <span class="c1"># each member's score and its contribution to the fused logit</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load_fusion</span><span class="p">(</span><span class="s2">"fusions/lavdf_av.json"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"members"</span><span class="p">]</span>   <span class="c1"># each member's score and its contribution to the fused logit</span>
 </code></pre></div>
 <ul>
 <li><strong>Inputs:</strong> probabilities enter as their logit and anomaly scores as they are, all standardized on the fitting data. A member that fails on an input (no face, too short) is treated as average and listed in <code>details</code>.</li>
@@ -3567,11 +3739,11 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 - <strong>Coverage:</strong>
   - Adapters exist for image detectors (on images, or videos as the mean of 8 frames), audio detectors, and the GenD face pipeline (<code>gend</code>, <code>gend-pe</code>, <code>dfdet-clip</code>).
   - Other detectors fall back to <code>predict</code>. CPU (physics) detectors run in a process pool.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>gend<span class="w"> </span>--inputs<span class="w"> </span>/data/videos<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span>--precision<span class="w"> </span>bf16<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="w">    </span>--batch-size<span class="w"> </span><span class="m">64</span><span class="w"> </span>--workers<span class="w"> </span><span class="m">8</span><span class="w"> </span>--out<span class="w"> </span>scores/gend.jsonl<span class="w">            </span><span class="c1"># resumable: rerun to continue</span>
-<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>univfd<span class="w"> </span>--inputs<span class="w"> </span>list.txt<span class="w"> </span>--gpus<span class="w"> </span><span class="m">0</span>,1,2,3<span class="w"> </span>--out<span class="w"> </span>scores/univfd.jsonl<span class="w">   </span><span class="c1"># one process per GPU</span>
-<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>univfd<span class="w"> </span>--inputs<span class="w"> </span>/data/videos<span class="w"> </span>--precision<span class="w"> </span>bf16<span class="w"> </span>--compare-fp32<span class="w"> </span><span class="m">200</span><span class="w"> </span>--out<span class="w"> </span>/dev/null<span class="w">  </span><span class="c1"># check bf16 drift first</span>
-<a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>gend<span class="w"> </span>--inputs<span class="w"> </span>/data/videos<span class="w"> </span>--calibration<span class="w"> </span>calibrations/sdfvd/gend.json<span class="w"> </span>--out<span class="w"> </span>scores/gend.jsonl
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>gend<span class="w"> </span>--inputs<span class="w"> </span>/data/videos<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span>--precision<span class="w"> </span>bf16<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="w">    </span>--batch-size<span class="w"> </span><span class="m">64</span><span class="w"> </span>--workers<span class="w"> </span><span class="m">8</span><span class="w"> </span>--out<span class="w"> </span>scores/gend.jsonl<span class="w">            </span><span class="c1"># resumable: rerun to continue</span>
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>univfd<span class="w"> </span>--inputs<span class="w"> </span>list.txt<span class="w"> </span>--gpus<span class="w"> </span><span class="m">0</span>,1,2,3<span class="w"> </span>--out<span class="w"> </span>scores/univfd.jsonl<span class="w">   </span><span class="c1"># one process per GPU</span>
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>univfd<span class="w"> </span>--inputs<span class="w"> </span>/data/videos<span class="w"> </span>--precision<span class="w"> </span>bf16<span class="w"> </span>--compare-fp32<span class="w"> </span><span class="m">200</span><span class="w"> </span>--out<span class="w"> </span>/dev/null<span class="w">  </span><span class="c1"># check bf16 drift first</span>
+<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>gend<span class="w"> </span>--inputs<span class="w"> </span>/data/videos<span class="w"> </span>--calibration<span class="w"> </span>calibrations/sdfvd/gend.json<span class="w"> </span>--out<span class="w"> </span>scores/gend.jsonl
 </code></pre></div>
 <p>Output is one JSON line per input: score, label, per-segment scores, and with <code>--calibration</code> also the calibrated probability, decision and prediction set. Errors are recorded per input and don't stop the run.</p>
 <p><strong>Throughput on one NVIDIA L4</strong></p>
@@ -3757,88 +3929,88 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 </tbody>
 </table>
 <h2 id="structure">Structure<a class="headerlink" href="#structure" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>forensix/
-<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>├── __init__.py        # load / download / list_models / info
-<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>├── registry.py        # ModelSpec + registry
-<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>├── hub.py             # weight download, cache, checksum
-<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>├── metrics.py         # EER (ASVspoof-compatible), ROC-AUC, AP
-<a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>├── calibration.py     # Platt scaling, conformal thresholds and prediction sets, drift checks
-<a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a>├── fusion.py          # fuse several detectors' scores into one (logistic regression)
-<a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a>├── batch.py           # BatchRunner: batched, multi-worker GPU inference (image, audio, GenD; others via predict)
-<a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a>├── kernels.py         # fused uint8 -&gt; normalized CHW kernel (Triton, bit-exact to torchvision)
-<a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a>├── types.py           # Prediction
-<a id="__codelineno-32-11" name="__codelineno-32-11" href="#__codelineno-32-11"></a>├── audio/
-<a id="__codelineno-32-12" name="__codelineno-32-12" href="#__codelineno-32-12"></a>│   ├── io.py          # loading, mono, resampling
-<a id="__codelineno-32-13" name="__codelineno-32-13" href="#__codelineno-32-13"></a>│   ├── detector.py    # AudioDetector base (windowing, batching)
-<a id="__codelineno-32-14" name="__codelineno-32-14" href="#__codelineno-32-14"></a>│   ├── xlsr.py        # shared XLS-R front end (HF) + fairseq checkpoint converter
-<a id="__codelineno-32-15" name="__codelineno-32-15" href="#__codelineno-32-15"></a>│   ├── aasist/        # AASIST, AASIST-L
-<a id="__codelineno-32-16" name="__codelineno-32-16" href="#__codelineno-32-16"></a>│   ├── nes2net_x/     # Nes2Net-X (2021, In-the-Wild)
-<a id="__codelineno-32-17" name="__codelineno-32-17" href="#__codelineno-32-17"></a>│   ├── rawgat_st/     # RawGAT-ST
-<a id="__codelineno-32-18" name="__codelineno-32-18" href="#__codelineno-32-18"></a>│   └── xlsr_aasist/   # XLS-R + AASIST (LA, DF)
-<a id="__codelineno-32-19" name="__codelineno-32-19" href="#__codelineno-32-19"></a>├── image/
-<a id="__codelineno-32-20" name="__codelineno-32-20" href="#__codelineno-32-20"></a>│   ├── io.py          # image loading (RGB, no resizing)
-<a id="__codelineno-32-21" name="__codelineno-32-21" href="#__codelineno-32-21"></a>│   ├── detector.py    # ImageDetector base (batching)
-<a id="__codelineno-32-22" name="__codelineno-32-22" href="#__codelineno-32-22"></a>│   ├── clip.py        # shared OpenAI CLIP ViT-L/14 backbone (HF)
-<a id="__codelineno-32-23" name="__codelineno-32-23" href="#__codelineno-32-23"></a>│   ├── clipdet/       # GRIP CLIP-based detector (OpenCLIP)
-<a id="__codelineno-32-24" name="__codelineno-32-24" href="#__codelineno-32-24"></a>│   ├── commfor/       # Community Forensics (384, 224)
-<a id="__codelineno-32-25" name="__codelineno-32-25" href="#__codelineno-32-25"></a>│   ├── rine/          # RINE (ProGAN 4-class, LDM)
-<a id="__codelineno-32-26" name="__codelineno-32-26" href="#__codelineno-32-26"></a>│   ├── safe/          # SAFE (reimplemented network + wavelet front end)
-<a id="__codelineno-32-27" name="__codelineno-32-27" href="#__codelineno-32-27"></a>│   └── univfd/        # UnivFD
-<a id="__codelineno-32-28" name="__codelineno-32-28" href="#__codelineno-32-28"></a>├── video/
-<a id="__codelineno-32-29" name="__codelineno-32-29" href="#__codelineno-32-29"></a>│   ├── io.py          # evenly spaced frame reading (OpenCV)
-<a id="__codelineno-32-30" name="__codelineno-32-30" href="#__codelineno-32-30"></a>│   ├── detector.py    # VideoDetector base
-<a id="__codelineno-32-31" name="__codelineno-32-31" href="#__codelineno-32-31"></a>│   ├── faces.py       # 5-point face alignment (GenD template)
-<a id="__codelineno-32-32" name="__codelineno-32-32" href="#__codelineno-32-32"></a>│   ├── mtcnn/         # MTCNN face detector (vendored, MIT)
-<a id="__codelineno-32-33" name="__codelineno-32-33" href="#__codelineno-32-33"></a>│   ├── retinaface/    # RetinaFace-ResNet50 detector (vendored, MIT) + ArcFace alignment
-<a id="__codelineno-32-34" name="__codelineno-32-34" href="#__codelineno-32-34"></a>│   ├── dfdc_selim/    # DFDC winner (7 x EfficientNet-B7)
-<a id="__codelineno-32-35" name="__codelineno-32-35" href="#__codelineno-32-35"></a>│   ├── dfdc_wm/       # DFDC 2nd place (WS-DAN + Xception)
-<a id="__codelineno-32-36" name="__codelineno-32-36" href="#__codelineno-32-36"></a>│   └── gend/          # GenD (CLIP, Perception Encoder) + its predecessor dfdet-clip
-<a id="__codelineno-32-37" name="__codelineno-32-37" href="#__codelineno-32-37"></a>├── audiovisual/
-<a id="__codelineno-32-38" name="__codelineno-32-38" href="#__codelineno-32-38"></a>│   ├── io.py          # 25 fps frames + 16 kHz audio via ffmpeg
-<a id="__codelineno-32-39" name="__codelineno-32-39" href="#__codelineno-32-39"></a>│   ├── facetrack.py   # face tracks and talking-face crops (syncnet_python-style)
-<a id="__codelineno-32-40" name="__codelineno-32-40" href="#__codelineno-32-40"></a>│   ├── avad/          # AVAD (self-supervised A/V anomaly detection)
-<a id="__codelineno-32-41" name="__codelineno-32-41" href="#__codelineno-32-41"></a>│   ├── syncnet/       # SyncNet (lip-sync offset and confidence)
-<a id="__codelineno-32-42" name="__codelineno-32-42" href="#__codelineno-32-42"></a>│   ├── stablesyncnet/ # LatentSync's StableSyncNet (sync probability)
-<a id="__codelineno-32-43" name="__codelineno-32-43" href="#__codelineno-32-43"></a>│   ├── avcons/        # AV consistency learned from real videos (ForensiX)
-<a id="__codelineno-32-44" name="__codelineno-32-44" href="#__codelineno-32-44"></a>│   └── avid/          # voice-face identity consistency (ForensiX; ECAPA-TDNN + DINOv2)
-<a id="__codelineno-32-45" name="__codelineno-32-45" href="#__codelineno-32-45"></a>├── identity/          # reference-based: enrollment gallery, frame sampling
-<a id="__codelineno-32-46" name="__codelineno-32-46" href="#__codelineno-32-46"></a>│   ├── face.py        # id-face (SFace + YuNet)
-<a id="__codelineno-32-47" name="__codelineno-32-47" href="#__codelineno-32-47"></a>│   ├── voice.py       # id-voice (ECAPA-TDNN speaker verification)
-<a id="__codelineno-32-48" name="__codelineno-32-48" href="#__codelineno-32-48"></a>│   └── motion/        # id-motion: motion features, temporal ID network, training
-<a id="__codelineno-32-49" name="__codelineno-32-49" href="#__codelineno-32-49"></a>└── physics/           # physdf
-<a id="__codelineno-32-50" name="__codelineno-32-50" href="#__codelineno-32-50"></a>    ├── io.py          # full-frame-rate video reading
-<a id="__codelineno-32-51" name="__codelineno-32-51" href="#__codelineno-32-51"></a>    ├── face/          # MediaPipe tracker, skin regions, ICT-FaceKit model + fitting
-<a id="__codelineno-32-52" name="__codelineno-32-52" href="#__codelineno-32-52"></a>    ├── signals/       # rPPG (POS, CHROM); speech: YIN, jitter, HNR, LPC formants, VTL; room: pause VAD, band spectra, blind RT60
-<a id="__codelineno-32-53" name="__codelineno-32-53" href="#__codelineno-32-53"></a>    ├── base.py        # constraint scoring and evidence
-<a id="__codelineno-32-54" name="__codelineno-32-54" href="#__codelineno-32-54"></a>    ├── priors.py      # learned priors: fitting and loading
-<a id="__codelineno-32-55" name="__codelineno-32-55" href="#__codelineno-32-55"></a>    ├── graph/         # physdf graph: schema, node features, GNN, training and residuals
-<a id="__codelineno-32-56" name="__codelineno-32-56" href="#__codelineno-32-56"></a>    ├── physdf.py      # physdf
-<a id="__codelineno-32-57" name="__codelineno-32-57" href="#__codelineno-32-57"></a>    ├── report.py      # forensic report and its verification
-<a id="__codelineno-32-58" name="__codelineno-32-58" href="#__codelineno-32-58"></a>    ├── calibration.py # measuring constraints on media; scoring stored measurements
-<a id="__codelineno-32-59" name="__codelineno-32-59" href="#__codelineno-32-59"></a>    ├── bloodflow.py   # phys-bloodflow
-<a id="__codelineno-32-60" name="__codelineno-32-60" href="#__codelineno-32-60"></a>    ├── motion.py      # phys-motion
-<a id="__codelineno-32-61" name="__codelineno-32-61" href="#__codelineno-32-61"></a>    ├── lighting.py    # phys-lighting
-<a id="__codelineno-32-62" name="__codelineno-32-62" href="#__codelineno-32-62"></a>    ├── voice.py       # phys-voice
-<a id="__codelineno-32-63" name="__codelineno-32-63" href="#__codelineno-32-63"></a>    └── room.py        # phys-room
-<a id="__codelineno-32-64" name="__codelineno-32-64" href="#__codelineno-32-64"></a>scripts/
-<a id="__codelineno-32-65" name="__codelineno-32-65" href="#__codelineno-32-65"></a>├── download_weights.py
-<a id="__codelineno-32-66" name="__codelineno-32-66" href="#__codelineno-32-66"></a>├── eval_asvspoof2019_la.py
-<a id="__codelineno-32-67" name="__codelineno-32-67" href="#__codelineno-32-67"></a>├── eval_video_folder.py
-<a id="__codelineno-32-68" name="__codelineno-32-68" href="#__codelineno-32-68"></a>├── eval_lavdf.py
-<a id="__codelineno-32-69" name="__codelineno-32-69" href="#__codelineno-32-69"></a>├── eval_sasv.py
-<a id="__codelineno-32-70" name="__codelineno-32-70" href="#__codelineno-32-70"></a>├── recalibrate.py
-<a id="__codelineno-32-71" name="__codelineno-32-71" href="#__codelineno-32-71"></a>├── fit_fusion.py
-<a id="__codelineno-32-72" name="__codelineno-32-72" href="#__codelineno-32-72"></a>├── batch_infer.py
-<a id="__codelineno-32-73" name="__codelineno-32-73" href="#__codelineno-32-73"></a>├── bench_throughput.py
-<a id="__codelineno-32-74" name="__codelineno-32-74" href="#__codelineno-32-74"></a>├── eval_deepfake_eval_2024.py
-<a id="__codelineno-32-75" name="__codelineno-32-75" href="#__codelineno-32-75"></a>├── calibrate_physics.py
-<a id="__codelineno-32-76" name="__codelineno-32-76" href="#__codelineno-32-76"></a>├── train_physdf.py
-<a id="__codelineno-32-77" name="__codelineno-32-77" href="#__codelineno-32-77"></a>├── train_avcons.py
-<a id="__codelineno-32-78" name="__codelineno-32-78" href="#__codelineno-32-78"></a>├── train_avid.py
-<a id="__codelineno-32-79" name="__codelineno-32-79" href="#__codelineno-32-79"></a>├── eval_identity.py
-<a id="__codelineno-32-80" name="__codelineno-32-80" href="#__codelineno-32-80"></a>├── train_id_motion.py
-<a id="__codelineno-32-81" name="__codelineno-32-81" href="#__codelineno-32-81"></a>├── build_image_eval_set.py
-<a id="__codelineno-32-82" name="__codelineno-32-82" href="#__codelineno-32-82"></a>└── eval_image.py
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>forensix/
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>├── __init__.py        # load / download / list_models / info
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>├── registry.py        # ModelSpec + registry
+<a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>├── hub.py             # weight download, cache, checksum
+<a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a>├── metrics.py         # EER (ASVspoof-compatible), ROC-AUC, AP
+<a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>├── calibration.py     # Platt scaling, conformal thresholds and prediction sets, drift checks
+<a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a>├── fusion.py          # fuse several detectors' scores into one (logistic regression)
+<a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a>├── batch.py           # BatchRunner: batched, multi-worker GPU inference (image, audio, GenD; others via predict)
+<a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a>├── kernels.py         # fused uint8 -&gt; normalized CHW kernel (Triton, bit-exact to torchvision)
+<a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a>├── types.py           # Prediction
+<a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a>├── audio/
+<a id="__codelineno-33-12" name="__codelineno-33-12" href="#__codelineno-33-12"></a>│   ├── io.py          # loading, mono, resampling
+<a id="__codelineno-33-13" name="__codelineno-33-13" href="#__codelineno-33-13"></a>│   ├── detector.py    # AudioDetector base (windowing, batching)
+<a id="__codelineno-33-14" name="__codelineno-33-14" href="#__codelineno-33-14"></a>│   ├── xlsr.py        # shared XLS-R front end (HF) + fairseq checkpoint converter
+<a id="__codelineno-33-15" name="__codelineno-33-15" href="#__codelineno-33-15"></a>│   ├── aasist/        # AASIST, AASIST-L
+<a id="__codelineno-33-16" name="__codelineno-33-16" href="#__codelineno-33-16"></a>│   ├── nes2net_x/     # Nes2Net-X (2021, In-the-Wild)
+<a id="__codelineno-33-17" name="__codelineno-33-17" href="#__codelineno-33-17"></a>│   ├── rawgat_st/     # RawGAT-ST
+<a id="__codelineno-33-18" name="__codelineno-33-18" href="#__codelineno-33-18"></a>│   └── xlsr_aasist/   # XLS-R + AASIST (LA, DF)
+<a id="__codelineno-33-19" name="__codelineno-33-19" href="#__codelineno-33-19"></a>├── image/
+<a id="__codelineno-33-20" name="__codelineno-33-20" href="#__codelineno-33-20"></a>│   ├── io.py          # image loading (RGB, no resizing)
+<a id="__codelineno-33-21" name="__codelineno-33-21" href="#__codelineno-33-21"></a>│   ├── detector.py    # ImageDetector base (batching)
+<a id="__codelineno-33-22" name="__codelineno-33-22" href="#__codelineno-33-22"></a>│   ├── clip.py        # shared OpenAI CLIP ViT-L/14 backbone (HF)
+<a id="__codelineno-33-23" name="__codelineno-33-23" href="#__codelineno-33-23"></a>│   ├── clipdet/       # GRIP CLIP-based detector (OpenCLIP)
+<a id="__codelineno-33-24" name="__codelineno-33-24" href="#__codelineno-33-24"></a>│   ├── commfor/       # Community Forensics (384, 224)
+<a id="__codelineno-33-25" name="__codelineno-33-25" href="#__codelineno-33-25"></a>│   ├── rine/          # RINE (ProGAN 4-class, LDM)
+<a id="__codelineno-33-26" name="__codelineno-33-26" href="#__codelineno-33-26"></a>│   ├── safe/          # SAFE (reimplemented network + wavelet front end)
+<a id="__codelineno-33-27" name="__codelineno-33-27" href="#__codelineno-33-27"></a>│   └── univfd/        # UnivFD
+<a id="__codelineno-33-28" name="__codelineno-33-28" href="#__codelineno-33-28"></a>├── video/
+<a id="__codelineno-33-29" name="__codelineno-33-29" href="#__codelineno-33-29"></a>│   ├── io.py          # evenly spaced frame reading (OpenCV)
+<a id="__codelineno-33-30" name="__codelineno-33-30" href="#__codelineno-33-30"></a>│   ├── detector.py    # VideoDetector base
+<a id="__codelineno-33-31" name="__codelineno-33-31" href="#__codelineno-33-31"></a>│   ├── faces.py       # 5-point face alignment (GenD template)
+<a id="__codelineno-33-32" name="__codelineno-33-32" href="#__codelineno-33-32"></a>│   ├── mtcnn/         # MTCNN face detector (vendored, MIT)
+<a id="__codelineno-33-33" name="__codelineno-33-33" href="#__codelineno-33-33"></a>│   ├── retinaface/    # RetinaFace-ResNet50 detector (vendored, MIT) + ArcFace alignment
+<a id="__codelineno-33-34" name="__codelineno-33-34" href="#__codelineno-33-34"></a>│   ├── dfdc_selim/    # DFDC winner (7 x EfficientNet-B7)
+<a id="__codelineno-33-35" name="__codelineno-33-35" href="#__codelineno-33-35"></a>│   ├── dfdc_wm/       # DFDC 2nd place (WS-DAN + Xception)
+<a id="__codelineno-33-36" name="__codelineno-33-36" href="#__codelineno-33-36"></a>│   └── gend/          # GenD (CLIP, Perception Encoder) + its predecessor dfdet-clip
+<a id="__codelineno-33-37" name="__codelineno-33-37" href="#__codelineno-33-37"></a>├── audiovisual/
+<a id="__codelineno-33-38" name="__codelineno-33-38" href="#__codelineno-33-38"></a>│   ├── io.py          # 25 fps frames + 16 kHz audio via ffmpeg
+<a id="__codelineno-33-39" name="__codelineno-33-39" href="#__codelineno-33-39"></a>│   ├── facetrack.py   # face tracks and talking-face crops (syncnet_python-style)
+<a id="__codelineno-33-40" name="__codelineno-33-40" href="#__codelineno-33-40"></a>│   ├── avad/          # AVAD (self-supervised A/V anomaly detection)
+<a id="__codelineno-33-41" name="__codelineno-33-41" href="#__codelineno-33-41"></a>│   ├── syncnet/       # SyncNet (lip-sync offset and confidence)
+<a id="__codelineno-33-42" name="__codelineno-33-42" href="#__codelineno-33-42"></a>│   ├── stablesyncnet/ # LatentSync's StableSyncNet (sync probability)
+<a id="__codelineno-33-43" name="__codelineno-33-43" href="#__codelineno-33-43"></a>│   ├── avcons/        # AV consistency learned from real videos (ForensiX)
+<a id="__codelineno-33-44" name="__codelineno-33-44" href="#__codelineno-33-44"></a>│   └── avid/          # voice-face identity consistency (ForensiX; ECAPA-TDNN + DINOv2)
+<a id="__codelineno-33-45" name="__codelineno-33-45" href="#__codelineno-33-45"></a>├── identity/          # reference-based: enrollment gallery, frame sampling
+<a id="__codelineno-33-46" name="__codelineno-33-46" href="#__codelineno-33-46"></a>│   ├── face.py        # id-face (SFace + YuNet)
+<a id="__codelineno-33-47" name="__codelineno-33-47" href="#__codelineno-33-47"></a>│   ├── voice.py       # id-voice (ECAPA-TDNN speaker verification)
+<a id="__codelineno-33-48" name="__codelineno-33-48" href="#__codelineno-33-48"></a>│   └── motion/        # id-motion: motion features, temporal ID network, training
+<a id="__codelineno-33-49" name="__codelineno-33-49" href="#__codelineno-33-49"></a>└── physics/           # physdf
+<a id="__codelineno-33-50" name="__codelineno-33-50" href="#__codelineno-33-50"></a>    ├── io.py          # full-frame-rate video reading
+<a id="__codelineno-33-51" name="__codelineno-33-51" href="#__codelineno-33-51"></a>    ├── face/          # MediaPipe tracker, skin regions, ICT-FaceKit model + fitting
+<a id="__codelineno-33-52" name="__codelineno-33-52" href="#__codelineno-33-52"></a>    ├── signals/       # rPPG (POS, CHROM); speech: YIN, jitter, HNR, LPC formants, VTL; room: pause VAD, band spectra, blind RT60
+<a id="__codelineno-33-53" name="__codelineno-33-53" href="#__codelineno-33-53"></a>    ├── base.py        # constraint scoring and evidence
+<a id="__codelineno-33-54" name="__codelineno-33-54" href="#__codelineno-33-54"></a>    ├── priors.py      # learned priors: fitting and loading
+<a id="__codelineno-33-55" name="__codelineno-33-55" href="#__codelineno-33-55"></a>    ├── graph/         # physdf graph: schema, node features, GNN, training and residuals
+<a id="__codelineno-33-56" name="__codelineno-33-56" href="#__codelineno-33-56"></a>    ├── physdf.py      # physdf
+<a id="__codelineno-33-57" name="__codelineno-33-57" href="#__codelineno-33-57"></a>    ├── report.py      # forensic report and its verification
+<a id="__codelineno-33-58" name="__codelineno-33-58" href="#__codelineno-33-58"></a>    ├── calibration.py # measuring constraints on media; scoring stored measurements
+<a id="__codelineno-33-59" name="__codelineno-33-59" href="#__codelineno-33-59"></a>    ├── bloodflow.py   # phys-bloodflow
+<a id="__codelineno-33-60" name="__codelineno-33-60" href="#__codelineno-33-60"></a>    ├── motion.py      # phys-motion
+<a id="__codelineno-33-61" name="__codelineno-33-61" href="#__codelineno-33-61"></a>    ├── lighting.py    # phys-lighting
+<a id="__codelineno-33-62" name="__codelineno-33-62" href="#__codelineno-33-62"></a>    ├── voice.py       # phys-voice
+<a id="__codelineno-33-63" name="__codelineno-33-63" href="#__codelineno-33-63"></a>    └── room.py        # phys-room
+<a id="__codelineno-33-64" name="__codelineno-33-64" href="#__codelineno-33-64"></a>scripts/
+<a id="__codelineno-33-65" name="__codelineno-33-65" href="#__codelineno-33-65"></a>├── download_weights.py
+<a id="__codelineno-33-66" name="__codelineno-33-66" href="#__codelineno-33-66"></a>├── eval_asvspoof2019_la.py
+<a id="__codelineno-33-67" name="__codelineno-33-67" href="#__codelineno-33-67"></a>├── eval_video_folder.py
+<a id="__codelineno-33-68" name="__codelineno-33-68" href="#__codelineno-33-68"></a>├── eval_lavdf.py
+<a id="__codelineno-33-69" name="__codelineno-33-69" href="#__codelineno-33-69"></a>├── eval_sasv.py
+<a id="__codelineno-33-70" name="__codelineno-33-70" href="#__codelineno-33-70"></a>├── recalibrate.py
+<a id="__codelineno-33-71" name="__codelineno-33-71" href="#__codelineno-33-71"></a>├── fit_fusion.py
+<a id="__codelineno-33-72" name="__codelineno-33-72" href="#__codelineno-33-72"></a>├── batch_infer.py
+<a id="__codelineno-33-73" name="__codelineno-33-73" href="#__codelineno-33-73"></a>├── bench_throughput.py
+<a id="__codelineno-33-74" name="__codelineno-33-74" href="#__codelineno-33-74"></a>├── eval_deepfake_eval_2024.py
+<a id="__codelineno-33-75" name="__codelineno-33-75" href="#__codelineno-33-75"></a>├── calibrate_physics.py
+<a id="__codelineno-33-76" name="__codelineno-33-76" href="#__codelineno-33-76"></a>├── train_physdf.py
+<a id="__codelineno-33-77" name="__codelineno-33-77" href="#__codelineno-33-77"></a>├── train_avcons.py
+<a id="__codelineno-33-78" name="__codelineno-33-78" href="#__codelineno-33-78"></a>├── train_avid.py
+<a id="__codelineno-33-79" name="__codelineno-33-79" href="#__codelineno-33-79"></a>├── eval_identity.py
+<a id="__codelineno-33-80" name="__codelineno-33-80" href="#__codelineno-33-80"></a>├── train_id_motion.py
+<a id="__codelineno-33-81" name="__codelineno-33-81" href="#__codelineno-33-81"></a>├── build_image_eval_set.py
+<a id="__codelineno-33-82" name="__codelineno-33-82" href="#__codelineno-33-82"></a>└── eval_image.py
 </code></pre></div>
 <h2 id="adding-a-model">Adding a model<a class="headerlink" href="#adding-a-model" title="Permanent link">&para;</a></h2>
 <ol>
@@ -3847,8 +4019,35 @@ The <a href="../../getting-started/">Quickstart</a> walks through all of it.</p>
 <li><code>register(ModelSpec(...))</code> with the weight URL and SHA-256, license, source and paper.</li>
 <li>Add tests and a row in the Models table, then run the family's eval script.</li>
 </ol>
+<h2 id="why-forensix-exists">Why ForensiX exists<a class="headerlink" href="#why-forensix-exists" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><em>Draft for the maintainer to edit:</em> When I looked for deepfake detection to build into products,
+the strongest research models were often released for research use only, and the commercial
+options gave me a score without the evidence or the numbers behind it. ForensiX brings together
+the models that <em>can</em> be used commercially, measures them in the open, and adds what a real
+deployment needs: provenance checks, calibration, fairness reports and a way to run it all on
+your own infrastructure. — Muhammad Anas Raza</p>
+</blockquote>
+<h2 id="community">Community<a class="headerlink" href="#community" title="Permanent link">&para;</a></h2>
+<p>ForensiX is for the people who keep synthetic media from doing harm: trust and safety analysts,
+fraud investigators, identity teams, journalists and researchers. You can help in several ways:</p>
+<ul>
+<li><strong>Report a miss or a false alarm.</strong> An <a href="https://github.com/anas-rz/ForensiX/issues">issue</a> with a
+  file you're allowed to share improves the benchmarks for everyone.</li>
+<li><strong>Add a model or a benchmark</strong> with a commercially usable license: see <a href="https://github.com/anas-rz/ForensiX/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>
+  and <a href="../../guides/extending/">Extending ForensiX</a>.</li>
+<li><strong>Improve the docs,</strong> or share how you deployed it.</li>
+<li><strong>Cite it</strong> in your work: GitHub's "Cite this repository" button uses <a href="https://github.com/anas-rz/ForensiX/blob/main/CITATION.cff">CITATION.cff</a>.</li>
+</ul>
+<p>If ForensiX saved you time, a GitHub star helps others find it.</p>
+<p><a href="https://github.com/anas-rz/ForensiX/graphs/contributors"><img alt="Contributors" src="https://contrib.rocks/image?repo=anas-rz/ForensiX" /></a></p>
 <h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
-<p>Each model's code and weights carry their upstream license, listed in the Models table and in the model's directory.</p>
+<p>The ForensiX framework is released under the <a href="https://github.com/anas-rz/ForensiX/blob/main/LICENSE">MIT License</a>: the library, server, web
+console, deployment templates, scripts and documentation.</p>
+<p>Models keep their own licenses. Each model's code carries the license in its directory, and its
+weights carry the license listed in the <a href="#models">Models</a> table (also in
+<code>forensix.info(name).license</code>). All of them allow commercial use; the
+<a href="../../guides/licensing/">licensing guide</a> lists the conditions to check before you ship.</p>
 
 
 

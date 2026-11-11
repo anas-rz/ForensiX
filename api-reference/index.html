@@ -672,6 +672,8 @@
       
         
       
+        
+      
     
     
     
@@ -984,6 +986,34 @@
     
   
     Licensing and compliance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/buyers-checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Buyer's checklist
   
 
     
@@ -1676,6 +1706,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#command-line-python-m-forensix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command line: python -m forensix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#calibration-forensixcalibrate-forensixcalibration-forensixdataset" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2163,6 +2204,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#command-line-python-m-forensix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command line: python -m forensix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#calibration-forensixcalibrate-forensixcalibration-forensixdataset" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2641,6 +2693,25 @@ the media has nothing to compare.</p>
 <tr>
 <td><code>extract_features(media, modality)</code> and per-modality <code>extract_*_features</code></td>
 <td>The feature extractors, for custom training loops.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="command-line-python-m-forensix">Command line: <code>python -m forensix</code><a class="headerlink" href="#command-line-python-m-forensix" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>python -m forensix FILE [FILE ...] [--models a,b] [--device cuda] [--json]</code></td>
+<td>Scores files with the server's default models for each media type (or <code>--models</code>), plus provenance checks, and prints a line per model or JSON</td>
+</tr>
+<tr>
+<td><code>python scripts/fetch_samples.py [--out DIR]</code></td>
+<td>Downloads a labelled test kit of real and fake media (public domain, CC0 and MIT/Apache) with a <code>SOURCES.md</code></td>
 </tr>
 </tbody>
 </table>
