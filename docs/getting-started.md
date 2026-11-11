@@ -1,7 +1,9 @@
 # Quickstart
 
-This page takes you from a fresh checkout to scoring files in Python, over HTTP and in the web
-manager, in about ten minutes. Each step links to the page that covers it in depth.
+In about ten minutes you'll go from a fresh checkout to a running detection service: scoring
+files in Python, calling the API over HTTP, and working in the web console. Each step links to the
+page that covers it in depth. When you're ready for production, the same service deploys to
+[AWS](aws.md), [Google Cloud](gcp.md) or [Azure](azure.md) with one command.
 
 !!! tip "No install: try it in Google Colab"
     [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb)

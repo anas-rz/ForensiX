@@ -138,7 +138,8 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         telemetry.stop()
 
     app = FastAPI(title="ForensiX", version=_version(), lifespan=lifespan,
-                  description="Deepfake and manipulated-media detection with ForensiX models.")
+                  description="ForensiX: detect deepfakes and AI-generated images, video and voices, verify provenance, "
+                              "calibrate to your false-alarm budget and audit fairness.")
     app.state.manager = manager
     app.state.telemetry = telemetry
     app.state.config = config

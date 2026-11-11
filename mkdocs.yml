@@ -1,5 +1,5 @@
 site_name: ForensiX
-site_description: Deepfake detection and media forensics. Commercially licensed detectors behind one Python API, an HTTP server and a web manager.
+site_description: "End-to-end deepfake detection and media forensics: 38 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure."
 site_url: https://anas-rz.github.io/ForensiX/
 repo_url: https://github.com/anas-rz/ForensiX
 repo_name: anas-rz/ForensiX

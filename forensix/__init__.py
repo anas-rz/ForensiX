@@ -1,4 +1,6 @@
-"""ForensiX: a model zoo for deepfake detection.
+"""ForensiX: end-to-end deepfake detection and media forensics.
+
+Detect, verify provenance, fine-tune, calibrate and deploy. The Python API:
 
     import forensix
     forensix.list_models()              # ['aasist', ..., 'univfd']

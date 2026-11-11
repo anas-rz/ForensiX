@@ -1,14 +1,71 @@
 # ForensiX
 
+**Catch deepfakes before they cost you, from the first file you check to a production API on any cloud.**
+
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb) [![Documentation](https://img.shields.io/badge/docs-anas--rz.github.io%2FForensiX-blue)](https://anas-rz.github.io/ForensiX/)
 
-A PyTorch model zoo for **deepfake detection and multimodal media forensics**: audio, video, audiovisual, multimodal, physics-based, image, identity-based and graph-based detectors behind one Python API.
+ForensiX is an end-to-end media forensics platform. It detects manipulated and AI-generated
+**images, video and voices**, and reads the evidence a file carries: Content Credentials,
+generator watermarks and metadata. It **adapts to your own media** and runs as an **API and web
+console** on your laptop, your Kubernetes cluster, or **AWS, Google Cloud and Azure**. Every bundled
+model and weight is under a commercially usable license.
 
-All bundled models and weights are under **commercially usable licenses**.
+**[Try it in Colab: no install](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb)** · **[Read the docs](https://anas-rz.github.io/ForensiX/)** · **[Deploy to your cloud](docs/cloud.md#managed-clouds)**
 
-**Get started:** [open the Colab notebook](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb) to detect, calibrate, evaluate and run the web manager on a free GPU, with no install. Or read the [documentation](https://anas-rz.github.io/ForensiX/).
+## Why teams choose ForensiX
 
-It ships with an HTTP server and a web manager for testing, calibrating and monitoring the detectors:
+- **Built for commercial use.** Every bundled model and weight is under a commercially usable
+  license, documented model by model, with the conditions to check before you ship in the
+  [licensing guide](docs/guides/licensing.md). Research weights with non-commercial terms are left
+  out.
+- **Every modality, one API.** Image generators, face swaps, cloned voices, lip-sync mismatches,
+  physical and physiological inconsistencies, identity and provenance: 38 detectors in 8 families
+  behind `forensix.load(name).predict(file)` and a single `/v1/detect` endpoint.
+- **Decisions you can defend.** Calibrate on your own data to get real probabilities, a threshold
+  with a statistical guarantee on the false-alarm rate you choose (split conformal), and an explicit
+  "can't tell" when the evidence is mixed. Provenance adds proof that no score can: a signed
+  AI-generation declaration, an edit after signing, a generator's watermark.
+- **Proof, not promises.** A public, reproducible [leaderboard](LEADERBOARD.md) with 95% confidence
+  intervals, recomputed from raw result files. For example, `gend-pe` reaches **AUC 0.956
+  [0.919–0.983]** on SDFVD face swaps, and `xlsr-aasist-df` **0.0% EER** on an ASVspoof 2019 LA
+  subset.
+- **Fairness you can show.** [Fairness reports](docs/fairness.md) give false-alarm rates by skin
+  tone, age and gender, with confidence intervals and significance tests: the evidence buyers and
+  regulators ask for.
+- **Adapts to your media.** [Fine-tune](docs/guides/finetuning.md) any image, audio or face-video
+  detector on your own data, including [LoRA with PEFT](docs/guides/peft.md). The result is a
+  checkpoint of a few megabytes that serves at full speed.
+- **Production-ready on day one.** The API keeps models loaded, batches requests and caches
+  results, and comes with a web console, Prometheus metrics, Docker and Kubernetes manifests, and
+  [one-command or one-click deployment](docs/cloud.md#managed-clouds) to AWS, Google Cloud and Azure.
+
+## From data to production
+
+| Stage | What you get | How |
+|---|---|---|
+| **Try** | Scores for your own files in minutes | The [Colab notebook](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb), or the web console's Test page |
+| **Detect** | Images, video and audio scored, with evidence | `forensix.load(...).predict(...)`, `POST /v1/detect` ([Quickstart](docs/getting-started.md)) |
+| **Verify provenance** | C2PA credentials, watermarks, metadata | `forensix.provenance.check(...)` ([Provenance](docs/provenance.md)) |
+| **Measure** | Accuracy on *your* media, next to public benchmarks | Evaluation scripts and the [leaderboard](LEADERBOARD.md) ([Evaluation](docs/guides/evaluation.md)) |
+| **Adapt** | A detector tuned to your generators and pipelines | `python -m forensix.finetuning` ([Fine-tuning](docs/guides/finetuning.md), [PEFT](docs/guides/peft.md)) |
+| **Calibrate** | Probabilities you can trust and a false-alarm budget | `forensix.calibrate(...)` or the web console ([Calibration](docs/calibration.md)) |
+| **Audit** | False alarms by skin tone, age and gender | `POST /v1/fairness` or the web console ([Fairness](docs/fairness.md)) |
+| **Deploy** | An autoscaled API and web console | Docker, Kubernetes, [AWS](docs/aws.md), [Google Cloud](docs/gcp.md), [Azure](docs/azure.md) |
+| **Monitor** | Live traffic, latency and verdicts; drift alerts | The web console's dashboard, `/metrics`, drift checks ([Web manager](docs/ui.md)) |
+
+## Built for
+
+| Team | Use ForensiX to |
+|---|---|
+| **Trust & safety, marketplaces, social platforms** | Flag AI-generated images and face-swapped video at upload, and read signed AI declarations |
+| **Identity verification and KYC** | Check selfie videos for face swaps and lip-sync, and confirm the face matches the enrolled person |
+| **Fraud teams and contact centers** | Detect cloned voices in calls and voicemails |
+| **Newsrooms and fact-checkers** | Verify Content Credentials, spot edits after signing, and explain the evidence |
+| **Compliance and procurement** | Show licenses, reproducible benchmarks and fairness reports |
+
+## See it in action
+
+The web console tests files, manages and calibrates models, and monitors the service live:
 
 ![The ForensiX web manager: overview dashboard](docs/images/ui/overview.png)
 
@@ -27,14 +84,25 @@ It ships with an HTTP server and a web manager for testing, calibrating and moni
   </tr>
 </table>
 
-## Install
+## Get started
+
+**No install:** the [Colab notebook](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb)
+detects, calibrates, evaluates and runs the web console on a free GPU, with sample media.
+
+**On your machine:**
 
 ```bash
-pip install -e ".[dev]"
-python scripts/download_weights.py          # optional: pre-fetch all weights
+git clone https://github.com/anas-rz/ForensiX.git && cd ForensiX
+pip install -e ".[server]"
+python -m forensix.server --preload commfor nes2net-x-itw      # then open http://localhost:8000/ui/
 ```
 
-Weights are cached in `~/.cache/forensix` (override with `FORENSIX_CACHE`) and checked against a SHA-256 hash. `forensix.load()` downloads them automatically on first use.
+**In containers:** `docker compose up -d --build`, or deploy to [AWS](docs/aws.md),
+[Google Cloud](docs/gcp.md) or [Azure](docs/azure.md) with one command.
+
+Weights download on first use into `~/.cache/forensix` (override with `FORENSIX_CACHE`) and are
+checked against SHA-256 hashes. To fetch them ahead of time, run `python scripts/download_weights.py`.
+The [Quickstart](docs/getting-started.md) walks through all of it.
 
 ## Leaderboard
 
@@ -80,7 +148,9 @@ Containers: `docker compose up -d --build` runs the server and manager locally, 
 |---|---|---|
 | AWS | `deploy/aws/deploy.sh ecs` (or `ecs-gpu`, `eks`, `eks-gpu`) | [docs/aws.md](docs/aws.md) |
 | Google Cloud | `deploy/gcp/deploy.sh cloudrun` (or `cloudrun-gpu`, `gke`, `gke-gpu`) | [docs/gcp.md](docs/gcp.md) |
-| Azure | `deploy/azure/deploy.sh aca` (or `aca-gpu`, `aks`, `aks-gpu`), or [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fanas-rz%2FForensiX%2Fmain%2Fdeploy%2Fazure%2Fcontainerapps.json) | [docs/azure.md](docs/azure.md) | Benchmark results are in [benchmark.md](benchmark.md).
+| Azure | `deploy/azure/deploy.sh aca` (or `aca-gpu`, `aks`, `aks-gpu`), or [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fanas-rz%2FForensiX%2Fmain%2Fdeploy%2Fazure%2Fcontainerapps.json) | [docs/azure.md](docs/azure.md) |
+
+Benchmark results are in [benchmark.md](benchmark.md).
 
 ## Usage
 

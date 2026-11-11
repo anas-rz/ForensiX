@@ -1,10 +1,20 @@
 # ForensiX documentation
 
-ForensiX is a PyTorch model zoo for deepfake detection and media forensics. Every detector,
-whether it checks audio, images, video, lip sync, physics or identity, sits behind the same small
-Python API: `forensix.load(name).predict(media)` returns a `Prediction`.
+ForensiX is an end-to-end media forensics platform: it takes you from the first suspicious file
+to a calibrated, monitored detection service on your own infrastructure or any major cloud.
 
-These pages are for engineers who use ForensiX in their own systems. The
+- **Detect** manipulated and AI-generated images, video and voices with 38 commercially licensed
+  detectors, including face swaps, lip-sync mismatches, cloned voices and physical
+  inconsistencies. They all sit behind one API: `forensix.load(name).predict(media)` in Python, or
+  `POST /v1/detect` over HTTP.
+- **Prove** what a file says about itself: C2PA Content Credentials, generator watermarks,
+  metadata.
+- **Adapt and trust** the results on your media: fine-tune (including LoRA), calibrate to a
+  false-alarm budget, and audit fairness.
+- **Run it** as an API and web console: locally, on Kubernetes, or on AWS, Google Cloud and
+  Azure with one command or one click. Monitor it live.
+
+These pages are for engineers who build ForensiX into their products and pipelines. The
 [top-level README](../README.md) is the model reference: per-model papers, licenses,
 preprocessing details and parity checks against upstream code.
 
@@ -22,8 +32,8 @@ preprocessing details and parity checks against upstream code.
 | Call the detectors over HTTP | [HTTP server](server.md) |
 | Manage, test and calibrate models in the browser | [Web manager](ui.md) |
 | Calibrate models on your own labelled data, and get predictions with confidence | [Calibration](calibration.md) |
-| Fine-tune a detector on your data and deploy it to any cloud | [Parameter-efficient fine-tuning (PEFT)](guides/peft.md) | LoRA adapters with Hugging Face PEFT: train ~1% of a large model's parameters, merge for full-speed serving, deploy to any cloud |
-| [Fine-tuning on your data](guides/finetuning.md) |
+| Fine-tune a detector on your data and deploy it to any cloud | [Fine-tuning on your data](guides/finetuning.md) |
+| Fine-tune the large CLIP/ViT models with LoRA adapters (PEFT) | [Parameter-efficient fine-tuning](guides/peft.md) |
 | Check C2PA credentials, generator watermarks and metadata | [Provenance](provenance.md) |
 | Report false-alarm rates by skin tone, age and gender | [Fairness reports](fairness.md) |
 | Run it in Docker, on Kubernetes or a managed cloud | [Docker, Kubernetes and cloud](cloud.md) |
@@ -42,6 +52,7 @@ preprocessing details and parity checks against upstream code.
 | [Evaluating on your data](guides/evaluation.md) | The eval scripts, metrics, building a fair test set, reading benchmark numbers |
 | [Identity and person models](guides/identity.md) | Enrolling people, verifying media against them, galleries, tiny per-person models |
 | [Physics forensics](guides/physics.md) | The physics detectors, forensic reports, learned priors |
+| [Parameter-efficient fine-tuning (PEFT)](guides/peft.md) | LoRA adapters with Hugging Face PEFT: train about 1% of a large model's parameters, merge for full-speed serving, deploy to any cloud |
 | [Fine-tuning on your data](guides/finetuning.md) | Fine-tune a pretrained detector on your labelled data, evaluate, calibrate, package and deploy it to AWS, Google Cloud or Azure |
 | [Training models](guides/training.md) | Training the models that ship without weights (avcons, avid, id-motion, physdf) |
 | [Working in Google Colab](guides/colab.md) | GPU choice, Drive, GitHub, Claude Code in Colab |

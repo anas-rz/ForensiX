@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "forensix"
 version = "0.1.0"
-description = "A PyTorch model zoo for deepfake detection and multimodal media forensics"
+description = "End-to-end deepfake detection and media forensics: detect, verify provenance, fine-tune, calibrate, audit and deploy on any cloud"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
