@@ -3,6 +3,13 @@
 This page takes you from a fresh checkout to scoring files in Python, over HTTP and in the web
 manager, in about ten minutes. Each step links to the page that covers it in depth.
 
+!!! tip "No install: try it in Google Colab"
+    [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb)
+
+    The [get-started notebook](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb) runs everything on this page on a free Colab GPU, with
+    sample media: detecting images, audio and video, provenance checks, uploading your own files,
+    calibration, evaluation, the web manager inside Colab, and a fairness report.
+
 ## 1. Install
 
 You need Python 3.10 or newer and ffmpeg ([Installation](guides/installation.md) has the details

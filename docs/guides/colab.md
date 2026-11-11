@@ -1,5 +1,14 @@
 # Working in Google Colab
 
+**New to ForensiX?** Start with the [get-started notebook](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb): it installs ForensiX,
+downloads sample media, and walks through detection, calibration, evaluation and the web manager.
+
+| Notebook | What it does |
+|---|---|
+| [Get started](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb) ([source](../../notebooks/ForensiX_Get_Started.ipynb)) | Detect, provenance, calibrate, evaluate, web manager and fairness on sample media |
+| [Benchmark on SDFVD](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Benchmark_SDFVD.ipynb) ([source](../../notebooks/ForensiX_Benchmark_SDFVD.ipynb)) | Every image and video detector on the SDFVD face swaps |
+| [Train and test](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Colab_Train_and_Test.ipynb) ([source](../../notebooks/ForensiX_Colab_Train_and_Test.ipynb)) | Train the models that ship without weights, then benchmark them |
+
 Training and large evaluations run on Colab GPUs. This guide sets up a workflow where the repo
 lives on Google Drive, survives disconnects, and syncs with GitHub.
 

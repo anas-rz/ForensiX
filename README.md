@@ -1,8 +1,12 @@
 # ForensiX
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb) [![Documentation](https://img.shields.io/badge/docs-anas--rz.github.io%2FForensiX-blue)](https://anas-rz.github.io/ForensiX/)
+
 A PyTorch model zoo for **deepfake detection and multimodal media forensics**: audio, video, audiovisual, multimodal, physics-based, image, identity-based and graph-based detectors behind one Python API.
 
 All bundled models and weights are under **commercially usable licenses**.
+
+**Get started:** [open the Colab notebook](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb) to detect, calibrate, evaluate and run the web manager on a free GPU, with no install. Or read the [documentation](https://anas-rz.github.io/ForensiX/).
 
 It ships with an HTTP server and a web manager for testing, calibrating and monitoring the detectors:
 
@@ -38,9 +42,11 @@ Every model on commercially usable benchmarks (SDFVD face swaps, ASVspoof 2019 L
 
 ## Documentation
 
+The documentation is published at **[anas-rz.github.io/ForensiX](https://anas-rz.github.io/ForensiX/)**. To try everything without installing, use the [Colab notebook](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb).
+
 Start with the [Quickstart](docs/getting-started.md): install, score a file in Python, run the server and use the web manager. [docs/](docs/README.md) also has the [concepts](docs/concepts.md), the [API reference](docs/api-reference.md), [recipes](docs/recipes.md) for common tasks, [guides](docs/README.md#guides) (choosing detectors, interpreting scores, evaluation, identity, physics, training, Colab, extending, licensing), the [HTTP server](docs/server.md), [calibration](docs/calibration.md), [provenance](docs/provenance.md), [fairness reports](docs/fairness.md), and [deployment at scale](docs/deployment.md).
 
-The same pages build into a searchable documentation site with [MkDocs](https://www.mkdocs.org/):
+The site is built from these pages with [MkDocs](https://www.mkdocs.org/) and deployed by `.github/workflows/docs.yml` on every push to `main`. To preview it locally:
 
 ```bash
 pip install -e ".[docs]"

@@ -12,6 +12,7 @@ preprocessing details and parity checks against upstream code.
 
 | If you want to… | Read |
 |---|---|
+| Try everything in the browser, with no install: detect, calibrate, evaluate, web manager | [Colab notebook](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb) |
 | Go from a fresh checkout to the running server and web manager in ten minutes | [Quickstart](getting-started.md) |
 | Install ForensiX and score your first file | [Installation](guides/installation.md) |
 | Understand the building blocks (registry, `Prediction`, score types, families) | [Concepts](concepts.md) |
