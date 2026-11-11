@@ -1010,8 +1010,8 @@ scripts/
 
 ## Why ForensiX exists
 
-> I worked on deepfakes for my master's research, which led to papers at CVPR Workshops,
-> *Information Sciences* and IJCB, where one received a best paper award. When I looked for
+> I worked on deepfakes for my master's research, which led to papers at CVPR Workshop,
+> *Information Sciences* and IJCB, where one received a best poster award. When I looked for
 > tools to use beyond research, I found open-source detectors, but nothing that could quantify
 > its own uncertainty or stay calibrated as the data and the generators keep changing. A detector
 > that is confident and wrong on next month's generator is worse than one that says "I'm not
