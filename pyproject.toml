@@ -32,6 +32,8 @@ provenance = ["c2pa-python>=0.38", "audioseal>=0.2", "omegaconf>=2.3"]
 # HTTP server (python -m forensix.server), with the provenance checks it runs by default
 server = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "python-multipart>=0.0.9",
           "c2pa-python>=0.38", "audioseal>=0.2", "omegaconf>=2.3"]
+# parameter-efficient fine-tuning (python -m forensix.finetuning --mode lora); not needed to serve the result
+finetune = ["peft>=0.13"]
 # documentation site (mkdocs serve / mkdocs build)
 docs = ["mkdocs>=1.6", "mkdocs-material>=9.5"]
 # building the image evaluation set (scripts/build_image_eval_set.py)

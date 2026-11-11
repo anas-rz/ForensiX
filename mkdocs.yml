@@ -81,6 +81,7 @@ nav:
       - Identity and person models: guides/identity.md
       - Physics forensics: guides/physics.md
       - Fine-tuning on your data: guides/finetuning.md
+      - Parameter-efficient fine-tuning (PEFT): guides/peft.md
       - Training models: guides/training.md
       - Extending ForensiX: guides/extending.md
       - Licensing and compliance: guides/licensing.md

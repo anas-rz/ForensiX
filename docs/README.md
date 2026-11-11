@@ -22,7 +22,8 @@ preprocessing details and parity checks against upstream code.
 | Call the detectors over HTTP | [HTTP server](server.md) |
 | Manage, test and calibrate models in the browser | [Web manager](ui.md) |
 | Calibrate models on your own labelled data, and get predictions with confidence | [Calibration](calibration.md) |
-| Fine-tune a detector on your data and deploy it to any cloud | [Fine-tuning on your data](guides/finetuning.md) |
+| Fine-tune a detector on your data and deploy it to any cloud | [Parameter-efficient fine-tuning (PEFT)](guides/peft.md) | LoRA adapters with Hugging Face PEFT: train ~1% of a large model's parameters, merge for full-speed serving, deploy to any cloud |
+| [Fine-tuning on your data](guides/finetuning.md) |
 | Check C2PA credentials, generator watermarks and metadata | [Provenance](provenance.md) |
 | Report false-alarm rates by skin tone, age and gender | [Fairness reports](fairness.md) |
 | Run it in Docker, on Kubernetes or a managed cloud | [Docker, Kubernetes and cloud](cloud.md) |

@@ -643,6 +643,8 @@ python -m forensix.finetuning dfdet-clip --dataset train.zip --out models/dfdet-
 det = forensix.load("dfdet-clip", weights_path="models/dfdet-clip-ft.safetensors")
 ```
 
+For the large CLIP/ViT models, `--mode lora` trains LoRA adapters with Hugging Face PEFT (`pip install peft`): about 1% of the parameters, a checkpoint of a few MB, merged at load so serving needs no PEFT and runs at full speed ([PEFT guide](docs/guides/peft.md)).
+
 ## Calibration
 
 A detector's `fake_prob` and default threshold come from its training data, and they often don't hold on other media: on SDFVD, most detectors call almost every face swap real at 0.5 ([benchmark.md](benchmark.md)). `forensix.calibration` fits a small JSON table on labelled scores of your own media and applies it on top of any detector. Weights and preprocessing are unchanged. Three tools are fitted together:

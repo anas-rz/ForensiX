@@ -180,11 +180,12 @@ Report helpers in `forensix.physics.report`:
 
 | Name | Description |
 |---|---|
-| `forensix.finetune(model, dataset=None, real_media=None, fake_media=None, out=None, mode="norm", epochs=5, lr=None, batch_size=16, val_fraction=0.2, max_per_class=None, frames=16, augment=True, seed=0, device="cpu", cache_dir=None)` | Fine-tunes and returns `(detector, report)`: held-out AUC before (`base_val_auc`) and after (`val_auc`), `best_epoch`, per-epoch `history`, counts and `warnings` |
+| `forensix.finetune(model, dataset=None, real_media=None, fake_media=None, out=None, mode="norm", epochs=5, lr=None, batch_size=16, val_fraction=0.2, max_per_class=None, frames=16, augment=True, seed=0, device="cpu", cache_dir=None, lora_rank=8, lora_alpha=16, lora_dropout=0.05, lora_target_pattern=None)` | Fine-tunes and returns `(detector, report)`: held-out AUC before (`base_val_auc`) and after (`val_auc`), `best_epoch`, per-epoch `history`, counts and `warnings` |
 | `python -m forensix.finetuning MODEL --dataset DATA --out MODEL-ft.safetensors` | The same from the command line; also writes `MODEL-ft.json` |
 | `finetuning.checkpoint_info(path)` | The checkpoint's metadata (model, mode, base weights hash, report), or `None` if `path` isn't a fine-tune checkpoint |
 | `finetuning.apply(detector, path)` | Loads a checkpoint into a detector built with its pretrained weights (what `forensix.load(..., weights_path=...)` does) |
 | `finetuning.trainable_parameters(network, mode)` | The parameters a mode trains (`head`, `norm`, `full`) |
+| `finetuning.lora_targets(network, pattern=None)`, `add_lora(...)`, `merge_lora(network)` | LoRA through PEFT: choose layers, inject adapters, fold them back into plain layers ([PEFT](guides/peft.md)) |
 
 ## Provenance: `forensix.provenance`
 

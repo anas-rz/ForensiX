@@ -46,6 +46,7 @@ of them are calibrated rather than trained, or have their own training scripts.
 |---|---|---|---|
 | `head` | The final classifier layer | A few hundred items per class; a quick, safe first try | `1e-3` |
 | **`norm`** (default) | Normalization layers' scales and shifts, plus the head ("LN-tuning", as GenD and `dfdet-clip` were trained) | Hundreds to a few thousand items per class | `1e-4` |
+| `lora` | Low-rank adapters on every Linear layer, plus the head, via Hugging Face PEFT (`pip install peft`) | When `norm` plateaus and you have more data: near-full capacity at low memory. See [PEFT](peft.md) | `2e-4` |
 | `full` | Every parameter | Many thousands of items per class and a large GPU | `1e-5` |
 
 `head` and `norm` checkpoints store only the tensors they changed, from kilobytes to a few
@@ -102,7 +103,7 @@ report["base_val_auc"], report["val_auc"], report["best_epoch"], report["warning
 | Option | Default | Meaning |
 |---|---|---|
 | `--dataset` or `--real` / `--fake` | | A dataset ZIP or folder, or two folders of files |
-| `--mode` | `norm` | `head`, `norm` or `full` (above) |
+| `--mode` | `norm` | `head`, `norm`, `lora` or `full` (above); `lora` options in [PEFT](peft.md) |
 | `--epochs` | 5 | Passes over the training data. The best epoch on held-out data is kept |
 | `--lr` | by mode | Learning rate (AdamW) |
 | `--batch-size` | 16 | Lower it if the GPU runs out of memory |
