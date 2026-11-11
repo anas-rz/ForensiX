@@ -1,0 +1,2589 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Deepfake detection and media forensics. Commercially licensed detectors behind one Python API, an HTTP server and a web manager.">
+      
+      
+      
+        <link rel="canonical" href="https://anas-rz.github.io/ForensiX/deployment/">
+      
+      
+        <link rel="prev" href="../cloud/">
+      
+      
+        <link rel="next" href="../api-reference/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Deployment at scale - ForensiX</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#deployment-at-scale" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ForensiX" class="md-header__button md-logo" aria-label="ForensiX" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ForensiX
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Deployment at scale
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anas-rz/ForensiX" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anas-rz/ForensiX
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../guides/choosing-detectors/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../server/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Server and web manager
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../cloud/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api-reference/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ForensiX" class="md-nav__button md-logo" aria-label="ForensiX" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ForensiX
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anas-rz/ForensiX" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anas-rz/ForensiX
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/colab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working in Google Colab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/choosing-detectors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choosing detectors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/interpreting-scores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interpreting scores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluating on your data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity and person models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/physics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Physics forensics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/extending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extending ForensiX
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/licensing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Licensing and compliance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server and web manager
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Server and web manager
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calibration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fairness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fairness reports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cloud/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker, Kubernetes and cloud
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment at scale
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment at scale
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#packaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Packaging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sizing-and-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sizing and scaling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sizing and scaling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#per-model-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-model cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workers-per-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workers per GPU
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autoscaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autoscaling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cutting-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cutting cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisions-thresholds-and-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisions, thresholds and review
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audit-and-reproducibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit and reproducibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#launch-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Launch checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/leaderboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Leaderboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Benchmarks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/benchmark-video-image/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Video and image (SDFVD)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/benchmark-audiovisual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audiovisual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/benchmark-identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/benchmark-physics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Physics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#packaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Packaging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sizing-and-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sizing and scaling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sizing and scaling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#per-model-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-model cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workers-per-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workers per GPU
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autoscaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autoscaling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cutting-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cutting cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisions-thresholds-and-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisions, thresholds and review
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audit-and-reproducibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit and reproducibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#launch-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Launch checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/anas-rz/ForensiX/edit/main/docs/deployment.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="deployment-at-scale">Deployment at scale<a class="headerlink" href="#deployment-at-scale" title="Permanent link">&para;</a></h1>
+<p>ForensiX is a Python library with an optional HTTP server (<a href="../server/">HTTP server</a>). The server
+suits synchronous calls at moderate volume: one process per GPU, models kept in memory. This
+guide covers the next step: a service that scores large volumes of media reliably, cheaply and
+auditably, with queues and worker pools. It is written for the engineers who will design and run
+that service. A pool of <code>forensix.server</code> instances behind a load balancer is one way to build
+the worker pools below.</p>
+<p>The worker code below was run end to end with real models. The queue and autoscaling sections
+are patterns to adapt. The container image and Kubernetes manifests are in the repo; see
+<a href="../cloud/">Docker, Kubernetes and cloud</a> for what has been verified.</p>
+<ul>
+<li><a href="#architecture">Architecture</a></li>
+<li><a href="#input-limits">Input limits</a></li>
+<li><a href="#workers">Workers</a></li>
+<li><a href="#packaging">Packaging</a></li>
+<li><a href="#sizing-and-scaling">Sizing and scaling</a></li>
+<li><a href="#decisions-thresholds-and-review">Decisions, thresholds and review</a></li>
+<li><a href="#monitoring">Monitoring</a></li>
+<li><a href="#security">Security</a></li>
+<li><a href="#audit-and-reproducibility">Audit and reproducibility</a></li>
+<li><a href="#launch-checklist">Launch checklist</a></li>
+</ul>
+<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>                ┌──────────────┐
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a> uploads ──────▶│  API / intake │── store original (object storage), compute SHA-256
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                └──────┬───────┘
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>                       │ job {media_uri, sha256, priority}
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>                       ▼
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>                ┌──────────────┐    cache hit (same sha256 + same model versions)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>                │  job queue    │───────────────────────────────────────────┐
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                └──────┬───────┘                                            │
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        ┌──────────────┼──────────────────┬─────────────────┐               │
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        ▼              ▼                  ▼                 ▼               │
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a> ┌────────────┐ ┌─────────────┐  ┌───────────────┐ ┌──────────────┐         │
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a> │ probe +    │ │ face-video  │  │ audio pool    │ │ AV pool      │         │
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a> │ normalize  │ │ pool (GPU)  │  │ (GPU)         │ │ (GPU, RAM)   │         │
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a> │ (CPU)      │ │ gend-pe ... │  │ nes2net-x-itw │ │ syncnet ...  │         │
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a> └────────────┘ └──────┬──────┘  └──────┬────────┘ └──────┬───────┘         │
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>                       └─────────────────┼─────────────────┘                 │
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>                                         ▼                                   │
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>                                ┌─────────────────┐                          │
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>                                │ results store    │◀────────────────────────┘
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>                                │ (scores+versions)│
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>                                └────────┬────────┘
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>                                         ▼
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>                                ┌─────────────────┐     ┌──────────────┐
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>                                │ decision layer   │────▶│ human review │
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>                                │ thresholds, rules│     │ queue        │
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>                                └─────────────────┘     └──────────────┘
+</code></pre></div>
+<p>Design principles:</p>
+<ul>
+<li><strong>Asynchronous.</strong> Video models take seconds per clip on a GPU and minutes on a CPU. Accept a
+  job, return an ID, and deliver results by callback or polling. Never run inference inside a
+  web request.</li>
+<li><strong>Pools by model group.</strong> Each pool is a set of identical worker processes with models loaded
+  once at startup. Pools scale independently: audio-only traffic shouldn't wait behind video.</li>
+<li><strong>Normalize first.</strong> One cheap CPU step probes the media and caps resolution and duration
+  before any GPU work (<a href="#input-limits">Input limits</a>).</li>
+<li><strong>Scores, then decisions.</strong> Workers produce raw scores with full provenance. A separate
+  decision layer applies thresholds and rules from versioned configuration, so you can change a
+  threshold without rescoring anything.</li>
+<li><strong>Idempotent by content.</strong> Key results by <code>(input SHA-256, model, weights hash)</code>. Re-uploads
+  and retries cost nothing.</li>
+</ul>
+<h2 id="input-limits">Input limits<a class="headerlink" href="#input-limits" title="Permanent link">&para;</a></h2>
+<p>Some code paths read whole files into memory. Bound every input before it reaches a model.</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Reads</th>
+<th>Memory and time</th>
+<th>Limit to apply</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Video models (<code>gend-pe</code> etc.)</td>
+<td>32 evenly spaced frames, decoded sequentially</td>
+<td>Memory small; time grows with length</td>
+<td>Fine for long files, but see coverage below</td>
+</tr>
+<tr>
+<td>Audiovisual models</td>
+<td><strong>Every frame at 25 fps, full resolution, all in RAM</strong>, plus audio</td>
+<td>About 155 MB per second at 1080p, so a 1-minute 1080p clip is about 9 GB</td>
+<td>Downscale to ≤ 720p and cut to ≤ 60 s segments</td>
+</tr>
+<tr>
+<td>Physics models</td>
+<td>Every frame of the first 30 s, downscaled to 640 px</td>
+<td>Bounded (about 1 GB at 30 fps)</td>
+<td>Content after 30 s is ignored: segment long files</td>
+</tr>
+<tr>
+<td>Audio models</td>
+<td>The whole file, at 16 kHz mono</td>
+<td>Small (≈ 4 MB per minute)</td>
+<td>Segment very long recordings for latency</td>
+</tr>
+<tr>
+<td><code>id-face</code></td>
+<td>2 frames per second, up to 120</td>
+<td>Bounded</td>
+<td>Content after 60 s is ignored: segment</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Coverage on long videos.</strong> Video models spread 32 frames over the whole file. On a
+10-minute video that's one frame every 19 s, so a short manipulated segment can be missed.
+Split long media into 30–60 s segments, score each segment, and keep per-segment results, then
+flag on the most suspicious segment.</p>
+<p>A normalization step with ffmpeg (used by the worker below):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>ffmpeg<span class="w"> </span>-nostdin<span class="w"> </span>-v<span class="w"> </span>error<span class="w"> </span>-y<span class="w"> </span>-i<span class="w"> </span>input<span class="w"> </span>-t<span class="w"> </span><span class="m">60</span><span class="w"> </span>-vf<span class="w"> </span><span class="s2">"scale=-2:'min(720,ih)'"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">       </span>-c:v<span class="w"> </span>libx264<span class="w"> </span>-crf<span class="w"> </span><span class="m">18</span><span class="w"> </span>-c:a<span class="w"> </span>aac<span class="w"> </span>-b:a<span class="w"> </span>192k<span class="w"> </span>normalized.mp4
+</code></pre></div>
+<p>Re-encoding changes pixels. The detectors were tested on compressed media, and CRF 18 is close
+to visually lossless, but measure your thresholds on media that went through the same
+normalization. For segments, use <code>-ss START -t 60</code> per segment.</p>
+<h2 id="workers">Workers<a class="headerlink" href="#workers" title="Permanent link">&para;</a></h2>
+<p>A worker is a long-running process that loads its models once and then scores jobs one at a
+time. This one probes the input, normalizes video, runs only the models that apply (no audio
+track means no audio or AV models), and returns a record with provenance:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="sd">"""ForensiX scoring worker: one process, models loaded once, one job at a time."""</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kn">import</span><span class="w"> </span><span class="nn">importlib.metadata</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="kn">import</span><span class="w"> </span><span class="nn">forensix</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">MAX_SECONDS</span> <span class="o">=</span> <span class="mi">60</span>          <span class="c1"># longer media is split into segments before it reaches this worker</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="n">MAX_HEIGHT</span> <span class="o">=</span> <span class="mi">720</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="k">def</span><span class="w"> </span><span class="nf">sha256_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="n">h</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">()</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">20</span><span class="p">),</span> <span class="sa">b</span><span class="s2">""</span><span class="p">):</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>            <span class="n">h</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>    <span class="k">return</span> <span class="n">h</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="k">def</span><span class="w"> </span><span class="nf">probe</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="w">    </span><span class="sd">"""Stream types and duration, via ffprobe."""</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>    <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>        <span class="p">[</span><span class="s2">"ffprobe"</span><span class="p">,</span> <span class="s2">"-v"</span><span class="p">,</span> <span class="s2">"error"</span><span class="p">,</span> <span class="s2">"-show_entries"</span><span class="p">,</span> <span class="s2">"stream=codec_type:format=duration"</span><span class="p">,</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>         <span class="s2">"-of"</span><span class="p">,</span> <span class="s2">"json"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)],</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">stdout</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>    <span class="n">info</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>    <span class="n">kinds</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span><span class="p">[</span><span class="s2">"codec_type"</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"streams"</span><span class="p">,</span> <span class="p">[])}</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">"video"</span><span class="p">:</span> <span class="s2">"video"</span> <span class="ow">in</span> <span class="n">kinds</span><span class="p">,</span> <span class="s2">"audio"</span><span class="p">:</span> <span class="s2">"audio"</span> <span class="ow">in</span> <span class="n">kinds</span><span class="p">,</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>            <span class="s2">"duration_s"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"format"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"duration"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)}</span>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a><span class="k">def</span><span class="w"> </span><span class="nf">normalize</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">workdir</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a><span class="w">    </span><span class="sd">"""Cap duration and resolution so memory per job is bounded."""</span>
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>    <span class="n">dst</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">workdir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"input.mp4"</span>
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>        <span class="p">[</span><span class="s2">"ffmpeg"</span><span class="p">,</span> <span class="s2">"-nostdin"</span><span class="p">,</span> <span class="s2">"-v"</span><span class="p">,</span> <span class="s2">"error"</span><span class="p">,</span> <span class="s2">"-y"</span><span class="p">,</span> <span class="s2">"-i"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">src</span><span class="p">),</span> <span class="s2">"-t"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">MAX_SECONDS</span><span class="p">),</span>
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>         <span class="s2">"-vf"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"scale=-2:'min(</span><span class="si">{</span><span class="n">MAX_HEIGHT</span><span class="si">}</span><span class="s2">,ih)'"</span><span class="p">,</span> <span class="s2">"-c:v"</span><span class="p">,</span> <span class="s2">"libx264"</span><span class="p">,</span> <span class="s2">"-crf"</span><span class="p">,</span> <span class="s2">"18"</span><span class="p">,</span>
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>         <span class="s2">"-c:a"</span><span class="p">,</span> <span class="s2">"aac"</span><span class="p">,</span> <span class="s2">"-b:a"</span><span class="p">,</span> <span class="s2">"192k"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">dst</span><span class="p">)],</span>
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>        <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>    <span class="k">return</span> <span class="n">dst</span>
+<a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a>
+<a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a>
+<a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a><span class="k">class</span><span class="w"> </span><span class="nc">Worker</span><span class="p">:</span>
+<a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">video_models</span><span class="p">,</span> <span class="n">audio_models</span><span class="p">,</span> <span class="n">av_models</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">):</span>
+<a id="__codelineno-2-49" name="__codelineno-2-49" href="#__codelineno-2-49"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-2-50" name="__codelineno-2-50" href="#__codelineno-2-50"></a>        <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">names</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">"video"</span><span class="p">,</span> <span class="n">video_models</span><span class="p">),</span> <span class="p">(</span><span class="s2">"audio"</span><span class="p">,</span> <span class="n">audio_models</span><span class="p">),</span> <span class="p">(</span><span class="s2">"av"</span><span class="p">,</span> <span class="n">av_models</span><span class="p">)):</span>
+<a id="__codelineno-2-51" name="__codelineno-2-51" href="#__codelineno-2-51"></a>            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+<a id="__codelineno-2-52" name="__codelineno-2-52" href="#__codelineno-2-52"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
+<a id="__codelineno-2-53" name="__codelineno-2-53" href="#__codelineno-2-53"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">versions</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"forensix"</span><span class="p">:</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">version</span><span class="p">(</span><span class="s2">"forensix"</span><span class="p">)}</span>
+<a id="__codelineno-2-54" name="__codelineno-2-54" href="#__codelineno-2-54"></a>        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>
+<a id="__codelineno-2-55" name="__codelineno-2-55" href="#__codelineno-2-55"></a>            <span class="n">w</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">weights</span>
+<a id="__codelineno-2-56" name="__codelineno-2-56" href="#__codelineno-2-56"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">sha256</span><span class="p">[:</span><span class="mi">16</span><span class="p">]</span> <span class="k">if</span> <span class="n">w</span> <span class="k">else</span> <span class="s2">"no-weights"</span>
+<a id="__codelineno-2-57" name="__codelineno-2-57" href="#__codelineno-2-57"></a>
+<a id="__codelineno-2-58" name="__codelineno-2-58" href="#__codelineno-2-58"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">media_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-2-59" name="__codelineno-2-59" href="#__codelineno-2-59"></a>        <span class="n">record</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"input_sha256"</span><span class="p">:</span> <span class="n">sha256_file</span><span class="p">(</span><span class="n">media_path</span><span class="p">),</span> <span class="s2">"versions"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">,</span> <span class="s2">"results"</span><span class="p">:</span> <span class="p">{}}</span>
+<a id="__codelineno-2-60" name="__codelineno-2-60" href="#__codelineno-2-60"></a>        <span class="n">info</span> <span class="o">=</span> <span class="n">probe</span><span class="p">(</span><span class="n">media_path</span><span class="p">)</span>
+<a id="__codelineno-2-61" name="__codelineno-2-61" href="#__codelineno-2-61"></a>        <span class="n">record</span><span class="p">[</span><span class="s2">"input"</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span>
+<a id="__codelineno-2-62" name="__codelineno-2-62" href="#__codelineno-2-62"></a>        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+<a id="__codelineno-2-63" name="__codelineno-2-63" href="#__codelineno-2-63"></a>            <span class="n">path</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">media_path</span><span class="p">,</span> <span class="n">tmp</span><span class="p">)</span> <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">"video"</span><span class="p">]</span> <span class="k">else</span> <span class="n">Path</span><span class="p">(</span><span class="n">media_path</span><span class="p">)</span>
+<a id="__codelineno-2-64" name="__codelineno-2-64" href="#__codelineno-2-64"></a>            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-2-65" name="__codelineno-2-65" href="#__codelineno-2-65"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">group</span> <span class="o">==</span> <span class="s2">"video"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">info</span><span class="p">[</span><span class="s2">"video"</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="n">group</span> <span class="o">==</span> <span class="s2">"audio"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">info</span><span class="p">[</span><span class="s2">"audio"</span><span class="p">])</span> \
+<a id="__codelineno-2-66" name="__codelineno-2-66" href="#__codelineno-2-66"></a>                        <span class="ow">or</span> <span class="p">(</span><span class="n">group</span> <span class="o">==</span> <span class="s2">"av"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">"video"</span><span class="p">]</span> <span class="ow">and</span> <span class="n">info</span><span class="p">[</span><span class="s2">"audio"</span><span class="p">])):</span>
+<a id="__codelineno-2-67" name="__codelineno-2-67" href="#__codelineno-2-67"></a>                    <span class="n">record</span><span class="p">[</span><span class="s2">"results"</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="s2">"not_applicable"</span><span class="p">}</span>
+<a id="__codelineno-2-68" name="__codelineno-2-68" href="#__codelineno-2-68"></a>                    <span class="k">continue</span>
+<a id="__codelineno-2-69" name="__codelineno-2-69" href="#__codelineno-2-69"></a>                <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<a id="__codelineno-2-70" name="__codelineno-2-70" href="#__codelineno-2-70"></a>                <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-2-71" name="__codelineno-2-71" href="#__codelineno-2-71"></a>                    <span class="n">p</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<a id="__codelineno-2-72" name="__codelineno-2-72" href="#__codelineno-2-72"></a>                    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">,</span> <span class="s2">"score"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="s2">"score_type"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">score_type</span><span class="p">,</span>
+<a id="__codelineno-2-73" name="__codelineno-2-73" href="#__codelineno-2-73"></a>                              <span class="s2">"default_threshold"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span> <span class="s2">"n_segments"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">segment_fake_probs</span><span class="p">)}</span>
+<a id="__codelineno-2-74" name="__codelineno-2-74" href="#__codelineno-2-74"></a>                    <span class="k">if</span> <span class="n">group</span> <span class="o">==</span> <span class="s2">"video"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">segment_fake_probs</span><span class="p">:</span>
+<a id="__codelineno-2-75" name="__codelineno-2-75" href="#__codelineno-2-75"></a>                        <span class="n">result</span><span class="p">[</span><span class="s2">"status"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"no_face"</span>
+<a id="__codelineno-2-76" name="__codelineno-2-76" href="#__codelineno-2-76"></a>                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>          <span class="c1"># decode failures, no face track, ...</span>
+<a id="__codelineno-2-77" name="__codelineno-2-77" href="#__codelineno-2-77"></a>                    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="s2">"error"</span><span class="p">,</span> <span class="s2">"error"</span><span class="p">:</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)[:</span><span class="mi">500</span><span class="p">]}</span>
+<a id="__codelineno-2-78" name="__codelineno-2-78" href="#__codelineno-2-78"></a>                <span class="n">result</span><span class="p">[</span><span class="s2">"seconds"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<a id="__codelineno-2-79" name="__codelineno-2-79" href="#__codelineno-2-79"></a>                <span class="n">record</span><span class="p">[</span><span class="s2">"results"</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+<a id="__codelineno-2-80" name="__codelineno-2-80" href="#__codelineno-2-80"></a>        <span class="k">return</span> <span class="n">record</span>
+</code></pre></div>
+<p>For a video with sound, run on CPU with <code>dfdc-wm</code>, <code>aasist</code> and <code>syncnet</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w"> </span><span class="nt">"input_sha256"</span><span class="p">:</span><span class="w"> </span><span class="s2">"…"</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w"> </span><span class="nt">"versions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"forensix"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.1.0"</span><span class="p">,</span><span class="w"> </span><span class="nt">"dfdc-wm"</span><span class="p">:</span><span class="w"> </span><span class="s2">"651ca679c582501b"</span><span class="p">,</span><span class="w"> </span><span class="nt">"aasist"</span><span class="p">:</span><span class="w"> </span><span class="s2">"51d2d9cf0738172f"</span><span class="p">,</span><span class="w"> </span><span class="nt">"syncnet"</span><span class="p">:</span><span class="w"> </span><span class="s2">"961e8696f888fce4"</span><span class="p">},</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w"> </span><span class="nt">"results"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">"dfdc-wm"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ok"</span><span class="p">,</span><span class="w"> </span><span class="nt">"score"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.032</span><span class="p">,</span><span class="w"> </span><span class="nt">"score_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"probability"</span><span class="p">,</span><span class="w"> </span><span class="nt">"default_threshold"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="nt">"n_segments"</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span><span class="w"> </span><span class="nt">"seconds"</span><span class="p">:</span><span class="w"> </span><span class="mf">49.4</span><span class="p">},</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nt">"aasist"</span><span class="p">:</span><span class="w">  </span><span class="p">{</span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ok"</span><span class="p">,</span><span class="w"> </span><span class="nt">"score"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.109</span><span class="p">,</span><span class="w"> </span><span class="nt">"score_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"probability"</span><span class="p">,</span><span class="w"> </span><span class="nt">"default_threshold"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="nt">"n_segments"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">"seconds"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">},</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="nt">"syncnet"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ok"</span><span class="p">,</span><span class="w"> </span><span class="nt">"score"</span><span class="p">:</span><span class="w"> </span><span class="mf">-0.535</span><span class="p">,</span><span class="w"> </span><span class="nt">"score_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"anomaly"</span><span class="p">,</span><span class="w"> </span><span class="nt">"default_threshold"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="nt">"n_segments"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"seconds"</span><span class="p">:</span><span class="w"> </span><span class="mf">76.9</span><span class="p">}</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w"> </span><span class="nt">"input"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"video"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nt">"audio"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nt">"duration_s"</span><span class="p">:</span><span class="w"> </span><span class="mf">8.1</span><span class="p">}</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">}</span>
+</code></pre></div>
+<p>For an audio file, the video and AV models report <code>"not_applicable"</code>.</p>
+<p>Connect the worker to your queue (SQS, Pub/Sub, Kafka, Redis, Celery) with a loop: take a job,
+download the media to local disk, call <code>worker.run</code>, write the record, acknowledge the job.</p>
+<p><strong>Rules for workers:</strong></p>
+<ul>
+<li><strong>Load once.</strong> Building a model takes seconds: library imports, initialization, and hash
+  checks of weight files that have no <code>.verified</code> stamp yet. Never load per request.</li>
+<li><strong>Processes, not threads.</strong> Detectors keep state (networks, face detectors) and aren't
+  designed for concurrent calls. Run one detector instance per process, and scale with
+  processes.</li>
+<li><strong>Timeouts per job.</strong> Run each job under a hard timeout: a watchdog that kills and restarts
+  the worker process. A Python-level timeout can't interrupt a stuck decoder.</li>
+<li><strong>Limit CPU threads.</strong> Set <code>OMP_NUM_THREADS</code> / <code>torch.set_num_threads</code> to the worker's
+  share of the cores. Otherwise several workers fight over every core.</li>
+<li><strong>Retry errors, not results.</strong> Retry on infrastructure errors (OOM, killed worker). A
+  <code>"no_face"</code> or decode error is a result: store it, don't retry it forever.</li>
+<li><strong>Spawn, don't fork, with CUDA.</strong> If one parent process starts the workers, use
+  <code>multiprocessing.get_context("spawn")</code>.</li>
+</ul>
+<h2 id="packaging">Packaging<a class="headerlink" href="#packaging" title="Permanent link">&para;</a></h2>
+<p>The repo ships a production <a href="https://github.com/anas-rz/ForensiX/blob/main/Dockerfile"><code>Dockerfile</code></a>, Compose files and Kubernetes manifests;
+<a href="../cloud/">Docker, Kubernetes and cloud</a> covers them. In short:</p>
+<ul>
+<li><strong>Bake weights into the image</strong> (<code>--build-arg MODELS="..."</code>), so a new node starts without
+  downloading anything and the running service never needs the network. Baking runs
+  <code>python -m forensix.server --warm-only</code>, which loads each model once, so lazily fetched helper
+  files (face detectors, landmark models) are included, with verified hash stamps.</li>
+<li><strong>One image per pool</strong> keeps images small. Bake the models that pool preloads and uses as
+  defaults.</li>
+<li><strong>Match the CUDA build to your nodes</strong> with <code>--build-arg TORCH_INDEX=...</code>.</li>
+<li><strong>Lazy helper files.</strong> <code>phys-lighting</code> and <code>physdf</code> download the ICT-FaceKit meshes on their
+  first <em>prediction</em>, not at load. If you serve them, run one prediction on a short sample video
+  during the build or give them a writable cache. Verify the image with
+  <code>docker run --network none</code>.</li>
+<li><strong>Your trained checkpoints</strong> (<code>avcons</code>, <code>avid</code>, <code>id-motion</code>, <code>physdf</code>, <code>person-detector</code>):
+  <code>COPY</code> them into the image, or mount them read-only, and set <code>weights</code> in the server config.</li>
+</ul>
+<h2 id="sizing-and-scaling">Sizing and scaling<a class="headerlink" href="#sizing-and-scaling" title="Permanent link">&para;</a></h2>
+<h3 id="per-model-cost">Per-model cost<a class="headerlink" href="#per-model-cost" title="Permanent link">&para;</a></h3>
+<p>Measured on one NVIDIA L4 (24 GB) with 2–6 s clips (SDFVD). Most of these were measured with
+2–4 processes sharing the GPU, so treat them as upper bounds:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Seconds per clip</th>
+<th>Weights</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>image models (8 frames per video)</td>
+<td>0.06–0.5 (<code>rine-ldm</code> 2–2.7)</td>
+<td>5 MB – 1.6 GB</td>
+</tr>
+<tr>
+<td><code>dfdc-wm</code></td>
+<td>~1</td>
+<td>312 MB</td>
+</tr>
+<tr>
+<td><code>dfdet-clip</code></td>
+<td>~2.7</td>
+<td>1.2 GB + 1.6 GB CLIP</td>
+</tr>
+<tr>
+<td><code>gend-pe</code>, <code>gend</code></td>
+<td>~7 (shared GPU)</td>
+<td>1.2 GB each</td>
+</tr>
+<tr>
+<td><code>dfdc-selim</code></td>
+<td>~7 (shared GPU)</td>
+<td>1.8 GB</td>
+</tr>
+</tbody>
+</table>
+<p>Audio, audiovisual and physics models haven't been timed on a GPU yet. Measure them on your
+own media before sizing those pools.</p>
+<h3 id="workers-per-gpu">Workers per GPU<a class="headerlink" href="#workers-per-gpu" title="Permanent link">&para;</a></h3>
+<p>Video and audiovisual models spend much of each job on the CPU (decoding, face detection,
+tracking), so one process leaves the GPU idle.</p>
+<ol>
+<li>Start with 3 workers per 24 GB GPU and about 3 CPU cores per worker.</li>
+<li>Raise the count while GPU utilization rises and GPU memory fits; stop when per-job latency
+   grows without throughput gains.</li>
+<li>Each worker holds its own copy of the model in GPU memory, which sets the ceiling.</li>
+</ol>
+<h3 id="autoscaling">Autoscaling<a class="headerlink" href="#autoscaling" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Scale each pool on its own queue depth</strong> (or age of the oldest job), not on CPU or GPU
+  utilization. On Kubernetes, KEDA does this for most queue systems.</li>
+<li><strong>Keep a minimum of one warm worker per pool.</strong> Cold starts include pulling a multi-GB image
+  and loading the models, which can take minutes. Images built by loading each model already
+  contain the <code>.verified</code> stamps, so weights aren't rehashed at startup.</li>
+<li><strong>Use separate queues per priority.</strong> User-facing checks shouldn't wait behind a bulk
+  backfill.</li>
+<li><strong>Route by content.</strong> Use <code>probe</code> to send audio-only files only to the audio pool.
+  A cheap face check (any face in a few frames?) avoids sending faceless videos to face models.</li>
+</ul>
+<h3 id="cutting-cost">Cutting cost<a class="headerlink" href="#cutting-cost" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Cache by content hash.</strong> Viral media gets uploaded many times.</li>
+<li><strong>Cascade.</strong> Run a fast model on everything (e.g. <code>dfdet-clip</code>), and send only uncertain
+  cases to the slower ones. Measure the cascade's detection rate as a whole: the first stage's
+  misses are never seen again.</li>
+<li><strong>Don't run models that can't help.</strong> Image detectors on face-swap video added little on
+  SDFVD (AUC 0.56–0.75).</li>
+</ul>
+<h2 id="decisions-thresholds-and-review">Decisions, thresholds and review<a class="headerlink" href="#decisions-thresholds-and-review" title="Permanent link">&para;</a></h2>
+<p>Keep decision logic out of the workers, in versioned configuration:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># decision-config v7 (2026-10-26), thresholds set at 1% FPR on 12,000 real uploads (platform X)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">rules</span><span class="p">:</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">face_manipulation</span><span class="p">:</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dfdet-clip</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.71</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">voice_clone</span><span class="p">:</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nes2net-x-itw</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.83</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span><span class="nt">lip_sync_mismatch</span><span class="p">:</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">syncnet</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-2.0</span><span class="w">        </span><span class="c1"># anomaly score = -confidence; flag when confidence &lt; 2</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="nt">action</span><span class="p">:</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">  </span><span class="nt">any_rule_fires</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">human_review</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">  </span><span class="nt">none_fire</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pass</span>
+</code></pre></div>
+<ul>
+<li><strong>Set thresholds on real traffic</strong> from the deployment's own sources, at the false-alarm rate
+  your review team can absorb (<a href="../guides/interpreting-scores/#choosing-a-threshold">Interpreting scores</a>).
+  The defaults are wrong for many domains: on SDFVD, <code>rine</code> called every video real at 0.5.</li>
+<li><strong>Version the config</strong> and store its version with every decision, so any decision can be
+  explained later.</li>
+<li><strong>Send uncertain or consequential cases to people,</strong> with the evidence: which check fired,
+  its score and threshold, segment timelines, <code>syncnet</code> offset and confidence, the <code>physdf</code>
+  report. The <code>stablesyncnet</code> weights license forbids fully automated decisions that adversely
+  affect someone's legal rights (<a href="../guides/licensing/">Licensing</a>).</li>
+<li><strong>Feed reviewer verdicts back</strong> as labelled data for re-checking thresholds.</li>
+</ul>
+<h2 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Why</th>
+<th>Alert when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Score distribution per model (daily quantiles)</td>
+<td>Drift: new cameras, codecs or generators shift scores</td>
+<td>The 99th percentile on presumed-real traffic moves past the threshold</td>
+</tr>
+<tr>
+<td>Flag rate per rule</td>
+<td>Thresholds going stale; attacks</td>
+<td>Outside the expected band</td>
+</tr>
+<tr>
+<td><code>no_face</code> / <code>not_applicable</code> / <code>error</code> rates</td>
+<td>Pipeline breakage, new formats</td>
+<td>Sudden change</td>
+</tr>
+<tr>
+<td>Latency per pool (p50, p95) and queue age</td>
+<td>Capacity</td>
+<td>SLA risk</td>
+</tr>
+<tr>
+<td>GPU utilization and memory per node</td>
+<td>Sizing</td>
+<td>Persistently below 50% (too few workers) or OOM kills</td>
+</tr>
+<tr>
+<td>Reviewer agreement with flags</td>
+<td>Real precision</td>
+<td>Precision falls</td>
+</tr>
+</tbody>
+</table>
+<p>Regularly audit a random sample of unflagged media too. Monitoring only flagged items shows
+precision, never what you miss.</p>
+<h2 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h2>
+<p>The service decodes untrusted files with ffmpeg and OpenCV, two large C codebases with a
+history of decoder vulnerabilities. Treat every upload as hostile:</p>
+<ul>
+<li><strong>Sandbox the workers.</strong> Run as non-root (the Dockerfile does), with a read-only root
+  filesystem, a writable temp directory only, and no network egress
+  (weights are baked in, <code>HF_HUB_OFFLINE=1</code>).</li>
+<li><strong>Limit resources:</strong> CPU and memory limits per container, file-size caps at intake, a
+  duration cap in normalization, and job timeouts.</li>
+<li><strong>Patch the decoders.</strong> Rebuild images regularly to pick up ffmpeg and OpenCV security
+  fixes.</li>
+<li><strong>Never trust file extensions.</strong> Probe the streams.</li>
+<li><strong>Weights are integrity-checked.</strong> <code>forensix.load</code> verifies SHA-256 hashes, and checkpoints
+  load with <code>weights_only=True</code> or safetensors, so a tampered checkpoint can't execute code.
+  Keep the cache read-only at runtime.</li>
+<li><strong>Protect the gallery and scores.</strong> Identity galleries are biometric data, and stored scores
+  reveal which media was flagged. Encrypt them at rest, restrict access, and set retention.</li>
+</ul>
+<h2 id="audit-and-reproducibility">Audit and reproducibility<a class="headerlink" href="#audit-and-reproducibility" title="Permanent link">&para;</a></h2>
+<p>Store with every result:
+- the input SHA-256 and, for segments, their start and end;
+- the ForensiX version and git commit (set it in the image, e.g. as an environment variable at
+  build time);
+- the model name and weights hash (<code>forensix.info(name).weights.sha256</code>), or the checkpoint
+  hash for models you trained;
+- the normalization parameters;
+- the decision-config version, the decision, and any reviewer action.</p>
+<p>With these, any past decision can be re-derived exactly: same input, same code, same weights,
+same thresholds. Reprocessing after a model upgrade becomes a query: everything scored with the
+old weights hash.</p>
+<h2 id="launch-checklist">Launch checklist<a class="headerlink" href="#launch-checklist" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[ ] Models chosen per threat (<a href="../guides/choosing-detectors/">Choosing detectors</a>) and
+      evaluated on your own media (<a href="../guides/evaluation/">Evaluation</a>).</li>
+<li>[ ] Thresholds set on real traffic at a chosen false-alarm rate; config versioned.</li>
+<li>[ ] Inputs normalized: resolution, duration, segmentation for long media.</li>
+<li>[ ] Image built with baked weights; verified with <code>--network none</code>.</li>
+<li>[ ] Workers: models loaded once, processes not threads, job timeouts, CPU threads limited.</li>
+<li>[ ] Pools sized by measurement; autoscaling on queue depth; warm minimums.</li>
+<li>[ ] Results keyed by content hash, with full provenance.</li>
+<li>[ ] Human review for consequential decisions; reviewer feedback captured.</li>
+<li>[ ] Monitoring on score drift, flag rates, error rates, latency; random audits of unflagged
+      media.</li>
+<li>[ ] Sandboxed decoding, no egress, patched images.</li>
+<li>[ ] License review done (<a href="../guides/licensing/">Licensing</a>), including <code>‡</code> training-data
+      terms and <code>stablesyncnet</code> restrictions if used.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../cloud/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Docker, Kubernetes and cloud">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Docker, Kubernetes and cloud
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../api-reference/" class="md-footer__link md-footer__link--next" aria-label="Next: API reference">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                API reference
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      All bundled models and weights are under commercially usable licenses.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.indexes", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit", "toc.follow"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

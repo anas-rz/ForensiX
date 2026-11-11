@@ -1,0 +1,2454 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Deepfake detection and media forensics. Commercially licensed detectors behind one Python API, an HTTP server and a web manager.">
+      
+      
+      
+        <link rel="canonical" href="https://anas-rz.github.io/ForensiX/recipes/">
+      
+      
+        <link rel="prev" href="../concepts/">
+      
+      
+        <link rel="next" href="../guides/colab/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Recipes - ForensiX</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#recipes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ForensiX" class="md-header__button md-logo" aria-label="ForensiX" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ForensiX
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Recipes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anas-rz/ForensiX" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anas-rz/ForensiX
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../guides/choosing-detectors/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../server/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Server and web manager
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../cloud/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api-reference/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ForensiX" class="md-nav__button md-logo" aria-label="ForensiX" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ForensiX
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anas-rz/ForensiX" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anas-rz/ForensiX
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recipes
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-scan-a-folder-of-images-into-a-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Scan a folder of images into a CSV
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-check-a-face-video" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Check a face video
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-find-which-part-of-a-long-recording-is-fake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Find which part of a long recording is fake
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-check-a-talking-head-video-across-modalities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Check a talking-head video across modalities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-pick-a-threshold-for-a-target-false-alarm-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Pick a threshold for a target false-alarm rate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-combine-several-detectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Combine several detectors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-verify-that-media-shows-a-specific-person" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Verify that media shows a specific person
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-train-a-tiny-detector-for-one-person" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Train a tiny detector for one person
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-produce-a-physics-forensic-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Produce a physics forensic report
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-score-a-large-folder-of-videos-in-parallel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Score a large folder of videos in parallel
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-benchmark-detectors-on-your-own-videos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Benchmark detectors on your own videos
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/colab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working in Google Colab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/choosing-detectors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choosing detectors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/interpreting-scores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interpreting scores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluating on your data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity and person models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/physics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Physics forensics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/extending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extending ForensiX
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/licensing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Licensing and compliance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server and web manager
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Server and web manager
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calibration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fairness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fairness reports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cloud/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker, Kubernetes and cloud
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment at scale
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/leaderboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Leaderboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Benchmarks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/benchmark-video-image/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Video and image (SDFVD)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/benchmark-audiovisual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audiovisual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/benchmark-identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/benchmark-physics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Physics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-scan-a-folder-of-images-into-a-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Scan a folder of images into a CSV
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-check-a-face-video" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Check a face video
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-find-which-part-of-a-long-recording-is-fake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Find which part of a long recording is fake
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-check-a-talking-head-video-across-modalities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Check a talking-head video across modalities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-pick-a-threshold-for-a-target-false-alarm-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Pick a threshold for a target false-alarm rate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-combine-several-detectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Combine several detectors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-verify-that-media-shows-a-specific-person" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Verify that media shows a specific person
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-train-a-tiny-detector-for-one-person" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Train a tiny detector for one person
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-produce-a-physics-forensic-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Produce a physics forensic report
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-score-a-large-folder-of-videos-in-parallel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Score a large folder of videos in parallel
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-benchmark-detectors-on-your-own-videos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Benchmark detectors on your own videos
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/anas-rz/ForensiX/edit/main/docs/recipes.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="recipes">Recipes<a class="headerlink" href="#recipes" title="Permanent link">&para;</a></h1>
+<p>Copy-paste solutions to common tasks. Each recipe was run on CPU against the repo's test
+fixtures or the SDFVD videos, and the outputs shown are real. Swap <code>device="cpu"</code> for
+<code>device="cuda"</code> on a GPU.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Recipe</th>
+<th>Models</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a href="#1-scan-a-folder-of-images-into-a-csv">Scan a folder of images into a CSV</a></td>
+<td>image</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="#2-check-a-face-video">Check a face video</a></td>
+<td>video</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="#3-find-which-part-of-a-long-recording-is-fake">Find which part of a long recording is fake</a></td>
+<td>audio</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="#4-check-a-talking-head-video-across-modalities">Check a talking-head video across modalities</a></td>
+<td>video, audio, audiovisual, physics</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="#5-pick-a-threshold-for-a-target-false-alarm-rate">Pick a threshold for a target false-alarm rate</a></td>
+<td>any</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="#6-combine-several-detectors">Combine several detectors</a></td>
+<td>any</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a href="#7-verify-that-media-shows-a-specific-person">Verify that media shows a specific person</a></td>
+<td>identity</td>
+</tr>
+<tr>
+<td>8</td>
+<td><a href="#8-train-a-tiny-detector-for-one-person">Train a tiny detector for one person</a></td>
+<td>specialized</td>
+</tr>
+<tr>
+<td>9</td>
+<td><a href="#9-produce-a-physics-forensic-report">Produce a physics forensic report</a></td>
+<td>physics</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="#10-score-a-large-folder-of-videos-in-parallel">Score a large folder of videos in parallel</a></td>
+<td>video</td>
+</tr>
+<tr>
+<td>11</td>
+<td><a href="#11-benchmark-detectors-on-your-own-videos">Benchmark detectors on your own videos</a></td>
+<td>video, image</td>
+</tr>
+</tbody>
+</table>
+<h2 id="1-scan-a-folder-of-images-into-a-csv">1. Scan a folder of images into a CSV<a class="headerlink" href="#1-scan-a-folder-of-images-into-a-csv" title="Permanent link">&para;</a></h2>
+<p>Image detectors batch on the GPU, so pass lists to <code>predict_batch</code>. Load one model at a time
+and free it before the next one: three CLIP-sized models at once need several GB.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">import</span><span class="w"> </span><span class="nn">forensix</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">paths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"photos"</span><span class="p">)</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">".jpg"</span><span class="p">,</span> <span class="s2">".jpeg"</span><span class="p">,</span> <span class="s2">".png"</span><span class="p">,</span> <span class="s2">".webp"</span><span class="p">})</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"commfor"</span><span class="p">,</span> <span class="s2">"clipdet"</span><span class="p">,</span> <span class="s2">"univfd"</span><span class="p">]</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">scores</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">detector</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">)</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">scores</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">fake_prob</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict_batch</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">)]</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="k">del</span> <span class="n">detector</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"image_scores.csv"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="n">w</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="n">w</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="s2">"file"</span><span class="p">,</span> <span class="o">*</span><span class="n">models</span><span class="p">])</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">paths</span><span class="p">):</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>        <span class="n">w</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">scores</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">models</span><span class="p">)])</span>
+</code></pre></div>
+<p>On the three real public-domain photos in <code>tests/data</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>file,commfor,clipdet,univfd
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>face2_public_domain.jpg,0.0123,0.2115,0.0001
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>face_public_domain.jpg,0.0022,0.1946,0.0000
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>other_face_public_domain.jpg,0.0001,0.2191,0.0000
+</code></pre></div>
+<p><strong>Notes.</strong>
+- Image detectors look for whole generated images (GAN, diffusion). They are weak on face
+  swaps inside real photos and video frames (<a href="../reference/benchmark-video-image/">SDFVD benchmark</a>: AUC 0.56–0.75).
+- Don't resize or re-compress images before scoring. The detectors rely on traces that
+  resampling destroys.
+- <code>commfor</code> is the strongest choice for modern diffusion images (trained on ~4,800 generators).</p>
+<h2 id="2-check-a-face-video">2. Check a face video<a class="headerlink" href="#2-check-a-face-video" title="Permanent link">&para;</a></h2>
+<p>The face-based CLIP/PE detectors are the strongest video models in ForensiX (SDFVD AUC
+0.92–0.96). Each returns a video score and one score per scored face.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">forensix</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"dfdet-clip"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">if</span> <span class="ow">not</span> <span class="n">pred</span><span class="o">.</span><span class="n">segment_fake_probs</span><span class="p">:</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"no face found: the 0.5 score means nothing"</span><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">segment_fake_probs</span><span class="p">)</span><span class="si">}</span><span class="s2"> faces scored"</span><span class="p">)</span>
+</code></pre></div>
+<p>On SDFVD's face-swapped <code>vs1.mp4</code>: <code>0.8128 fake 32 faces scored</code> (about 2 minutes on CPU,
+about 3 s on an L4).</p>
+<p><strong>Notes.</strong>
+- <code>gend-pe</code> ranked first on SDFVD (AUC 0.956), but at the default 0.5 threshold it flagged 24%
+  of real videos. <code>dfdet-clip</code> is better balanced at 0.5 (89% of reals and 76% of fakes right).
+  See <a href="#5-pick-a-threshold-for-a-target-false-alarm-rate">recipe 5</a> to set your own threshold.
+- Every video model returns exactly 0.5 when it finds no face. Always check
+  <code>segment_fake_probs</code> before trusting the score.</p>
+<h2 id="3-find-which-part-of-a-long-recording-is-fake">3. Find which part of a long recording is fake<a class="headerlink" href="#3-find-which-part-of-a-long-recording-is-fake" title="Permanent link">&para;</a></h2>
+<p>Audio detectors cut long clips into windows and return one score per window. This maps the
+window scores back to timestamps. The windows follow <code>split_windows</code>: consecutive, with the last
+one aligned to the end of the clip.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">forensix</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">forensix.audio.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_audio</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">path</span> <span class="o">=</span> <span class="s2">"call_recording.wav"</span>          <span class="c1"># any audio format, or a video file (needs ffmpeg)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"aasist"</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">sr</span><span class="p">,</span> <span class="n">window</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">,</span> <span class="n">detector</span><span class="o">.</span><span class="n">window</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">load_audio</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sr</span><span class="p">))</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">starts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">window</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">window</span><span class="p">))</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">segment_fake_probs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">starts</span><span class="p">):</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="n">starts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">window</span><span class="p">)</span>        <span class="c1"># the last window is aligned to the end</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">segment_fake_probs</span><span class="p">):</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="n">flag</span> <span class="o">=</span> <span class="s2">"  &lt;-- suspicious"</span> <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;=</span> <span class="n">detector</span><span class="o">.</span><span class="n">threshold</span> <span class="k">else</span> <span class="s2">""</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">s</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sr</span><span class="si">:</span><span class="s2">6.2f</span><span class="si">}</span><span class="s2">s - </span><span class="si">{</span><span class="p">(</span><span class="n">s</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">window</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sr</span><span class="si">:</span><span class="s2">6.2f</span><span class="si">}</span><span class="s2">s  fake_prob=</span><span class="si">{</span><span class="n">p</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}{</span><span class="n">flag</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="nb">print</span><span class="p">(</span><span class="s2">"clip:"</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+</code></pre></div>
+<p>On the 10 s real CC0 speech fixture:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>  0.00s -   4.04s  fake_prob=0.120
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  4.04s -   8.07s  fake_prob=0.050
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  5.96s -  10.00s  fake_prob=0.002
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>clip: 0.05715656653046608 real
+</code></pre></div>
+<p><strong>Notes.</strong>
+- For real-world, compressed audio (phone calls, social media), use <code>nes2net-x-itw</code> or
+  <code>xlsr-aasist-df</code> rather than <code>aasist</code>; they were built for out-of-domain audio. They need a GPU
+  for reasonable speed (about 1.3 s per 4 s window on CPU).
+- <code>nes2net-x-itw</code> scores whole utterances up to 30 s, so its segments are 30 s chunks, not 4 s
+  windows.</p>
+<h2 id="4-check-a-talking-head-video-across-modalities">4. Check a talking-head video across modalities<a class="headerlink" href="#4-check-a-talking-head-video-across-modalities" title="Permanent link">&para;</a></h2>
+<p>Different attacks leave different evidence. A face swap shows up in the face models; a cloned
+voice in the audio models; a dubbed or lip-synced video in the sync models; physics checks look
+for violations of how real faces and voices behave. Run one model per question and read the
+answers side by side. Don't average them (<a href="#6-combine-several-detectors">recipe 6</a> explains why).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">forensix</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">video</span> <span class="o">=</span> <span class="s2">"interview.mp4"</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">checks</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="s2">"face (gend-pe)"</span><span class="p">:</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"gend-pe"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">),</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="s2">"voice (nes2net-x-itw)"</span><span class="p">:</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"nes2net-x-itw"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">),</span>   <span class="c1"># reads the video's audio track</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="s2">"lip sync (syncnet)"</span><span class="p">:</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"syncnet"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">),</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="p">}</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">preds</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="k">for</span> <span class="n">question</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="n">checks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="n">p</span> <span class="o">=</span> <span class="n">preds</span><span class="p">[</span><span class="n">question</span><span class="p">]</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">video</span><span class="p">)</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>              <span class="c1"># e.g. no audio track, no face</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">question</span><span class="si">:</span><span class="s2">24</span><span class="si">}</span><span class="s2"> not applicable: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>        <span class="k">continue</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">score_type</span> <span class="o">==</span> <span class="s2">"anomaly"</span><span class="p">:</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">question</span><span class="si">:</span><span class="s2">24</span><span class="si">}</span><span class="s2"> anomaly score </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">fake_prob</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> (no default threshold)"</span><span class="p">)</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">question</span><span class="si">:</span><span class="s2">24</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">fake_prob</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="k">if</span> <span class="s2">"lip sync (syncnet)"</span> <span class="ow">in</span> <span class="n">preds</span><span class="p">:</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>    <span class="n">sync</span> <span class="o">=</span> <span class="n">preds</span><span class="p">[</span><span class="s2">"lip sync (syncnet)"</span><span class="p">]</span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"AV offset"</span><span class="p">,</span> <span class="n">sync</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"offset_frames"</span><span class="p">],</span> <span class="s2">"frames, confidence"</span><span class="p">,</span> <span class="n">sync</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"confidence"</span><span class="p">])</span>
+</code></pre></div>
+<p>SyncNet's confidence is about 10 on a real, in-sync talking head (upstream's example clip). On
+an SDFVD clip with unrelated CC0 speech dubbed over it, it measured 0.54, with the best offset
+pinned at the edge of the search range (15 frames). That's what a mismatched voice looks like.</p>
+<p><strong>Notes.</strong>
+- The audiovisual models load the whole video into memory at full resolution. Downscale to
+  720p and trim to about a minute before scoring long videos
+  (<a href="../deployment/#input-limits">Deployment</a>).
+- Face swaps keep the original, in-sync mouth, so lip-sync models pass them. Lip-sync
+  generators keep the face, so face models may pass them. That's why you need both.</p>
+<h2 id="5-pick-a-threshold-for-a-target-false-alarm-rate">5. Pick a threshold for a target false-alarm rate<a class="headerlink" href="#5-pick-a-threshold-for-a-target-false-alarm-rate" title="Permanent link">&para;</a></h2>
+<p>Default thresholds are rarely right for your data. If you have scores for real media like the
+media you'll check, set the threshold so that only a chosen share of real media is flagged:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">threshold_at_fpr</span><span class="p">(</span><span class="n">real_scores</span><span class="p">,</span> <span class="n">target_fpr</span><span class="p">):</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="sd">"""Smallest threshold that flags at most target_fpr of the real scores."""</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">real_scores</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">target_fpr</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"higher"</span><span class="p">))</span> <span class="o">+</span> <span class="mf">1e-9</span>
+</code></pre></div>
+<p>Applied to the SDFVD per-video scores in <code>results/sdfvd_scores.csv</code>, with a 5% target:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">"results/sdfvd_scores.csv"</span><span class="p">)))</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">is_fake</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"fake"</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"dfdet-clip"</span><span class="p">,</span> <span class="s2">"rine"</span><span class="p">]:</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">model</span><span class="p">])</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">t</span> <span class="o">=</span> <span class="n">threshold_at_fpr</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="o">~</span><span class="n">is_fake</span><span class="p">],</span> <span class="mf">0.05</span><span class="p">)</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">"FPR"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="o">~</span><span class="n">is_fake</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="s2">"TPR"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">is_fake</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>dfdet-clip 0.6307 FPR 0.038 TPR 0.604
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>rine 0.0063 FPR 0.038 TPR 0.396
+</code></pre></div>
+<p><code>rine</code> needs a threshold of 0.0063, not 0.5: its default threshold called every SDFVD video
+real.</p>
+<p><strong>Notes.</strong>
+- Fit the threshold on one set of real media and check it on another. Thresholds fitted and
+  measured on the same data look better than they are.
+- With 53 real videos, as here, the measured false-alarm rate is only accurate to about ±5
+  points. For a 1% target you need thousands of real samples.
+- Anomaly scores (<code>avad</code>, <code>syncnet</code>, <code>physdf</code>) work the same way: they have no default
+  threshold, so this recipe is how you get one.</p>
+<h2 id="6-combine-several-detectors">6. Combine several detectors<a class="headerlink" href="#6-combine-several-detectors" title="Permanent link">&para;</a></h2>
+<p>Scores from different models live on different scales, so never average raw <code>fake_prob</code>s.
+Normalize each model against its own real-media distribution first, then combine. This version
+converts each score to a z-score relative to real media, using 5-fold cross-validation so the
+normalization never sees the media it scores:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">logit</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="mf">1e-6</span><span class="p">)</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p</span><span class="p">))</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">fuse</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">is_fake</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span><span class="sd">"""scores: (n_media, n_models) fake_probs. Returns one fused score per media item."""</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    <span class="n">folds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">scores</span><span class="p">))</span> <span class="o">%</span> <span class="n">n_folds</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    <span class="n">x</span><span class="p">,</span> <span class="n">fused</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">scores</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">scores</span><span class="p">))</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_folds</span><span class="p">):</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>        <span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">folds</span> <span class="o">!=</span> <span class="n">k</span><span class="p">,</span> <span class="n">folds</span> <span class="o">==</span> <span class="n">k</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>        <span class="n">real</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">train</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">is_fake</span><span class="p">]</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>        <span class="n">fused</span><span class="p">[</span><span class="n">test</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="n">test</span><span class="p">]</span> <span class="o">-</span> <span class="n">real</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="o">/</span> <span class="n">real</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>    <span class="k">return</span> <span class="n">fused</span>
+</code></pre></div>
+<p>On SDFVD, fusing <code>gend-pe</code>, <code>gend</code> and <code>dfdet-clip</code> gave AUC 0.942, <strong>below</strong> <code>gend-pe</code> alone
+(0.956). The three models share a CLIP-style backbone and training set, so they make the same
+mistakes, and averaging dilutes the best one.</p>
+<p><strong>Notes.</strong>
+- Fusion helps when models catch <em>different</em> things, e.g. a face model plus a voice model
+  plus a sync model on talking heads. It rarely helps among near-identical models.
+- Measure the fused score on held-out data, exactly as you would a single model.
+- For models that answer different questions (<a href="#4-check-a-talking-head-video-across-modalities">recipe 4</a>),
+  an OR over per-model thresholds ("flag if any check fires") is easier to explain than a fused
+  number. Set each threshold with recipe 5 so the combined false-alarm rate stays where you
+  want it.</p>
+<h2 id="7-verify-that-media-shows-a-specific-person">7. Verify that media shows a specific person<a class="headerlink" href="#7-verify-that-media-shows-a-specific-person" title="Permanent link">&para;</a></h2>
+<p><code>id-face</code> enrolls people from photos or videos and checks new media against them. It catches
+impersonation and poor face swaps. A good face swap of the person is built to look like them
+and passes, so pair it with a face-manipulation model (<a href="#2-check-a-face-video">recipe 2</a>).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">forensix</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"id-face"</span><span class="p">)</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">det</span><span class="o">.</span><span class="n">enroll</span><span class="p">(</span><span class="s2">"armstrong"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"tests/data/face_public_domain.jpg"</span><span class="p">])</span>       <span class="c1"># photos and/or videos</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">det</span><span class="o">.</span><span class="n">enroll</span><span class="p">(</span><span class="s2">"aldrin"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"tests/data/other_face_public_domain.jpg"</span><span class="p">])</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="n">det</span><span class="o">.</span><span class="n">save_gallery</span><span class="p">(</span><span class="s2">"people.npz"</span><span class="p">)</span>                                        <span class="c1"># det.load_gallery("people.npz") later</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"tests/data/face2_public_domain.jpg"</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="s2">"armstrong"</span><span class="p">)</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"similarity"</span><span class="p">],</span> <span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"other_enrolled_similarity"</span><span class="p">])</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="nb">print</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">identify</span><span class="p">(</span><span class="s2">"tests/data/face2_public_domain.jpg"</span><span class="p">))</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>real 0.3878 0.6122 {'aldrin': 0.0583}
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>[('armstrong', 0.6121812462806702), ('aldrin', 0.058341484516859055)]
+</code></pre></div>
+<p>The Aldrin photo checked against Armstrong comes back <code>fake</code>. For videos,
+<code>details["frame_similarity"]</code> and <code>details["frame_time_s"]</code> show when the face stops being the
+person.</p>
+<p>More in <a href="../guides/identity/">Identity and person models</a>.</p>
+<h2 id="8-train-a-tiny-detector-for-one-person">8. Train a tiny detector for one person<a class="headerlink" href="#8-train-a-tiny-detector-for-one-person" title="Permanent link">&para;</a></h2>
+<p>A <code>person-detector</code> is a ~23k-parameter model trained on CPU in seconds from one person's real
+media. Negatives are optional: without them, manipulated and impostor-like samples are
+synthesized.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">forensix.specialized</span><span class="w"> </span><span class="kn">import</span> <span class="n">PersonDetector</span><span class="p">,</span> <span class="n">train_person_model</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">det</span> <span class="o">=</span> <span class="n">train_person_model</span><span class="p">(</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="s2">"armstrong"</span><span class="p">,</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">real_media</span><span class="o">=</span><span class="p">[</span><span class="s2">"tests/data/face_public_domain.jpg"</span><span class="p">],</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">negative_media</span><span class="o">=</span><span class="p">[</span><span class="s2">"tests/data/other_face_public_domain.jpg"</span><span class="p">],</span>    <span class="c1"># optional</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">modality</span><span class="o">=</span><span class="s2">"image"</span><span class="p">,</span>                                              <span class="c1"># image, audio, video, audiovisual or auto</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="p">)</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="n">det</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"armstrong.safetensors"</span><span class="p">)</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="n">det</span> <span class="o">=</span> <span class="n">PersonDetector</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"armstrong.safetensors"</span><span class="p">)</span>    <span class="c1"># or forensix.load("person-detector", weights_path=...)</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="nb">print</span><span class="p">(</span><span class="n">det</span><span class="p">)</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"face2_public_domain.jpg"</span><span class="p">,</span> <span class="s2">"other_face_public_domain.jpg"</span><span class="p">]:</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>    <span class="n">p</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="sa">f</span><span class="s2">"tests/data/</span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>PersonDetector(person='armstrong', modality='image', params=23,301, threshold=0.500)
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>face2_public_domain.jpg real 0.1861
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>other_face_public_domain.jpg fake 0.9999
+</code></pre></div>
+<p>The same from the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>python<span class="w"> </span>scripts/train_person_model.py<span class="w"> </span>--person<span class="w"> </span>armstrong<span class="w"> </span>--real<span class="w"> </span>tests/data/face_public_domain.jpg<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span>--fake<span class="w"> </span>tests/data/other_face_public_domain.jpg<span class="w"> </span>--modality<span class="w"> </span>image<span class="w"> </span>--out<span class="w"> </span>armstrong.safetensors
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>python<span class="w"> </span>scripts/train_person_model.py<span class="w"> </span>--load<span class="w"> </span>armstrong.safetensors<span class="w"> </span>--test<span class="w"> </span>tests/data/face2_public_domain.jpg
+</code></pre></div>
+<p><strong>Notes.</strong> One training photo is a demo, not a deployment. Use dozens of varied real samples,
+and hold some back to measure false alarms (<a href="../guides/identity/">Identity guide</a>).</p>
+<h2 id="9-produce-a-physics-forensic-report">9. Produce a physics forensic report<a class="headerlink" href="#9-produce-a-physics-forensic-report" title="Permanent link">&para;</a></h2>
+<p><code>physdf</code> runs every physics check and writes a report from the measured evidence. The
+single-constraint detectors (<code>phys-voice</code>, <code>phys-room</code>, <code>phys-bloodflow</code>, <code>phys-motion</code>,
+<code>phys-lighting</code>) expose the same evidence per constraint.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">forensix</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"phys-voice"</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"tests/data/speech_cc0.flac"</span><span class="p">)</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">score_type</span><span class="p">)</span>                          <span class="c1"># 0.0 anomaly</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"constraints"</span><span class="p">][</span><span class="s2">"f0_jump_rate_per_s"</span><span class="p">])</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="c1"># {'expected_range_start': 2.0, 'worse': 'higher', 'prior': 'provisional', 'measured': 0.2584, 'violation': 0.0}</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"physdf"</span><span class="p">)</span>                                   <span class="c1"># add weights_path= once you've trained the graph prior</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"interview.mp4"</span><span class="p">)</span>                             <span class="c1"># a video (uses its sound), or an audio file</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="nb">print</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"report"</span><span class="p">][</span><span class="s2">"markdown"</span><span class="p">])</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"localization"</span><span class="p">]</span>                                    <span class="c1"># where and when constraints were violated</span>
+</code></pre></div>
+<p><strong>Read this before relying on physics scores.</strong> Until learned priors are fitted on real media,
+the expected ranges are provisional and hand-set. In testing, a real SDFVD clip that was looped
+three times and dubbed with unrelated speech scored 1.00 (report confidence: low), driven by
+blood-flow ranges. The looping itself may break the pulse signal, but provisional video ranges
+are known to fire on real video. Treat physics output as leads for a human reviewer until you
+have run <code>scripts/calibrate_physics.py</code> on real media like yours (<a href="../guides/physics/">Physics guide</a>).</p>
+<h2 id="10-score-a-large-folder-of-videos-in-parallel">10. Score a large folder of videos in parallel<a class="headerlink" href="#10-score-a-large-folder-of-videos-in-parallel" title="Permanent link">&para;</a></h2>
+<p>Video detectors spend much of their time decoding and finding faces on the CPU, so one process
+leaves a GPU idle. Run several worker processes, each with its own copy of the model:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="n">MODEL</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">,</span> <span class="n">WORKERS</span> <span class="o">=</span> <span class="s2">"dfdet-clip"</span><span class="p">,</span> <span class="s2">"cuda"</span><span class="p">,</span> <span class="mi">3</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="n">_detector</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">init_worker</span><span class="p">():</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>    <span class="k">global</span> <span class="n">_detector</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>    <span class="n">torch</span><span class="o">.</span><span class="n">set_num_threads</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>          <span class="c1"># leave CPU cores for the other workers</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">forensix</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>    <span class="n">_detector</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">MODEL</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a><span class="k">def</span><span class="w"> </span><span class="nf">score</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a>        <span class="n">pred</span> <span class="o">=</span> <span class="n">_detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a>        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">segment_fake_probs</span><span class="p">),</span> <span class="s2">""</span>
+<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>            <span class="c1"># keep going on corrupt files; record why</span>
+<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a>        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a>
+<a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a>
+<a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+<a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a>    <span class="n">folder</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<a id="__codelineno-16-29" name="__codelineno-16-29" href="#__codelineno-16-29"></a>    <span class="n">videos</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">folder</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">"*"</span><span class="p">)</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">".mp4"</span><span class="p">,</span> <span class="s2">".mov"</span><span class="p">,</span> <span class="s2">".avi"</span><span class="p">,</span> <span class="s2">".mkv"</span><span class="p">,</span> <span class="s2">".webm"</span><span class="p">})</span>
+<a id="__codelineno-16-30" name="__codelineno-16-30" href="#__codelineno-16-30"></a>    <span class="n">ctx</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">get_context</span><span class="p">(</span><span class="s2">"spawn"</span><span class="p">)</span>     <span class="c1"># required for CUDA in child processes</span>
+<a id="__codelineno-16-31" name="__codelineno-16-31" href="#__codelineno-16-31"></a>    <span class="k">with</span> <span class="n">ctx</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">WORKERS</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">init_worker</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-16-32" name="__codelineno-16-32" href="#__codelineno-16-32"></a>        <span class="n">w</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<a id="__codelineno-16-33" name="__codelineno-16-33" href="#__codelineno-16-33"></a>        <span class="n">w</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="s2">"file"</span><span class="p">,</span> <span class="s2">"fake_prob"</span><span class="p">,</span> <span class="s2">"n_faces"</span><span class="p">,</span> <span class="s2">"error"</span><span class="p">])</span>
+<a id="__codelineno-16-34" name="__codelineno-16-34" href="#__codelineno-16-34"></a>        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">videos</span><span class="p">):</span>
+<a id="__codelineno-16-35" name="__codelineno-16-35" href="#__codelineno-16-35"></a>            <span class="n">w</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+</code></pre></div>
+<p>Tested with <code>dfdc-wm</code>, 2 CPU workers, on 4 SDFVD videos.</p>
+<p><strong>Notes.</strong>
+- Each worker holds a full copy of the model in GPU memory, so size <code>WORKERS</code> by GPU memory.
+  The SDFVD benchmark ran 2–4 processes on one 24 GB L4.
+- For a service rather than a one-off batch, see <a href="../deployment/">Deployment at scale</a>.</p>
+<h2 id="11-benchmark-detectors-on-your-own-videos">11. Benchmark detectors on your own videos<a class="headerlink" href="#11-benchmark-detectors-on-your-own-videos" title="Permanent link">&para;</a></h2>
+<p>Put real videos in one folder and fake ones in another, then:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>python<span class="w"> </span>scripts/eval_video_folder.py<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">    </span>--real<span class="w"> </span>my_data/real<span class="w"> </span>--fake<span class="w"> </span>my_data/fake<span class="w"> </span>--dataset<span class="w"> </span>my-data<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span>--models<span class="w"> </span>gend-pe<span class="w"> </span>gend<span class="w"> </span>dfdet-clip<span class="w"> </span>dfdc-selim<span class="w"> </span>dfdc-wm<span class="w"> </span>commfor<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span>--out<span class="w"> </span>results/my_data.json<span class="w"> </span>--scores-out<span class="w"> </span>results/my_data_scores.csv
+</code></pre></div>
+<p>It reports AUC, AP, EER and accuracy at each model's default threshold, saves after every
+model, and skips finished models when rerun. Image detectors score 8 evenly spaced frames per
+video (<code>--frames</code>). See <a href="../guides/evaluation/">Evaluating on your data</a> for how to build a test
+set that measures what you think it measures.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../concepts/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Concepts">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Concepts
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../guides/colab/" class="md-footer__link md-footer__link--next" aria-label="Next: Working in Google Colab">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Working in Google Colab
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      All bundled models and weights are under commercially usable licenses.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.indexes", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit", "toc.follow"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,2586 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Deepfake detection and media forensics. Commercially licensed detectors behind one Python API, an HTTP server and a web manager.">
+      
+      
+      
+        <link rel="canonical" href="https://anas-rz.github.io/ForensiX/reference/benchmark-video-image/">
+      
+      
+        <link rel="prev" href="../leaderboard/">
+      
+      
+        <link rel="next" href="../benchmark-audiovisual/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Video and image (SDFVD) - ForensiX</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#forensix-benchmark-sdfvd-face-swap-videos" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ForensiX" class="md-header__button md-logo" aria-label="ForensiX" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ForensiX
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Video and image (SDFVD)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anas-rz/ForensiX" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anas-rz/ForensiX
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guides/choosing-detectors/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../server/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Server and web manager
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../cloud/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../api-reference/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ForensiX" class="md-nav__button md-logo" aria-label="ForensiX" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ForensiX
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anas-rz/ForensiX" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anas-rz/ForensiX
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/colab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working in Google Colab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/choosing-detectors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choosing detectors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/interpreting-scores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interpreting scores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluating on your data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity and person models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/physics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Physics forensics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/extending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extending ForensiX
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/licensing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Licensing and compliance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server and web manager
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Server and web manager
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../calibration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fairness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fairness reports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cloud/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker, Kubernetes and cloud
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment at scale
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../leaderboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Leaderboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Benchmarks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Video and image (SDFVD)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Video and image (SDFVD)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dataset
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#follow-up-1-image-detectors-on-face-crops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Follow-up 1: image detectors on face crops
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#follow-up-2-calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Follow-up 2: calibration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#caveats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caveats
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmark-audiovisual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audiovisual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmark-identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmark-physics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Physics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dataset
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#follow-up-1-image-detectors-on-face-crops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Follow-up 1: image detectors on face crops
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#follow-up-2-calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Follow-up 2: calibration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#caveats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caveats
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="forensix-benchmark-sdfvd-face-swap-videos">ForensiX benchmark: SDFVD (face-swap videos)<a class="headerlink" href="#forensix-benchmark-sdfvd-face-swap-videos" title="Permanent link">&para;</a></h1>
+<p>Every ForensiX image and video detector was scored on the same 106 videos. Raw results are in
+<code>results/sdfvd.json</code> (metrics and per-video scores), <code>results/sdfvd_scores.csv</code> (one row per video)
+and <code>results/sdfvd.log</code>.</p>
+<h2 id="dataset">Dataset<a class="headerlink" href="#dataset" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Name:</strong> SDFVD.</li>
+<li><strong>Link:</strong> <a href="https://data.mendeley.com/datasets/bcmkfgct2s/1">https://data.mendeley.com/datasets/bcmkfgct2s/1</a></li>
+<li><strong>License:</strong> CC BY 4.0.</li>
+<li><strong>Size:</strong> 106 videos. 53 are real (<code>SDFVD/videos_real/v1.mp4</code> … <code>v53.mp4</code>) and 53 are fake
+  (<code>SDFVD/videos_fake/vs1.mp4</code> … <code>vs53.mp4</code>). The archive is 182 MB, with sha256
+  <code>734a101fdfd89d5b20ac69f510d6a7cf3b588a145c1993ba2488322ae50d95a5</code>.</li>
+<li><strong>Real videos:</strong> short stock clips from Pexels, 2.1–5.8 s long (median 3.3 s), at 30 fps.
+  Resolutions are 1280x720 (26), 1280x674 (11), 378x720 (8) and 404x720 (8).</li>
+<li><strong>Fake videos:</strong> a face swap of each real clip, made with Remaker AI. The dataset uses one
+  face-swap tool for all fakes.</li>
+<li><strong>Format-matched pairs:</strong> each fake <code>vsN</code> comes from real <code>vN</code> and has the same resolution,
+  frame rate, frame count and codec. So a detector can't separate the classes by file format,
+  resolution or length; it has to respond to the manipulation itself.</li>
+</ul>
+<h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Hardware:</strong> NVIDIA L4 (23 GB, driver 580.82.07) on Google Colab Pro.</li>
+<li><strong>Date:</strong> 2026-10-26.</li>
+<li><strong>Code:</strong> ForensiX commit <code>16649a37fd31585fa49641c9f2a3ede17fbbe135</code>. Scored with
+  <code>scripts/eval_video_folder.py</code> as it is at that commit; no code changes were needed.</li>
+<li><strong>Software:</strong> Python 3.13.16, torch 2.11.0+cu130, OpenCV 5.0.0, numpy 2.1.3, timm 1.0.30,
+  transformers 5.20.2.</li>
+<li><strong>Image detectors:</strong> each video gets 8 evenly spaced full frames. The frames are not
+  face-cropped. Each frame goes through the model's own preprocessing, and the video score is
+  the mean of the 8 frame scores. Most of these models score only a central crop of the frame
+  without resizing it (<code>univfd</code>, <code>rine</code>: 224x224; <code>safe</code>: 256x256). On a 1280x720 frame, that crop
+  covers only a small part of the image and may miss some or all of the face.</li>
+<li><strong>Video detectors:</strong> each uses its own upstream frame sampling and face pipeline.</li>
+<li><code>gend</code>, <code>gend-pe</code>, <code>dfdet-clip</code>: MTCNN, largest face in 32 frames, 5-point alignment.</li>
+<li><code>dfdc-selim</code>: MTCNN, all faces in 32 frames, 7 EfficientNet-B7 models.</li>
+<li><code>dfdc-wm</code>: RetinaFace, largest face in every 10th frame, up to 25 faces.</li>
+<li><strong>Threshold:</strong> every model's default threshold is 0.5 on <code>fake_prob</code>. Balanced, real and fake
+  accuracy are measured at that threshold.</li>
+<li><strong>No-face fallback:</strong> these video models return exactly 0.5 when no face is found. No video got
+  that score from any model, so every video model found a face in every video.</li>
+</ul>
+<h2 id="results">Results<a class="headerlink" href="#results" title="Permanent link">&para;</a></h2>
+<p>Sorted by AUC. Fakes are the positive class.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Family</th>
+<th>AUC [95% CI]</th>
+<th>AP</th>
+<th>EER</th>
+<th>Bal. acc @0.5</th>
+<th>Real acc</th>
+<th>Fake acc</th>
+<th>Failed</th>
+<th>Seconds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gend-pe</code></td>
+<td>video</td>
+<td>0.956 [0.918, 0.984]</td>
+<td>0.959</td>
+<td>0.132</td>
+<td>0.859</td>
+<td>0.755</td>
+<td>0.962</td>
+<td>0</td>
+<td>714.0</td>
+</tr>
+<tr>
+<td><code>gend</code></td>
+<td>video</td>
+<td>0.919 [0.863, 0.962]</td>
+<td>0.916</td>
+<td>0.170</td>
+<td>0.811</td>
+<td>0.679</td>
+<td>0.943</td>
+<td>0</td>
+<td>767.4</td>
+</tr>
+<tr>
+<td><code>dfdet-clip</code></td>
+<td>video</td>
+<td>0.916 [0.860, 0.962]</td>
+<td>0.913</td>
+<td>0.151</td>
+<td>0.821</td>
+<td>0.887</td>
+<td>0.755</td>
+<td>0</td>
+<td>285.4</td>
+</tr>
+<tr>
+<td><code>dfdc-selim</code></td>
+<td>video</td>
+<td>0.761 [0.670, 0.846]</td>
+<td>0.756</td>
+<td>0.321</td>
+<td>0.566</td>
+<td>0.943</td>
+<td>0.189</td>
+<td>0</td>
+<td>745.5</td>
+</tr>
+<tr>
+<td><code>rine</code></td>
+<td>image</td>
+<td>0.745 [0.620, 0.812]</td>
+<td>0.774</td>
+<td>0.340</td>
+<td>0.500</td>
+<td>1.000</td>
+<td>0.000</td>
+<td>0</td>
+<td>24.1</td>
+</tr>
+<tr>
+<td><code>univfd</code></td>
+<td>image</td>
+<td>0.719 [0.618, 0.811]</td>
+<td>0.751</td>
+<td>0.302</td>
+<td>0.509</td>
+<td>1.000</td>
+<td>0.019</td>
+<td>0</td>
+<td>25.7</td>
+</tr>
+<tr>
+<td><code>clipdet</code></td>
+<td>image</td>
+<td>0.712 [0.608, 0.809]</td>
+<td>0.697</td>
+<td>0.321</td>
+<td>0.641</td>
+<td>0.604</td>
+<td>0.679</td>
+<td>0</td>
+<td>48.5</td>
+</tr>
+<tr>
+<td><code>dfdc-wm</code></td>
+<td>video</td>
+<td>0.699 [0.597, 0.791]</td>
+<td>0.718</td>
+<td>0.396</td>
+<td>0.594</td>
+<td>0.924</td>
+<td>0.264</td>
+<td>0</td>
+<td>106.3</td>
+</tr>
+<tr>
+<td><code>commfor</code></td>
+<td>image</td>
+<td>0.696 [0.592, 0.792]</td>
+<td>0.722</td>
+<td>0.340</td>
+<td>0.557</td>
+<td>0.981</td>
+<td>0.132</td>
+<td>0</td>
+<td>21.9</td>
+</tr>
+<tr>
+<td><code>safe</code></td>
+<td>image</td>
+<td>0.693 [0.588, 0.792]</td>
+<td>0.723</td>
+<td>0.377</td>
+<td>0.500</td>
+<td>1.000</td>
+<td>0.000</td>
+<td>0</td>
+<td>10.0</td>
+</tr>
+<tr>
+<td><code>commfor-224</code></td>
+<td>image</td>
+<td>0.642 [0.534, 0.743]</td>
+<td>0.630</td>
+<td>0.396</td>
+<td>0.509</td>
+<td>0.981</td>
+<td>0.038</td>
+<td>0</td>
+<td>13.9</td>
+</tr>
+<tr>
+<td><code>rine-ldm</code></td>
+<td>image</td>
+<td>0.561 [0.452, 0.667]</td>
+<td>0.566</td>
+<td>0.472</td>
+<td>0.528</td>
+<td>0.849</td>
+<td>0.207</td>
+<td>0</td>
+<td>289.6</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>AUC 95% CI:</strong> a bootstrap interval, with 5,000 resamples of real and fake videos drawn
+  separately and seed 0. It is not in <code>results/sdfvd.json</code>.</li>
+<li><strong>AP:</strong> average precision.</li>
+<li><strong>EER:</strong> equal error rate.</li>
+<li><strong>Failed:</strong> videos the script could not score (decode error or exception). These are left out
+  of the metrics. No model failed on any video.</li>
+<li><strong>Seconds:</strong> wall-clock time to score all 106 videos. It excludes model loading and weight
+  downloads. <strong>Only <code>univfd</code> and <code>rine</code> were timed alone on the GPU.</strong> The other models ran as
+  2–4 processes sharing the L4 and the 12 CPU cores, so their times are inflated. Four image
+  models were also scored alone by accident: they took 1.2–1.5x less time alone, with identical
+  scores (<code>rine-ldm</code> 200 s, <code>commfor</code> 16.5 s, <code>commfor-224</code> 11.5 s, <code>safe</code> 6.5 s). Use the column
+  for rough relative cost only.</li>
+</ul>
+<h2 id="analysis">Analysis<a class="headerlink" href="#analysis" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Only the three face-based CLIP/PE detectors work well here.</strong></li>
+<li><code>gend-pe</code>, <code>gend</code> and <code>dfdet-clip</code> reach AUC 0.92–0.96 and EER 0.13–0.17, and they are the
+    only models above 0.8 balanced accuracy at the default threshold.</li>
+<li>All three were trained on FaceForensics++ with aligned face crops, which matches this task.</li>
+<li>Their AUC differences are within noise on this dataset. Paired bootstrap 95% CIs:
+    <code>gend-pe</code> − <code>gend</code> +0.037 [−0.008, +0.087], <code>gend-pe</code> − <code>dfdet-clip</code> +0.040 [−0.008, +0.092],
+    <code>gend</code> − <code>dfdet-clip</code> +0.003 [−0.028, +0.035].</li>
+<li><code>dfdet-clip</code> beats the next model, <code>dfdc-selim</code>, by +0.154 AUC [+0.058, +0.258].</li>
+<li><strong>The two DFDC winners are weak here.</strong> <code>dfdc-selim</code> (AUC 0.761) and <code>dfdc-wm</code> (0.699) are
+  face-based too, but they were trained on DFDC fakes, not on this tool's output. Neither is clearly better than the
+  image detectors: for example, <code>dfdc-selim</code> − <code>rine</code> is +0.016 AUC [−0.092, +0.181].</li>
+<li><strong>Most models are miscalibrated at the default threshold.</strong> They rank fakes above reals better
+  than chance, but nearly all their scores fall below 0.5, so almost everything is called real:</li>
+<li><code>rine</code> and <code>safe</code> score every video below 0.5. They get 100% of reals and 0% of fakes right,
+    giving exactly 0.500 balanced accuracy despite AUC 0.745 and 0.693. Their highest fake scores
+    are 0.384 and 0.276.</li>
+<li><code>univfd</code> (AUC 0.719) catches 1.9% of fakes; <code>commfor-224</code> catches 3.8% and <code>commfor</code> 13.2%.</li>
+<li><code>dfdc-selim</code> catches 18.9% of fakes and <code>dfdc-wm</code> 26.4%, while getting 92–94% of reals right.</li>
+<li>These models need a threshold chosen on in-domain data before their binary decisions are
+    usable. AUC and EER are the fairer comparison for them.</li>
+<li><strong><code>gend</code> and <code>gend-pe</code> lean the other way.</strong> They catch 94–96% of fakes but get only 68% and
+  76% of reals right, so they will raise false alarms on real faces at 0.5. <code>dfdet-clip</code> is more
+  balanced at 0.5: it gets 89% of reals and 76% of fakes right.</li>
+<li><strong><code>clipdet</code> is the best calibrated image detector</strong> at 0.641 balanced accuracy. Its AUC (0.712)
+  is in line with the other image detectors.</li>
+<li><strong>The image detectors are expected to be weak here.</strong></li>
+<li><code>univfd</code>, <code>rine</code>, <code>rine-ldm</code>, <code>commfor</code>, <code>commfor-224</code>, <code>safe</code> and <code>clipdet</code> were trained to
+    flag whole images from GANs and diffusion models (ProGAN, Latent/Stable Diffusion and similar).</li>
+<li>In a face swap, the background, body and most of the frame are untouched real camera footage,
+    and only the face region is generated and blended in. That region is a small part of a
+    1280x720 frame.</li>
+<li>Several of these models score only a central crop without resizing, so they may not see the
+    face at all.</li>
+<li>Their AUCs of 0.56–0.75 show some weak signal. All of their 95% CIs reach down to between
+    0.45 and 0.62, and <code>rine-ldm</code>'s includes 0.5. They should not be used as face-swap detectors
+    based on this run.</li>
+</ul>
+<h2 id="follow-up-1-image-detectors-on-face-crops">Follow-up 1: image detectors on face crops<a class="headerlink" href="#follow-up-1-image-detectors-on-face-crops" title="Permanent link">&para;</a></h2>
+<p>The main run fed whole frames to the image detectors. As a follow-up, the same 8 frames per video were
+cropped around the largest face before scoring.</p>
+<ul>
+<li><strong>Option:</strong> <code>--face-crop</code>, added to <code>scripts/eval_video_folder.py</code> for this.</li>
+<li><strong>Crop:</strong> MTCNN, 1.3x the face box, at least 256 px a side, never resized, so each model's own
+  preprocessing still applies.</li>
+<li><strong>Frames without a face:</strong> dropped. Every video kept at least one.</li>
+<li><strong>Results:</strong> <code>results/sdfvd_facecrop.json</code>, <code>results/sdfvd_facecrop_scores.csv</code>, <code>results/sdfvd_facecrop.log</code>.</li>
+<li><strong>Gain:</strong> the change in AUC from full frames to face crops on the same videos. Its 95% CI comes
+  from 5,000 bootstrap resamples (reals and fakes drawn separately, seed 0), applied to both inputs.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>AUC, full frame</th>
+<th>AUC, face crop [95% CI]</th>
+<th>Gain [95% CI]</th>
+<th>EER, face crop</th>
+<th>Bal. acc @0.5, face crop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>commfor</code></td>
+<td>0.697</td>
+<td>0.878 [0.810, 0.936]</td>
+<td>+0.181 [+0.077, +0.289]</td>
+<td>0.226</td>
+<td>0.679</td>
+</tr>
+<tr>
+<td><code>commfor-224</code></td>
+<td>0.642</td>
+<td>0.848 [0.768, 0.915]</td>
+<td>+0.206 [+0.111, +0.302]</td>
+<td>0.226</td>
+<td>0.632</td>
+</tr>
+<tr>
+<td><code>rine</code></td>
+<td>0.745</td>
+<td>0.844 [0.761, 0.916]</td>
+<td>+0.100 [+0.010, +0.194]</td>
+<td>0.189</td>
+<td>0.509</td>
+</tr>
+<tr>
+<td><code>univfd</code></td>
+<td>0.719</td>
+<td>0.818 [0.729, 0.897]</td>
+<td>+0.099 [+0.012, +0.192]</td>
+<td>0.189</td>
+<td>0.547</td>
+</tr>
+<tr>
+<td><code>safe</code></td>
+<td>0.693</td>
+<td>0.722 [0.622, 0.811]</td>
+<td>+0.028 [−0.055, +0.110]</td>
+<td>0.358</td>
+<td>0.500</td>
+</tr>
+<tr>
+<td><code>rine-ldm</code></td>
+<td>0.561</td>
+<td>0.694 [0.585, 0.787]</td>
+<td>+0.133 [+0.019, +0.244]</td>
+<td>0.396</td>
+<td>0.585</td>
+</tr>
+<tr>
+<td><code>clipdet</code></td>
+<td>0.712</td>
+<td>0.678 [0.571, 0.777]</td>
+<td>−0.033 [−0.134, +0.065]</td>
+<td>0.377</td>
+<td>0.632</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Five of the seven models improve significantly</strong> on face crops; <code>safe</code> and <code>clipdet</code> don't
+  change significantly. This supports the earlier explanation: on full frames, the center crop
+  often missed the swapped face.</li>
+<li><strong>The best image detectors on crops (<code>commfor</code>, <code>commfor-224</code>, <code>rine</code>) are still below the
+  face-based video detectors</strong> (<code>gend-pe</code> 0.956, <code>gend</code> 0.919, <code>dfdet-clip</code> 0.916).</li>
+<li><strong>The miscalibration remains.</strong> At 0.5, <code>rine</code>, <code>univfd</code> and <code>safe</code> still call almost every video
+  real.</li>
+<li><strong>The <code>rine</code> row uses unrounded scores.</strong> The results files store per-video scores rounded to 6
+  decimals, and many of <code>rine</code>'s scores round to 0 (36 of 106 full-frame scores, 20 of 106
+  face-crop scores). Recomputing its AUC from the stored scores therefore gives 0.719 instead of
+  0.745 for full frames. The AUCs in the JSON <code>models</code> entries were computed before rounding and are
+  correct. The <code>rine</code> gain was computed from a rerun that kept full precision; it matched the stored
+  scores after rounding.</li>
+</ul>
+<h2 id="follow-up-2-calibration">Follow-up 2: calibration<a class="headerlink" href="#follow-up-2-calibration" title="Permanent link">&para;</a></h2>
+<p><code>forensix/calibration.py</code> and <code>scripts/recalibrate.py</code> (see the README's Calibration section) fit,
+per model:</p>
+<ul>
+<li>a Platt scaling of the score;</li>
+<li>a split-conformal threshold on real videos only, so the false-alarm rate is at most α;</li>
+<li>conformal prediction sets.</li>
+</ul>
+<p><strong>Out-of-fold results.</strong> To estimate how calibration behaves on unseen videos, the scores in
+<code>results/sdfvd_scores.csv</code> were cross-validated:</p>
+<ul>
+<li>5 folds, seed 0, α = 5%.</li>
+<li>Each real/fake pair (<code>vN</code>, <code>vsN</code>) is kept in the same fold, so a model is never calibrated on one
+  half of a pair and tested on the other.</li>
+<li>Results are in <code>results/calibration_sdfvd.json</code>.</li>
+<li>The tables in <code>calibrations/sdfvd/</code> are then fitted on all 106 videos.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>AUC</th>
+<th>Bal. acc @0.5, raw</th>
+<th>Bal. acc, Platt</th>
+<th>ECE, raw</th>
+<th>ECE, Platt</th>
+<th>False alarms, conformal (α = 5%)</th>
+<th>Detection, conformal</th>
+<th>Single-label sets</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gend-pe</code></td>
+<td>0.956</td>
+<td>0.859</td>
+<td>0.887</td>
+<td>0.116</td>
+<td>0.081</td>
+<td>5.7%</td>
+<td>67.9%</td>
+<td>72.6%</td>
+</tr>
+<tr>
+<td><code>gend</code></td>
+<td>0.919</td>
+<td>0.811</td>
+<td>0.821</td>
+<td>0.125</td>
+<td>0.049</td>
+<td>5.7%</td>
+<td>54.7%</td>
+<td>67.9%</td>
+</tr>
+<tr>
+<td><code>dfdet-clip</code></td>
+<td>0.916</td>
+<td>0.821</td>
+<td>0.849</td>
+<td>0.126</td>
+<td>0.091</td>
+<td>5.7%</td>
+<td>49.1%</td>
+<td>59.4%</td>
+</tr>
+<tr>
+<td><code>dfdc-selim</code></td>
+<td>0.761</td>
+<td>0.566</td>
+<td>0.698</td>
+<td>0.342</td>
+<td>0.071</td>
+<td>3.8%</td>
+<td>18.9%</td>
+<td>30.2%</td>
+</tr>
+<tr>
+<td><code>rine</code></td>
+<td>0.719*</td>
+<td>0.500</td>
+<td>0.641</td>
+<td>0.488</td>
+<td>0.122</td>
+<td>7.5%</td>
+<td>28.3%</td>
+<td>17.9%</td>
+</tr>
+<tr>
+<td><code>univfd</code></td>
+<td>0.719</td>
+<td>0.509</td>
+<td>0.660</td>
+<td>0.442</td>
+<td>0.062</td>
+<td>3.8%</td>
+<td>22.6%</td>
+<td>22.6%</td>
+</tr>
+<tr>
+<td><code>clipdet</code></td>
+<td>0.712</td>
+<td>0.641</td>
+<td>0.689</td>
+<td>0.052</td>
+<td>0.114</td>
+<td>3.8%</td>
+<td>11.3%</td>
+<td>13.2%</td>
+</tr>
+<tr>
+<td><code>dfdc-wm</code></td>
+<td>0.699</td>
+<td>0.594</td>
+<td>0.641</td>
+<td>0.305</td>
+<td>0.093</td>
+<td>3.8%</td>
+<td>15.1%</td>
+<td>22.6%</td>
+</tr>
+<tr>
+<td><code>commfor</code></td>
+<td>0.697</td>
+<td>0.557</td>
+<td>0.660</td>
+<td>0.399</td>
+<td>0.096</td>
+<td>3.8%</td>
+<td>24.5%</td>
+<td>21.7%</td>
+</tr>
+<tr>
+<td><code>safe</code></td>
+<td>0.693</td>
+<td>0.500</td>
+<td>0.632</td>
+<td>0.451</td>
+<td>0.033</td>
+<td>3.8%</td>
+<td>20.8%</td>
+<td>18.9%</td>
+</tr>
+<tr>
+<td><code>commfor-224</code></td>
+<td>0.642</td>
+<td>0.509</td>
+<td>0.632</td>
+<td>0.470</td>
+<td>0.077</td>
+<td>3.8%</td>
+<td>3.8%</td>
+<td>14.1%</td>
+</tr>
+<tr>
+<td><code>rine-ldm</code></td>
+<td>0.561</td>
+<td>0.528</td>
+<td>0.528</td>
+<td>0.106</td>
+<td>0.006</td>
+<td>3.8%</td>
+<td>3.8%</td>
+<td>7.5%</td>
+</tr>
+</tbody>
+</table>
+<p>* Computed from the rounded scores in the CSV (see Follow-up 1); 0.745 at full precision.</p>
+<ul>
+<li><strong>Calibration changes the threshold, not the ranking.</strong> AUC is unchanged by construction.</li>
+<li><strong>Platt scaling fixes the "everything is real" problem.</strong> Models whose balanced accuracy at 0.5
+  was about 0.50 reach 0.63–0.70. ECE drops for every model except <code>clipdet</code> (0.052 → 0.114), which
+  was already the best calibrated.</li>
+<li><strong>The conformal threshold held its false-alarm target out of fold.</strong> Observed rates were 3.8–7.5%
+  at α = 5%. With about 10 reals per fold, each rate has wide error.</li>
+<li><strong>It catches few fakes for the weak models.</strong> The cost of a guaranteed false-alarm rate is low
+  detection: 49–68% for the three GenD models, and at most 28% for the others.</li>
+<li><strong>Prediction sets are often {real, fake}.</strong> That means "this score doesn't support a decision at
+  95% confidence". The single-label column shows how often a model commits.</li>
+<li><strong>The tables were fitted on SDFVD.</strong> They encode Remaker AI swaps on Pexels clips. Refit them on
+  data like yours before using them; <code>scripts/recalibrate.py check</code> tests whether a table still
+  fits new labelled data.</li>
+</ul>
+<h2 id="caveats">Caveats<a class="headerlink" href="#caveats" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Small sample.</strong> With 53 real and 53 fake videos, the 95% CI on AUC is about ±0.03–0.05 for
+  the top models and about ±0.1 for models near AUC 0.7 (see the table). Differences of a few AUC
+  points are not meaningful, and the ranking from <code>dfdc-selim</code> down to <code>commfor</code> is not reliable.
+  Accuracy at a threshold has binomial error of up to about ±0.13 per class (95%, n=53).</li>
+<li><strong>One face-swap tool.</strong> All fakes come from Remaker AI on short Pexels clips.
+  These results say nothing about other face-swap tools, reenactment, lip-sync, fully generated
+  videos, or heavily compressed (social-media) footage.</li>
+<li><strong>Face detector substitution.</strong> Upstream GenD uses the SCRFD face detector. ForensiX uses MTCNN
+  for <code>gend</code>, <code>gend-pe</code> and <code>dfdet-clip</code> (see <code>forensix/video/gend/__init__.py</code>), so their face
+  crops can differ slightly from upstream.</li>
+<li><strong>Image detectors on video.</strong> The main table uses whole frames. Face crops change the numbers
+  substantially; see Follow-up 1.</li>
+<li><strong>Timing.</strong> Times other than <code>univfd</code> and <code>rine</code> were measured with other models sharing the
+  GPU (see the Results notes).</li>
+<li><strong>Run history.</strong> The run was split across processes to use the whole GPU:</li>
+<li><code>univfd</code> and <code>rine</code> come from a sequential run of the command below.</li>
+<li>The other ten models come from parallel runs of the same script with <code>--models</code> subsets and
+    their own <code>--out</code> files, merged into <code>results/sdfvd.json</code>.</li>
+<li>Then the command below was rerun; it skipped all 12 models and wrote the CSV.</li>
+<li>Splitting doesn't change scores. <code>rine</code> was scored twice, and <code>rine-ldm</code>, <code>commfor</code>,
+    <code>commfor-224</code> and <code>safe</code> were scored both alone and in parallel; per-video scores were
+    identical every time. <code>results/sdfvd.log</code> has the full history.</li>
+</ul>
+<h2 id="reproduce">Reproduce<a class="headerlink" href="#reproduce" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># from the repo root, with ForensiX installed (pip install -e .) and a CUDA GPU</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>/content/sdfvd<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/content/sdfvd
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>curl<span class="w"> </span>-L<span class="w"> </span>-o<span class="w"> </span>sdfvd.zip<span class="w"> </span><span class="s2">"https://data.mendeley.com/public-files/datasets/bcmkfgct2s/files/a9ef71a3-b625-4682-a21c-f0579e85cdd4/file_downloaded"</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"734a101fdfd89d5b20ac69f510d6a7cf3b588a145c1993ba2488322ae50d95a5  sdfvd.zip"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sha256sum<span class="w"> </span>-c
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>unzip<span class="w"> </span>-q<span class="w"> </span>sdfvd.zip<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>-
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nb">export</span><span class="w"> </span><span class="nv">FORENSIX_CACHE</span><span class="o">=</span>/path/to/forensix_cache<span class="w">   </span><span class="c1"># optional; about 6 GB of weights</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>python<span class="w"> </span>scripts/eval_video_folder.py<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span>--real<span class="w"> </span>/content/sdfvd/SDFVD/videos_real<span class="w"> </span>--fake<span class="w"> </span>/content/sdfvd/SDFVD/videos_fake<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span>--dataset<span class="w"> </span>SDFVD<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span>--models<span class="w"> </span>univfd<span class="w"> </span>rine<span class="w"> </span>rine-ldm<span class="w"> </span>commfor<span class="w"> </span>commfor-224<span class="w"> </span>safe<span class="w"> </span>clipdet<span class="w"> </span>gend<span class="w"> </span>gend-pe<span class="w"> </span>dfdet-clip<span class="w"> </span>dfdc-wm<span class="w"> </span>dfdc-selim<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span>--out<span class="w"> </span>results/sdfvd.json<span class="w"> </span>--scores-out<span class="w"> </span>results/sdfvd_scores.csv
+</code></pre></div>
+<p>Follow-ups (same downloads):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 1. image detectors on face crops</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>python<span class="w"> </span>scripts/eval_video_folder.py<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span>--face-crop<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>--real<span class="w"> </span>/content/sdfvd/SDFVD/videos_real<span class="w"> </span>--fake<span class="w"> </span>/content/sdfvd/SDFVD/videos_fake<span class="w"> </span>--dataset<span class="w"> </span>SDFVD<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>--models<span class="w"> </span>univfd<span class="w"> </span>rine<span class="w"> </span>rine-ldm<span class="w"> </span>commfor<span class="w"> </span>commfor-224<span class="w"> </span>safe<span class="w"> </span>clipdet<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span>--out<span class="w"> </span>results/sdfvd_facecrop.json<span class="w"> </span>--scores-out<span class="w"> </span>results/sdfvd_facecrop_scores.csv
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># 2. calibration: cross-validated report and one table per model, from the stored scores</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>python<span class="w"> </span>scripts/recalibrate.py<span class="w"> </span>fit<span class="w"> </span>--scores<span class="w"> </span>results/sdfvd_scores.csv<span class="w"> </span>--group-regex<span class="w"> </span><span class="s1">'(\d+)'</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span>--alpha<span class="w"> </span><span class="m">0</span>.05<span class="w"> </span>--out-dir<span class="w"> </span>calibrations/sdfvd<span class="w"> </span>--report<span class="w"> </span>results/calibration_sdfvd.json
+</code></pre></div>
+<p>The script resumes: models already in <code>--out</code> are skipped. To use more of a large GPU, run
+several copies with disjoint <code>--models</code> lists and separate <code>--out</code> files, then merge their
+<code>models</code> and <code>scores</code> entries. The metrics are unchanged.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../leaderboard/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Leaderboard">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Leaderboard
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../benchmark-audiovisual/" class="md-footer__link md-footer__link--next" aria-label="Next: Audiovisual">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Audiovisual
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      All bundled models and weights are under commercially usable licenses.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.indexes", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit", "toc.follow"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>
