@@ -14,6 +14,20 @@ to a calibrated, monitored detection service on your own infrastructure or any m
 - **Run it** as an API and web console: locally, on Kubernetes, or on AWS, Google Cloud and
   Azure with one command or one click. Monitor it live.
 
+## How it works
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/diagrams/architecture-dark.svg">
+  <img alt="How ForensiX works: images, video and audio come in through the Python API, HTTP API or web console. The engine prepares the media, runs detectors, optionally fuses their scores and calibrates them, while provenance checks read C2PA credentials, watermarks and metadata. The result is a verdict with a probability, label, confidence and evidence." src="images/diagrams/architecture-light.svg" width="100%">
+</picture>
+
+## From data to production
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/diagrams/lifecycle-dark.svg">
+  <img alt="From data to production: measure on your data, adapt with fine-tuning or LoRA, calibrate, audit fairness, deploy and monitor. Drift or an accuracy drop leads back to recalibration or retraining." src="images/diagrams/lifecycle-light.svg" width="100%">
+</picture>
+
 These pages are for engineers who build ForensiX into their products and pipelines. The
 [top-level README](../README.md) is the model reference: per-model papers, licenses,
 preprocessing details and parity checks against upstream code.

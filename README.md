@@ -39,7 +39,24 @@ model and weight is under a commercially usable license.
   results, and comes with a web console, Prometheus metrics, Docker and Kubernetes manifests, and
   [one-command or one-click deployment](docs/cloud.md#managed-clouds) to AWS, Google Cloud and Azure.
 
+## How it works
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/diagrams/architecture-dark.svg">
+  <img alt="How ForensiX works: images, video and audio come in through the Python API, HTTP API or web console. The engine prepares the media, runs detectors, optionally fuses their scores and calibrates them, while provenance checks read C2PA credentials, watermarks and metadata. The result is a verdict with a probability, label, confidence and evidence." src="docs/images/diagrams/architecture-light.svg" width="100%">
+</picture>
+
+Every way in reaches the same engine. Detectors score what the media *looks and sounds* like,
+provenance reads what the file *proves* about itself, and calibration turns raw scores into
+probabilities and decisions with a known false-alarm rate. You get a verdict with its evidence,
+not just a number.
+
 ## From data to production
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/diagrams/lifecycle-dark.svg">
+  <img alt="From data to production: measure on your data, adapt with fine-tuning or LoRA, calibrate, audit fairness, deploy and monitor. Drift or an accuracy drop leads back to recalibration or retraining." src="docs/images/diagrams/lifecycle-light.svg" width="100%">
+</picture>
 
 | Stage | What you get | How |
 |---|---|---|
@@ -142,7 +159,14 @@ curl -F file=@clip.mp4 -F models=dfdet-clip,syncnet http://localhost:8000/v1/det
 
 Models stay loaded between requests, concurrent image and audio requests are batched, and results are cached by file hash. See [docs/server.md](docs/server.md). The server also hosts a web manager at `http://localhost:8000/ui/` for testing, loading, calibrating and monitoring models ([docs/ui.md](docs/ui.md)).
 
-Containers: `docker compose up -d --build` runs the server and manager locally, and `kubectl apply -k deploy/kubernetes/overlays/cpu` (or `gpu`) deploys a manager plus autoscaled inference replicas. See [docs/cloud.md](docs/cloud.md). Each cloud deploys with one command or one click (a GitHub Actions workflow):
+Containers: `docker compose up -d --build` runs the server and manager locally, and `kubectl apply -k deploy/kubernetes/overlays/cpu` (or `gpu`) deploys a manager plus autoscaled inference replicas. See [docs/cloud.md](docs/cloud.md).
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/diagrams/deployment-dark.svg">
+  <img alt="Deployment: a load balancer routes management paths to one manager and detection to autoscaled inference replicas; the manager writes and the replicas read shared storage. Runs on Docker Compose, Kubernetes, AWS, Google Cloud and Azure." src="docs/images/diagrams/deployment-light.svg" width="100%">
+</picture>
+
+Each cloud deploys with one command or one click (a GitHub Actions workflow):
 
 | Cloud | Command | Guide |
 |---|---|---|

@@ -28,7 +28,7 @@ ROOT_PAGES = {  # repository file -> page in the site
     "physics_benchmark.md": "reference/benchmark-physics.md",
 }
 SOURCE_OF = {page: repo_file for repo_file, page in ROOT_PAGES.items()}
-LINK = re.compile(r"(!?\[[^\]]*\]\()([^)\s]+)(\))|(<img\s[^>]*?src=\")([^\"]+)(\")")
+LINK = re.compile(r"(!?\[[^\]]*\]\()([^)\s]+)(\))|(<(?:img\s[^>]*?src|source\s[^>]*?srcset)=\")([^\"]+)(\")")
 FENCE = re.compile(r"^(```|~~~)")
 
 

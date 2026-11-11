@@ -86,18 +86,14 @@ kubectl -n forensix get pods -w
 
 ### What gets deployed
 
-```text
-                     Ingress (one host, TLS)
-        ┌───────────────────┴─────────────────────────┐
-  /ui /docs /v1/datasets /v1/calibrations        /v1/detect and everything else
-  /v1/jobs /v1/identities /v1/models ...                    │
-        │                                                    │
-  forensix-manager (1 replica, Recreate)      forensix-inference (2–10 replicas, HPA)
-  admin_endpoints on, UI on                   admin_endpoints off, UI off
-        │   writes                                   │   reads
-        └──────────────► PVC forensix-data (RWX) ◄───┘
-                         calibrations, datasets, galleries
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/diagrams/deployment-dark.svg">
+  <img alt="Deployment: a load balancer routes management paths to one manager and detection to autoscaled inference replicas; the manager writes and the replicas read shared storage. Runs on Docker Compose, Kubernetes, AWS, Google Cloud and Azure." src="images/diagrams/deployment-light.svg" width="100%">
+</picture>
+
+On Kubernetes the shared storage is a ReadWriteMany volume (Filestore on GKE, EFS on EKS, Azure
+Files on AKS). On ECS it's EFS; on Cloud Run, a Cloud Storage bucket; on Container Apps, an Azure
+Files share.
 
 - **The manager** owns the web UI, dataset uploads, calibration jobs and identity enrollment.
   It runs as a single replica, so shared state has exactly one writer.
