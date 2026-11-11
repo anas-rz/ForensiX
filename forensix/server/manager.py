@@ -266,9 +266,11 @@ class ModelManager:
                 if not identity:
                     raise ValueError(f"{name} needs an identity to check against")
                 with entry.lock:
+                    start = time.perf_counter()  # time the work, not the wait for the lock
                     pred = entry.detector.predict(path, identity=identity)
             else:
                 with entry.lock:
+                    start = time.perf_counter()
                     pred = entry.detector.predict(path)
         except Exception:
             entry.errors += 1
