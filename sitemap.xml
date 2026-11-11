@@ -9,6 +9,14 @@
          <lastmod>2026-11-11</lastmod>
     </url>
     <url>
+         <loc>https://anas-rz.github.io/ForensiX/aws/</loc>
+         <lastmod>2026-11-11</lastmod>
+    </url>
+    <url>
+         <loc>https://anas-rz.github.io/ForensiX/azure/</loc>
+         <lastmod>2026-11-11</lastmod>
+    </url>
+    <url>
          <loc>https://anas-rz.github.io/ForensiX/calibration/</loc>
          <lastmod>2026-11-11</lastmod>
     </url>
@@ -26,6 +34,10 @@
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/fairness/</loc>
+         <lastmod>2026-11-11</lastmod>
+    </url>
+    <url>
+         <loc>https://anas-rz.github.io/ForensiX/gcp/</loc>
          <lastmod>2026-11-11</lastmod>
     </url>
     <url>
@@ -65,6 +77,10 @@
          <lastmod>2026-11-11</lastmod>
     </url>
     <url>
+         <loc>https://anas-rz.github.io/ForensiX/guides/finetuning/</loc>
+         <lastmod>2026-11-11</lastmod>
+    </url>
+    <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/identity/</loc>
          <lastmod>2026-11-11</lastmod>
     </url>
@@ -78,6 +94,10 @@
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/licensing/</loc>
+         <lastmod>2026-11-11</lastmod>
+    </url>
+    <url>
+         <loc>https://anas-rz.github.io/ForensiX/guides/peft/</loc>
          <lastmod>2026-11-11</lastmod>
     </url>
     <url>

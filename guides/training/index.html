@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://anas-rz.github.io/ForensiX/guides/training/">
       
       
-        <link rel="prev" href="../physics/">
+        <link rel="prev" href="../peft/">
       
       
         <link rel="next" href="../extending/">
@@ -670,6 +670,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -845,6 +849,62 @@
     
   
     Physics forensics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../finetuning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning on your data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../peft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameter-efficient fine-tuning (PEFT)
   
 
     
@@ -1308,6 +1368,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
     
     
@@ -1368,6 +1434,90 @@
     
   
     Docker, Kubernetes and cloud
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../aws/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AWS (ECS and EKS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Google Cloud (Cloud Run and GKE)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../azure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure (Container Apps and AKS)
   
 
     
@@ -1891,6 +2041,8 @@
 
 
 <h1 id="training-models">Training models<a class="headerlink" href="#training-models" title="Permanent link">&para;</a></h1>
+<p>To adapt a <em>pretrained</em> detector (image, audio, or the GenD video models) to your own data, see
+<a href="../finetuning/">Fine-tuning on your data</a>. This page covers the models that ship without weights.</p>
 <p>Most ForensiX models ship with pretrained weights. Five ship without, because no commercially
 usable weights exist and ForensiX trains its own:</p>
 <table>
@@ -2094,7 +2246,7 @@ held-out sets by person, so held-out results measure unseen people.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../physics/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Physics forensics">
+          <a href="../peft/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Parameter-efficient fine-tuning (PEFT)">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2104,7 +2256,7 @@ held-out sets by person, so held-out results measure unseen people.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Physics forensics
+                Parameter-efficient fine-tuning (PEFT)
               </div>
             </div>
           </a>

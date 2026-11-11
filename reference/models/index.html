@@ -668,6 +668,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -840,6 +844,62 @@
     
   
     Physics forensics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/finetuning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning on your data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/peft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameter-efficient fine-tuning (PEFT)
   
 
     
@@ -1168,6 +1228,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
     
     
@@ -1228,6 +1294,90 @@
     
   
     Docker, Kubernetes and cloud
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../aws/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AWS (ECS and EKS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Google Cloud (Cloud Run and GKE)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../azure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure (Container Apps and AKS)
   
 
     
@@ -1569,6 +1719,17 @@
     <span class="md-ellipsis">
       
         Evaluation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fine-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fine-tuning
       
     </span>
   </a>
@@ -2046,6 +2207,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#fine-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fine-tuning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#calibration" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2187,7 +2359,33 @@
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>curl<span class="w"> </span>-F<span class="w"> </span><span class="nv">file</span><span class="o">=</span>@clip.mp4<span class="w"> </span>-F<span class="w"> </span><span class="nv">models</span><span class="o">=</span>dfdet-clip,syncnet<span class="w"> </span>http://localhost:8000/v1/detect
 </code></pre></div>
 <p>Models stay loaded between requests, concurrent image and audio requests are batched, and results are cached by file hash. See <a href="../../server/">docs/server.md</a>. The server also hosts a web manager at <code>http://localhost:8000/ui/</code> for testing, loading, calibrating and monitoring models (<a href="../../ui/">docs/ui.md</a>).</p>
-<p>Containers: <code>docker compose up -d --build</code> runs the server and manager locally, and <code>kubectl apply -k deploy/kubernetes/overlays/cpu</code> (or <code>gpu</code>) deploys a manager plus autoscaled inference replicas. See <a href="../../cloud/">docs/cloud.md</a>. Benchmark results are in <a href="../benchmark-video-image/">benchmark.md</a>.</p>
+<p>Containers: <code>docker compose up -d --build</code> runs the server and manager locally, and <code>kubectl apply -k deploy/kubernetes/overlays/cpu</code> (or <code>gpu</code>) deploys a manager plus autoscaled inference replicas. See <a href="../../cloud/">docs/cloud.md</a>. Each cloud deploys with one command or one click (a GitHub Actions workflow):</p>
+<table>
+<thead>
+<tr>
+<th>Cloud</th>
+<th>Command</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AWS</td>
+<td><code>deploy/aws/deploy.sh ecs</code> (or <code>ecs-gpu</code>, <code>eks</code>, <code>eks-gpu</code>)</td>
+<td><a href="../../aws/">docs/aws.md</a></td>
+</tr>
+<tr>
+<td>Google Cloud</td>
+<td><code>deploy/gcp/deploy.sh cloudrun</code> (or <code>cloudrun-gpu</code>, <code>gke</code>, <code>gke-gpu</code>)</td>
+<td><a href="../../gcp/">docs/gcp.md</a></td>
+</tr>
+<tr>
+<td>Azure</td>
+<td><code>deploy/azure/deploy.sh aca</code> (or <code>aca-gpu</code>, <code>aks</code>, <code>aks-gpu</code>), or <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fanas-rz%2FForensiX%2Fmain%2Fdeploy%2Fazure%2Fcontainerapps.json"><img alt="Deploy to Azure" src="https://aka.ms/deploytoazurebutton" /></a></td>
+<td><a href="../../azure/">docs/azure.md</a></td>
+</tr>
+</tbody>
+</table>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">forensix</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
@@ -3052,6 +3250,13 @@
 <a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="c1"># likewise --modality audio / --modality image</span>
 </code></pre></div>
 <p>The script finds the metadata CSV's file and label columns by itself and prints them; <code>--file-col</code> and <code>--label-col</code> override that. Media a model can't decode is skipped and counted. Audio formats libsndfile can't read (e.g. m4a) are decoded with ffmpeg.</p>
+<h2 id="fine-tuning">Fine-tuning<a class="headerlink" href="#fine-tuning" title="Permanent link">&para;</a></h2>
+<p>Adapt a pretrained detector to your media, then calibrate, package and deploy it to AWS, Google Cloud or Azure (<a href="../../guides/finetuning/">guide</a>):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>python<span class="w"> </span>-m<span class="w"> </span>forensix.finetuning<span class="w"> </span>dfdet-clip<span class="w"> </span>--dataset<span class="w"> </span>train.zip<span class="w"> </span>--out<span class="w"> </span>models/dfdet-clip-ft.safetensors<span class="w"> </span>--mode<span class="w"> </span>norm<span class="w"> </span>--device<span class="w"> </span>cuda
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"dfdet-clip"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"models/dfdet-clip-ft.safetensors"</span><span class="p">)</span>
+</code></pre></div>
+<p>For the large CLIP/ViT models, <code>--mode lora</code> trains LoRA adapters with Hugging Face PEFT (<code>pip install peft</code>): about 1% of the parameters, a checkpoint of a few MB, merged at load so serving needs no PEFT and runs at full speed (<a href="../../guides/peft/">PEFT guide</a>).</p>
 <h2 id="calibration">Calibration<a class="headerlink" href="#calibration" title="Permanent link">&para;</a></h2>
 <p>A detector's <code>fake_prob</code> and default threshold come from its training data, and they often don't hold on other media: on SDFVD, most detectors call almost every face swap real at 0.5 (<a href="../benchmark-video-image/">benchmark.md</a>). <code>forensix.calibration</code> fits a small JSON table on labelled scores of your own media and applies it on top of any detector. Weights and preprocessing are unchanged. Three tools are fitted together:</p>
 <ul>
@@ -3059,31 +3264,31 @@
 <li><strong>Conformal threshold:</strong> fitted on real media only. A new real input is flagged with probability at most <code>alpha</code>, as long as it's like the calibration reals (exchangeable). It needs no fakes, so the guarantee holds against new generators.</li>
 <li><strong>Conformal p-values and prediction sets:</strong> <code>{"fake"}</code>, <code>{"real"}</code>, both (uncertain) or neither (unlike either class). Each class is covered with probability at least 1 − <code>alpha</code>.</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"gend"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="n">calibration</span><span class="o">=</span><span class="s2">"calibrations/sdfvd/gend.json"</span><span class="p">)</span>
-<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>
-<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">is_fake</span>               <span class="c1"># calibrated probability; conformal decision (rule="probability" for &gt;= 0.5)</span>
-<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"prediction_set"</span><span class="p">],</span> <span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"p_real"</span><span class="p">],</span> <span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"raw_score"</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"gend"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="n">calibration</span><span class="o">=</span><span class="s2">"calibrations/sdfvd/gend.json"</span><span class="p">)</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="n">pred</span><span class="o">.</span><span class="n">fake_prob</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">is_fake</span>               <span class="c1"># calibrated probability; conformal decision (rule="probability" for &gt;= 0.5)</span>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"prediction_set"</span><span class="p">],</span> <span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"p_real"</span><span class="p">],</span> <span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"raw_score"</span><span class="p">]</span>
 </code></pre></div>
 <p><strong>Pipeline.</strong> <code>scripts/recalibrate.py</code> works on per-file score CSVs, such as the <code>--scores-out</code> of <code>eval_video_folder.py</code>, so models are never re-run:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># 1. fit: cross-validated before/after report, then one table per model</span>
-<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>python<span class="w"> </span>scripts/recalibrate.py<span class="w"> </span>fit<span class="w"> </span>--scores<span class="w"> </span>results/sdfvd_scores.csv<span class="w"> </span>--group-regex<span class="w"> </span><span class="s1">'(\d+)'</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">    </span>--alpha<span class="w"> </span><span class="m">0</span>.05<span class="w"> </span>--out-dir<span class="w"> </span>calibrations/sdfvd<span class="w"> </span>--report<span class="w"> </span>results/calibration_sdfvd.json
-<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="c1"># 2. check new labelled media for drift (exit status 3 if any model needs recalibrating)</span>
-<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>python<span class="w"> </span>scripts/recalibrate.py<span class="w"> </span>check<span class="w"> </span>--calibration-dir<span class="w"> </span>calibrations/sdfvd<span class="w"> </span>--scores<span class="w"> </span>new_scores.csv
-<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="c1"># 3. refit on stored + new scores, newest first, at most --window per class; old tables go to history/</span>
-<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>python<span class="w"> </span>scripts/recalibrate.py<span class="w"> </span>update<span class="w"> </span>--calibration-dir<span class="w"> </span>calibrations/sdfvd<span class="w"> </span>--scores<span class="w"> </span>new_scores.csv<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="w">    </span>--window<span class="w"> </span><span class="m">2000</span><span class="w"> </span>--only-if-drift
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># 1. fit: cross-validated before/after report, then one table per model</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>python<span class="w"> </span>scripts/recalibrate.py<span class="w"> </span>fit<span class="w"> </span>--scores<span class="w"> </span>results/sdfvd_scores.csv<span class="w"> </span>--group-regex<span class="w"> </span><span class="s1">'(\d+)'</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span>--alpha<span class="w"> </span><span class="m">0</span>.05<span class="w"> </span>--out-dir<span class="w"> </span>calibrations/sdfvd<span class="w"> </span>--report<span class="w"> </span>results/calibration_sdfvd.json
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="c1"># 2. check new labelled media for drift (exit status 3 if any model needs recalibrating)</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>python<span class="w"> </span>scripts/recalibrate.py<span class="w"> </span>check<span class="w"> </span>--calibration-dir<span class="w"> </span>calibrations/sdfvd<span class="w"> </span>--scores<span class="w"> </span>new_scores.csv
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="c1"># 3. refit on stored + new scores, newest first, at most --window per class; old tables go to history/</span>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>python<span class="w"> </span>scripts/recalibrate.py<span class="w"> </span>update<span class="w"> </span>--calibration-dir<span class="w"> </span>calibrations/sdfvd<span class="w"> </span>--scores<span class="w"> </span>new_scores.csv<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="w">    </span>--window<span class="w"> </span><span class="m">2000</span><span class="w"> </span>--only-if-drift
 </code></pre></div>
 <p>To recalibrate as fakes change, score each new batch of labelled media (e.g. weekly) with <code>eval_video_folder.py</code> and run <code>update --only-if-drift</code> on it. Do this from a scheduler, CI job or notebook. The drift check tests the false-alarm rate on new reals against <code>alpha</code> (binomial), the detection rate on new fakes against the calibration fakes (Fisher exact) and both score distributions (KS). <code>--group-regex</code> keeps related files, such as a real clip and its face swap, in the same fold.</p>
 <p><strong>Limits.</strong> Calibration can't fix ranking: AUC is unchanged by any monotone map. When a new generator's fakes score like reals, <code>check</code> reports the drop in detection rate, but <code>update</code> can only trade false alarms for detections. That needs a retrained or different detector. Small calibration sets give noisy tables: the conformal threshold needs at least 1/<code>alpha</code> − 1 real scores (19 for <code>alpha</code> = 0.05), and more for a stable one.</p>
 <h2 id="fusion">Fusion<a class="headerlink" href="#fusion" title="Permanent link">&para;</a></h2>
 <p><code>forensix.fusion</code> combines several detectors into one, using a logistic regression on their scores. Detectors from different families look for different traces, so one often catches what another misses. Fit the fusion on score CSVs from one split, test it on another, then load it as a single detector:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>python<span class="w"> </span>scripts/fit_fusion.py<span class="w"> </span>--fit<span class="w"> </span>results/lavdf/lavdf_dev_scores.csv<span class="w"> </span>--test<span class="w"> </span>results/lavdf/lavdf_test_scores.csv<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">    </span>--members<span class="w"> </span>stablesyncnet:clip_score<span class="o">=</span>max-window<span class="w"> </span>syncnet:clip_score<span class="o">=</span>max-window<span class="w"> </span>--out<span class="w"> </span>fusions/lavdf_av.json
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>python<span class="w"> </span>scripts/fit_fusion.py<span class="w"> </span>--fit<span class="w"> </span>results/lavdf/lavdf_dev_scores.csv<span class="w"> </span>--test<span class="w"> </span>results/lavdf/lavdf_test_scores.csv<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">    </span>--members<span class="w"> </span>stablesyncnet:clip_score<span class="o">=</span>max-window<span class="w"> </span>syncnet:clip_score<span class="o">=</span>max-window<span class="w"> </span>--out<span class="w"> </span>fusions/lavdf_av.json
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load_fusion</span><span class="p">(</span><span class="s2">"fusions/lavdf_av.json"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
-<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>
-<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"members"</span><span class="p">]</span>   <span class="c1"># each member's score and its contribution to the fused logit</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load_fusion</span><span class="p">(</span><span class="s2">"fusions/lavdf_av.json"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"clip.mp4"</span><span class="p">)</span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"members"</span><span class="p">]</span>   <span class="c1"># each member's score and its contribution to the fused logit</span>
 </code></pre></div>
 <ul>
 <li><strong>Inputs:</strong> probabilities enter as their logit and anomaly scores as they are, all standardized on the fitting data. A member that fails on an input (no face, too short) is treated as average and listed in <code>details</code>.</li>
@@ -3105,11 +3310,11 @@
 - <strong>Coverage:</strong>
   - Adapters exist for image detectors (on images, or videos as the mean of 8 frames), audio detectors, and the GenD face pipeline (<code>gend</code>, <code>gend-pe</code>, <code>dfdet-clip</code>).
   - Other detectors fall back to <code>predict</code>. CPU (physics) detectors run in a process pool.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>gend<span class="w"> </span>--inputs<span class="w"> </span>/data/videos<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span>--precision<span class="w"> </span>bf16<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">    </span>--batch-size<span class="w"> </span><span class="m">64</span><span class="w"> </span>--workers<span class="w"> </span><span class="m">8</span><span class="w"> </span>--out<span class="w"> </span>scores/gend.jsonl<span class="w">            </span><span class="c1"># resumable: rerun to continue</span>
-<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>univfd<span class="w"> </span>--inputs<span class="w"> </span>list.txt<span class="w"> </span>--gpus<span class="w"> </span><span class="m">0</span>,1,2,3<span class="w"> </span>--out<span class="w"> </span>scores/univfd.jsonl<span class="w">   </span><span class="c1"># one process per GPU</span>
-<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>univfd<span class="w"> </span>--inputs<span class="w"> </span>/data/videos<span class="w"> </span>--precision<span class="w"> </span>bf16<span class="w"> </span>--compare-fp32<span class="w"> </span><span class="m">200</span><span class="w"> </span>--out<span class="w"> </span>/dev/null<span class="w">  </span><span class="c1"># check bf16 drift first</span>
-<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>gend<span class="w"> </span>--inputs<span class="w"> </span>/data/videos<span class="w"> </span>--calibration<span class="w"> </span>calibrations/sdfvd/gend.json<span class="w"> </span>--out<span class="w"> </span>scores/gend.jsonl
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>gend<span class="w"> </span>--inputs<span class="w"> </span>/data/videos<span class="w"> </span>--device<span class="w"> </span>cuda<span class="w"> </span>--precision<span class="w"> </span>bf16<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="w">    </span>--batch-size<span class="w"> </span><span class="m">64</span><span class="w"> </span>--workers<span class="w"> </span><span class="m">8</span><span class="w"> </span>--out<span class="w"> </span>scores/gend.jsonl<span class="w">            </span><span class="c1"># resumable: rerun to continue</span>
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>univfd<span class="w"> </span>--inputs<span class="w"> </span>list.txt<span class="w"> </span>--gpus<span class="w"> </span><span class="m">0</span>,1,2,3<span class="w"> </span>--out<span class="w"> </span>scores/univfd.jsonl<span class="w">   </span><span class="c1"># one process per GPU</span>
+<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>univfd<span class="w"> </span>--inputs<span class="w"> </span>/data/videos<span class="w"> </span>--precision<span class="w"> </span>bf16<span class="w"> </span>--compare-fp32<span class="w"> </span><span class="m">200</span><span class="w"> </span>--out<span class="w"> </span>/dev/null<span class="w">  </span><span class="c1"># check bf16 drift first</span>
+<a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>python<span class="w"> </span>scripts/batch_infer.py<span class="w"> </span>--model<span class="w"> </span>gend<span class="w"> </span>--inputs<span class="w"> </span>/data/videos<span class="w"> </span>--calibration<span class="w"> </span>calibrations/sdfvd/gend.json<span class="w"> </span>--out<span class="w"> </span>scores/gend.jsonl
 </code></pre></div>
 <p>Output is one JSON line per input: score, label, per-segment scores, and with <code>--calibration</code> also the calibrated probability, decision and prediction set. Errors are recorded per input and don't stop the run.</p>
 <p><strong>Throughput on one NVIDIA L4</strong></p>
@@ -3295,88 +3500,88 @@
 </tbody>
 </table>
 <h2 id="structure">Structure<a class="headerlink" href="#structure" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>forensix/
-<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>├── __init__.py        # load / download / list_models / info
-<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>├── registry.py        # ModelSpec + registry
-<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>├── hub.py             # weight download, cache, checksum
-<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>├── metrics.py         # EER (ASVspoof-compatible), ROC-AUC, AP
-<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>├── calibration.py     # Platt scaling, conformal thresholds and prediction sets, drift checks
-<a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a>├── fusion.py          # fuse several detectors' scores into one (logistic regression)
-<a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>├── batch.py           # BatchRunner: batched, multi-worker GPU inference (image, audio, GenD; others via predict)
-<a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a>├── kernels.py         # fused uint8 -&gt; normalized CHW kernel (Triton, bit-exact to torchvision)
-<a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a>├── types.py           # Prediction
-<a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a>├── audio/
-<a id="__codelineno-30-12" name="__codelineno-30-12" href="#__codelineno-30-12"></a>│   ├── io.py          # loading, mono, resampling
-<a id="__codelineno-30-13" name="__codelineno-30-13" href="#__codelineno-30-13"></a>│   ├── detector.py    # AudioDetector base (windowing, batching)
-<a id="__codelineno-30-14" name="__codelineno-30-14" href="#__codelineno-30-14"></a>│   ├── xlsr.py        # shared XLS-R front end (HF) + fairseq checkpoint converter
-<a id="__codelineno-30-15" name="__codelineno-30-15" href="#__codelineno-30-15"></a>│   ├── aasist/        # AASIST, AASIST-L
-<a id="__codelineno-30-16" name="__codelineno-30-16" href="#__codelineno-30-16"></a>│   ├── nes2net_x/     # Nes2Net-X (2021, In-the-Wild)
-<a id="__codelineno-30-17" name="__codelineno-30-17" href="#__codelineno-30-17"></a>│   ├── rawgat_st/     # RawGAT-ST
-<a id="__codelineno-30-18" name="__codelineno-30-18" href="#__codelineno-30-18"></a>│   └── xlsr_aasist/   # XLS-R + AASIST (LA, DF)
-<a id="__codelineno-30-19" name="__codelineno-30-19" href="#__codelineno-30-19"></a>├── image/
-<a id="__codelineno-30-20" name="__codelineno-30-20" href="#__codelineno-30-20"></a>│   ├── io.py          # image loading (RGB, no resizing)
-<a id="__codelineno-30-21" name="__codelineno-30-21" href="#__codelineno-30-21"></a>│   ├── detector.py    # ImageDetector base (batching)
-<a id="__codelineno-30-22" name="__codelineno-30-22" href="#__codelineno-30-22"></a>│   ├── clip.py        # shared OpenAI CLIP ViT-L/14 backbone (HF)
-<a id="__codelineno-30-23" name="__codelineno-30-23" href="#__codelineno-30-23"></a>│   ├── clipdet/       # GRIP CLIP-based detector (OpenCLIP)
-<a id="__codelineno-30-24" name="__codelineno-30-24" href="#__codelineno-30-24"></a>│   ├── commfor/       # Community Forensics (384, 224)
-<a id="__codelineno-30-25" name="__codelineno-30-25" href="#__codelineno-30-25"></a>│   ├── rine/          # RINE (ProGAN 4-class, LDM)
-<a id="__codelineno-30-26" name="__codelineno-30-26" href="#__codelineno-30-26"></a>│   ├── safe/          # SAFE (reimplemented network + wavelet front end)
-<a id="__codelineno-30-27" name="__codelineno-30-27" href="#__codelineno-30-27"></a>│   └── univfd/        # UnivFD
-<a id="__codelineno-30-28" name="__codelineno-30-28" href="#__codelineno-30-28"></a>├── video/
-<a id="__codelineno-30-29" name="__codelineno-30-29" href="#__codelineno-30-29"></a>│   ├── io.py          # evenly spaced frame reading (OpenCV)
-<a id="__codelineno-30-30" name="__codelineno-30-30" href="#__codelineno-30-30"></a>│   ├── detector.py    # VideoDetector base
-<a id="__codelineno-30-31" name="__codelineno-30-31" href="#__codelineno-30-31"></a>│   ├── faces.py       # 5-point face alignment (GenD template)
-<a id="__codelineno-30-32" name="__codelineno-30-32" href="#__codelineno-30-32"></a>│   ├── mtcnn/         # MTCNN face detector (vendored, MIT)
-<a id="__codelineno-30-33" name="__codelineno-30-33" href="#__codelineno-30-33"></a>│   ├── retinaface/    # RetinaFace-ResNet50 detector (vendored, MIT) + ArcFace alignment
-<a id="__codelineno-30-34" name="__codelineno-30-34" href="#__codelineno-30-34"></a>│   ├── dfdc_selim/    # DFDC winner (7 x EfficientNet-B7)
-<a id="__codelineno-30-35" name="__codelineno-30-35" href="#__codelineno-30-35"></a>│   ├── dfdc_wm/       # DFDC 2nd place (WS-DAN + Xception)
-<a id="__codelineno-30-36" name="__codelineno-30-36" href="#__codelineno-30-36"></a>│   └── gend/          # GenD (CLIP, Perception Encoder) + its predecessor dfdet-clip
-<a id="__codelineno-30-37" name="__codelineno-30-37" href="#__codelineno-30-37"></a>├── audiovisual/
-<a id="__codelineno-30-38" name="__codelineno-30-38" href="#__codelineno-30-38"></a>│   ├── io.py          # 25 fps frames + 16 kHz audio via ffmpeg
-<a id="__codelineno-30-39" name="__codelineno-30-39" href="#__codelineno-30-39"></a>│   ├── facetrack.py   # face tracks and talking-face crops (syncnet_python-style)
-<a id="__codelineno-30-40" name="__codelineno-30-40" href="#__codelineno-30-40"></a>│   ├── avad/          # AVAD (self-supervised A/V anomaly detection)
-<a id="__codelineno-30-41" name="__codelineno-30-41" href="#__codelineno-30-41"></a>│   ├── syncnet/       # SyncNet (lip-sync offset and confidence)
-<a id="__codelineno-30-42" name="__codelineno-30-42" href="#__codelineno-30-42"></a>│   ├── stablesyncnet/ # LatentSync's StableSyncNet (sync probability)
-<a id="__codelineno-30-43" name="__codelineno-30-43" href="#__codelineno-30-43"></a>│   ├── avcons/        # AV consistency learned from real videos (ForensiX)
-<a id="__codelineno-30-44" name="__codelineno-30-44" href="#__codelineno-30-44"></a>│   └── avid/          # voice-face identity consistency (ForensiX; ECAPA-TDNN + DINOv2)
-<a id="__codelineno-30-45" name="__codelineno-30-45" href="#__codelineno-30-45"></a>├── identity/          # reference-based: enrollment gallery, frame sampling
-<a id="__codelineno-30-46" name="__codelineno-30-46" href="#__codelineno-30-46"></a>│   ├── face.py        # id-face (SFace + YuNet)
-<a id="__codelineno-30-47" name="__codelineno-30-47" href="#__codelineno-30-47"></a>│   ├── voice.py       # id-voice (ECAPA-TDNN speaker verification)
-<a id="__codelineno-30-48" name="__codelineno-30-48" href="#__codelineno-30-48"></a>│   └── motion/        # id-motion: motion features, temporal ID network, training
-<a id="__codelineno-30-49" name="__codelineno-30-49" href="#__codelineno-30-49"></a>└── physics/           # physdf
-<a id="__codelineno-30-50" name="__codelineno-30-50" href="#__codelineno-30-50"></a>    ├── io.py          # full-frame-rate video reading
-<a id="__codelineno-30-51" name="__codelineno-30-51" href="#__codelineno-30-51"></a>    ├── face/          # MediaPipe tracker, skin regions, ICT-FaceKit model + fitting
-<a id="__codelineno-30-52" name="__codelineno-30-52" href="#__codelineno-30-52"></a>    ├── signals/       # rPPG (POS, CHROM); speech: YIN, jitter, HNR, LPC formants, VTL; room: pause VAD, band spectra, blind RT60
-<a id="__codelineno-30-53" name="__codelineno-30-53" href="#__codelineno-30-53"></a>    ├── base.py        # constraint scoring and evidence
-<a id="__codelineno-30-54" name="__codelineno-30-54" href="#__codelineno-30-54"></a>    ├── priors.py      # learned priors: fitting and loading
-<a id="__codelineno-30-55" name="__codelineno-30-55" href="#__codelineno-30-55"></a>    ├── graph/         # physdf graph: schema, node features, GNN, training and residuals
-<a id="__codelineno-30-56" name="__codelineno-30-56" href="#__codelineno-30-56"></a>    ├── physdf.py      # physdf
-<a id="__codelineno-30-57" name="__codelineno-30-57" href="#__codelineno-30-57"></a>    ├── report.py      # forensic report and its verification
-<a id="__codelineno-30-58" name="__codelineno-30-58" href="#__codelineno-30-58"></a>    ├── calibration.py # measuring constraints on media; scoring stored measurements
-<a id="__codelineno-30-59" name="__codelineno-30-59" href="#__codelineno-30-59"></a>    ├── bloodflow.py   # phys-bloodflow
-<a id="__codelineno-30-60" name="__codelineno-30-60" href="#__codelineno-30-60"></a>    ├── motion.py      # phys-motion
-<a id="__codelineno-30-61" name="__codelineno-30-61" href="#__codelineno-30-61"></a>    ├── lighting.py    # phys-lighting
-<a id="__codelineno-30-62" name="__codelineno-30-62" href="#__codelineno-30-62"></a>    ├── voice.py       # phys-voice
-<a id="__codelineno-30-63" name="__codelineno-30-63" href="#__codelineno-30-63"></a>    └── room.py        # phys-room
-<a id="__codelineno-30-64" name="__codelineno-30-64" href="#__codelineno-30-64"></a>scripts/
-<a id="__codelineno-30-65" name="__codelineno-30-65" href="#__codelineno-30-65"></a>├── download_weights.py
-<a id="__codelineno-30-66" name="__codelineno-30-66" href="#__codelineno-30-66"></a>├── eval_asvspoof2019_la.py
-<a id="__codelineno-30-67" name="__codelineno-30-67" href="#__codelineno-30-67"></a>├── eval_video_folder.py
-<a id="__codelineno-30-68" name="__codelineno-30-68" href="#__codelineno-30-68"></a>├── eval_lavdf.py
-<a id="__codelineno-30-69" name="__codelineno-30-69" href="#__codelineno-30-69"></a>├── eval_sasv.py
-<a id="__codelineno-30-70" name="__codelineno-30-70" href="#__codelineno-30-70"></a>├── recalibrate.py
-<a id="__codelineno-30-71" name="__codelineno-30-71" href="#__codelineno-30-71"></a>├── fit_fusion.py
-<a id="__codelineno-30-72" name="__codelineno-30-72" href="#__codelineno-30-72"></a>├── batch_infer.py
-<a id="__codelineno-30-73" name="__codelineno-30-73" href="#__codelineno-30-73"></a>├── bench_throughput.py
-<a id="__codelineno-30-74" name="__codelineno-30-74" href="#__codelineno-30-74"></a>├── eval_deepfake_eval_2024.py
-<a id="__codelineno-30-75" name="__codelineno-30-75" href="#__codelineno-30-75"></a>├── calibrate_physics.py
-<a id="__codelineno-30-76" name="__codelineno-30-76" href="#__codelineno-30-76"></a>├── train_physdf.py
-<a id="__codelineno-30-77" name="__codelineno-30-77" href="#__codelineno-30-77"></a>├── train_avcons.py
-<a id="__codelineno-30-78" name="__codelineno-30-78" href="#__codelineno-30-78"></a>├── train_avid.py
-<a id="__codelineno-30-79" name="__codelineno-30-79" href="#__codelineno-30-79"></a>├── eval_identity.py
-<a id="__codelineno-30-80" name="__codelineno-30-80" href="#__codelineno-30-80"></a>├── train_id_motion.py
-<a id="__codelineno-30-81" name="__codelineno-30-81" href="#__codelineno-30-81"></a>├── build_image_eval_set.py
-<a id="__codelineno-30-82" name="__codelineno-30-82" href="#__codelineno-30-82"></a>└── eval_image.py
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>forensix/
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>├── __init__.py        # load / download / list_models / info
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>├── registry.py        # ModelSpec + registry
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>├── hub.py             # weight download, cache, checksum
+<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>├── metrics.py         # EER (ASVspoof-compatible), ROC-AUC, AP
+<a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>├── calibration.py     # Platt scaling, conformal thresholds and prediction sets, drift checks
+<a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a>├── fusion.py          # fuse several detectors' scores into one (logistic regression)
+<a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a>├── batch.py           # BatchRunner: batched, multi-worker GPU inference (image, audio, GenD; others via predict)
+<a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a>├── kernels.py         # fused uint8 -&gt; normalized CHW kernel (Triton, bit-exact to torchvision)
+<a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a>├── types.py           # Prediction
+<a id="__codelineno-32-11" name="__codelineno-32-11" href="#__codelineno-32-11"></a>├── audio/
+<a id="__codelineno-32-12" name="__codelineno-32-12" href="#__codelineno-32-12"></a>│   ├── io.py          # loading, mono, resampling
+<a id="__codelineno-32-13" name="__codelineno-32-13" href="#__codelineno-32-13"></a>│   ├── detector.py    # AudioDetector base (windowing, batching)
+<a id="__codelineno-32-14" name="__codelineno-32-14" href="#__codelineno-32-14"></a>│   ├── xlsr.py        # shared XLS-R front end (HF) + fairseq checkpoint converter
+<a id="__codelineno-32-15" name="__codelineno-32-15" href="#__codelineno-32-15"></a>│   ├── aasist/        # AASIST, AASIST-L
+<a id="__codelineno-32-16" name="__codelineno-32-16" href="#__codelineno-32-16"></a>│   ├── nes2net_x/     # Nes2Net-X (2021, In-the-Wild)
+<a id="__codelineno-32-17" name="__codelineno-32-17" href="#__codelineno-32-17"></a>│   ├── rawgat_st/     # RawGAT-ST
+<a id="__codelineno-32-18" name="__codelineno-32-18" href="#__codelineno-32-18"></a>│   └── xlsr_aasist/   # XLS-R + AASIST (LA, DF)
+<a id="__codelineno-32-19" name="__codelineno-32-19" href="#__codelineno-32-19"></a>├── image/
+<a id="__codelineno-32-20" name="__codelineno-32-20" href="#__codelineno-32-20"></a>│   ├── io.py          # image loading (RGB, no resizing)
+<a id="__codelineno-32-21" name="__codelineno-32-21" href="#__codelineno-32-21"></a>│   ├── detector.py    # ImageDetector base (batching)
+<a id="__codelineno-32-22" name="__codelineno-32-22" href="#__codelineno-32-22"></a>│   ├── clip.py        # shared OpenAI CLIP ViT-L/14 backbone (HF)
+<a id="__codelineno-32-23" name="__codelineno-32-23" href="#__codelineno-32-23"></a>│   ├── clipdet/       # GRIP CLIP-based detector (OpenCLIP)
+<a id="__codelineno-32-24" name="__codelineno-32-24" href="#__codelineno-32-24"></a>│   ├── commfor/       # Community Forensics (384, 224)
+<a id="__codelineno-32-25" name="__codelineno-32-25" href="#__codelineno-32-25"></a>│   ├── rine/          # RINE (ProGAN 4-class, LDM)
+<a id="__codelineno-32-26" name="__codelineno-32-26" href="#__codelineno-32-26"></a>│   ├── safe/          # SAFE (reimplemented network + wavelet front end)
+<a id="__codelineno-32-27" name="__codelineno-32-27" href="#__codelineno-32-27"></a>│   └── univfd/        # UnivFD
+<a id="__codelineno-32-28" name="__codelineno-32-28" href="#__codelineno-32-28"></a>├── video/
+<a id="__codelineno-32-29" name="__codelineno-32-29" href="#__codelineno-32-29"></a>│   ├── io.py          # evenly spaced frame reading (OpenCV)
+<a id="__codelineno-32-30" name="__codelineno-32-30" href="#__codelineno-32-30"></a>│   ├── detector.py    # VideoDetector base
+<a id="__codelineno-32-31" name="__codelineno-32-31" href="#__codelineno-32-31"></a>│   ├── faces.py       # 5-point face alignment (GenD template)
+<a id="__codelineno-32-32" name="__codelineno-32-32" href="#__codelineno-32-32"></a>│   ├── mtcnn/         # MTCNN face detector (vendored, MIT)
+<a id="__codelineno-32-33" name="__codelineno-32-33" href="#__codelineno-32-33"></a>│   ├── retinaface/    # RetinaFace-ResNet50 detector (vendored, MIT) + ArcFace alignment
+<a id="__codelineno-32-34" name="__codelineno-32-34" href="#__codelineno-32-34"></a>│   ├── dfdc_selim/    # DFDC winner (7 x EfficientNet-B7)
+<a id="__codelineno-32-35" name="__codelineno-32-35" href="#__codelineno-32-35"></a>│   ├── dfdc_wm/       # DFDC 2nd place (WS-DAN + Xception)
+<a id="__codelineno-32-36" name="__codelineno-32-36" href="#__codelineno-32-36"></a>│   └── gend/          # GenD (CLIP, Perception Encoder) + its predecessor dfdet-clip
+<a id="__codelineno-32-37" name="__codelineno-32-37" href="#__codelineno-32-37"></a>├── audiovisual/
+<a id="__codelineno-32-38" name="__codelineno-32-38" href="#__codelineno-32-38"></a>│   ├── io.py          # 25 fps frames + 16 kHz audio via ffmpeg
+<a id="__codelineno-32-39" name="__codelineno-32-39" href="#__codelineno-32-39"></a>│   ├── facetrack.py   # face tracks and talking-face crops (syncnet_python-style)
+<a id="__codelineno-32-40" name="__codelineno-32-40" href="#__codelineno-32-40"></a>│   ├── avad/          # AVAD (self-supervised A/V anomaly detection)
+<a id="__codelineno-32-41" name="__codelineno-32-41" href="#__codelineno-32-41"></a>│   ├── syncnet/       # SyncNet (lip-sync offset and confidence)
+<a id="__codelineno-32-42" name="__codelineno-32-42" href="#__codelineno-32-42"></a>│   ├── stablesyncnet/ # LatentSync's StableSyncNet (sync probability)
+<a id="__codelineno-32-43" name="__codelineno-32-43" href="#__codelineno-32-43"></a>│   ├── avcons/        # AV consistency learned from real videos (ForensiX)
+<a id="__codelineno-32-44" name="__codelineno-32-44" href="#__codelineno-32-44"></a>│   └── avid/          # voice-face identity consistency (ForensiX; ECAPA-TDNN + DINOv2)
+<a id="__codelineno-32-45" name="__codelineno-32-45" href="#__codelineno-32-45"></a>├── identity/          # reference-based: enrollment gallery, frame sampling
+<a id="__codelineno-32-46" name="__codelineno-32-46" href="#__codelineno-32-46"></a>│   ├── face.py        # id-face (SFace + YuNet)
+<a id="__codelineno-32-47" name="__codelineno-32-47" href="#__codelineno-32-47"></a>│   ├── voice.py       # id-voice (ECAPA-TDNN speaker verification)
+<a id="__codelineno-32-48" name="__codelineno-32-48" href="#__codelineno-32-48"></a>│   └── motion/        # id-motion: motion features, temporal ID network, training
+<a id="__codelineno-32-49" name="__codelineno-32-49" href="#__codelineno-32-49"></a>└── physics/           # physdf
+<a id="__codelineno-32-50" name="__codelineno-32-50" href="#__codelineno-32-50"></a>    ├── io.py          # full-frame-rate video reading
+<a id="__codelineno-32-51" name="__codelineno-32-51" href="#__codelineno-32-51"></a>    ├── face/          # MediaPipe tracker, skin regions, ICT-FaceKit model + fitting
+<a id="__codelineno-32-52" name="__codelineno-32-52" href="#__codelineno-32-52"></a>    ├── signals/       # rPPG (POS, CHROM); speech: YIN, jitter, HNR, LPC formants, VTL; room: pause VAD, band spectra, blind RT60
+<a id="__codelineno-32-53" name="__codelineno-32-53" href="#__codelineno-32-53"></a>    ├── base.py        # constraint scoring and evidence
+<a id="__codelineno-32-54" name="__codelineno-32-54" href="#__codelineno-32-54"></a>    ├── priors.py      # learned priors: fitting and loading
+<a id="__codelineno-32-55" name="__codelineno-32-55" href="#__codelineno-32-55"></a>    ├── graph/         # physdf graph: schema, node features, GNN, training and residuals
+<a id="__codelineno-32-56" name="__codelineno-32-56" href="#__codelineno-32-56"></a>    ├── physdf.py      # physdf
+<a id="__codelineno-32-57" name="__codelineno-32-57" href="#__codelineno-32-57"></a>    ├── report.py      # forensic report and its verification
+<a id="__codelineno-32-58" name="__codelineno-32-58" href="#__codelineno-32-58"></a>    ├── calibration.py # measuring constraints on media; scoring stored measurements
+<a id="__codelineno-32-59" name="__codelineno-32-59" href="#__codelineno-32-59"></a>    ├── bloodflow.py   # phys-bloodflow
+<a id="__codelineno-32-60" name="__codelineno-32-60" href="#__codelineno-32-60"></a>    ├── motion.py      # phys-motion
+<a id="__codelineno-32-61" name="__codelineno-32-61" href="#__codelineno-32-61"></a>    ├── lighting.py    # phys-lighting
+<a id="__codelineno-32-62" name="__codelineno-32-62" href="#__codelineno-32-62"></a>    ├── voice.py       # phys-voice
+<a id="__codelineno-32-63" name="__codelineno-32-63" href="#__codelineno-32-63"></a>    └── room.py        # phys-room
+<a id="__codelineno-32-64" name="__codelineno-32-64" href="#__codelineno-32-64"></a>scripts/
+<a id="__codelineno-32-65" name="__codelineno-32-65" href="#__codelineno-32-65"></a>├── download_weights.py
+<a id="__codelineno-32-66" name="__codelineno-32-66" href="#__codelineno-32-66"></a>├── eval_asvspoof2019_la.py
+<a id="__codelineno-32-67" name="__codelineno-32-67" href="#__codelineno-32-67"></a>├── eval_video_folder.py
+<a id="__codelineno-32-68" name="__codelineno-32-68" href="#__codelineno-32-68"></a>├── eval_lavdf.py
+<a id="__codelineno-32-69" name="__codelineno-32-69" href="#__codelineno-32-69"></a>├── eval_sasv.py
+<a id="__codelineno-32-70" name="__codelineno-32-70" href="#__codelineno-32-70"></a>├── recalibrate.py
+<a id="__codelineno-32-71" name="__codelineno-32-71" href="#__codelineno-32-71"></a>├── fit_fusion.py
+<a id="__codelineno-32-72" name="__codelineno-32-72" href="#__codelineno-32-72"></a>├── batch_infer.py
+<a id="__codelineno-32-73" name="__codelineno-32-73" href="#__codelineno-32-73"></a>├── bench_throughput.py
+<a id="__codelineno-32-74" name="__codelineno-32-74" href="#__codelineno-32-74"></a>├── eval_deepfake_eval_2024.py
+<a id="__codelineno-32-75" name="__codelineno-32-75" href="#__codelineno-32-75"></a>├── calibrate_physics.py
+<a id="__codelineno-32-76" name="__codelineno-32-76" href="#__codelineno-32-76"></a>├── train_physdf.py
+<a id="__codelineno-32-77" name="__codelineno-32-77" href="#__codelineno-32-77"></a>├── train_avcons.py
+<a id="__codelineno-32-78" name="__codelineno-32-78" href="#__codelineno-32-78"></a>├── train_avid.py
+<a id="__codelineno-32-79" name="__codelineno-32-79" href="#__codelineno-32-79"></a>├── eval_identity.py
+<a id="__codelineno-32-80" name="__codelineno-32-80" href="#__codelineno-32-80"></a>├── train_id_motion.py
+<a id="__codelineno-32-81" name="__codelineno-32-81" href="#__codelineno-32-81"></a>├── build_image_eval_set.py
+<a id="__codelineno-32-82" name="__codelineno-32-82" href="#__codelineno-32-82"></a>└── eval_image.py
 </code></pre></div>
 <h2 id="adding-a-model">Adding a model<a class="headerlink" href="#adding-a-model" title="Permanent link">&para;</a></h2>
 <ol>

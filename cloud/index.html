@@ -16,7 +16,7 @@
         <link rel="prev" href="../fairness/">
       
       
-        <link rel="next" href="../deployment/">
+        <link rel="next" href="../aws/">
       
       
         
@@ -668,6 +668,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -840,6 +844,62 @@
     
   
     Physics forensics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/finetuning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning on your data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/peft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameter-efficient fine-tuning (PEFT)
   
 
     
@@ -1170,6 +1230,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
     
     
@@ -1399,6 +1465,90 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../aws/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AWS (ECS and EKS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Google Cloud (Cloud Run and GKE)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../azure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure (Container Apps and AKS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1969,6 +2119,18 @@ large-scale service (queues, worker pools, thresholds, monitoring), see
 <td><a href="https://github.com/anas-rz/ForensiX/blob/main/.github/workflows/docker.yml"><code>.github/workflows/docker.yml</code></a></td>
 <td>CI: tests, image builds, publishing to GHCR on version tags</td>
 </tr>
+<tr>
+<td><a href="https://github.com/anas-rz/ForensiX/tree/main/deploy/aws"><code>deploy/aws/</code></a></td>
+<td>AWS: ECS (Fargate or GPU) and EKS Auto Mode, one command or one click (<a href="../aws/">Deploying on AWS</a>)</td>
+</tr>
+<tr>
+<td><a href="https://github.com/anas-rz/ForensiX/tree/main/deploy/gcp"><code>deploy/gcp/</code></a></td>
+<td>Google Cloud: Cloud Run (CPU or L4) and GKE Autopilot (<a href="../gcp/">Deploying on Google Cloud</a>)</td>
+</tr>
+<tr>
+<td><a href="https://github.com/anas-rz/ForensiX/tree/main/deploy/azure"><code>deploy/azure/</code></a></td>
+<td>Azure: Container Apps (CPU or T4) and AKS (<a href="../azure/">Deploying on Azure</a>)</td>
+</tr>
 </tbody>
 </table>
 <h2 id="the-image">The image<a class="headerlink" href="#the-image" title="Permanent link">&para;</a></h2>
@@ -2130,6 +2292,12 @@ cluster.</p>
 slowly (10-minute window) so replicas don't flap. Pre-pull the image on GPU node pools if your
 platform supports it (e.g. GKE image streaming).</p>
 <h2 id="managed-clouds">Managed clouds<a class="headerlink" href="#managed-clouds" title="Permanent link">&para;</a></h2>
+<p>Each cloud has a one-command, one-click deployment that sets all of this up:</p>
+<ul>
+<li><a href="../aws/">AWS</a>: ECS on Fargate or GPU instances, or EKS Auto Mode.</li>
+<li><a href="../gcp/">Google Cloud</a>: Cloud Run (CPU or L4), or GKE Autopilot.</li>
+<li><a href="../azure/">Azure</a>: Container Apps (CPU or T4), or AKS.</li>
+</ul>
 <table>
 <thead>
 <tr>
@@ -2169,6 +2337,7 @@ platform supports it (e.g. GKE image streaming).</p>
 <p>The base Ingress targets ingress-nginx (its upload size and timeout annotations matter for
 dataset ZIPs). On other controllers, set the equivalent body-size and read-timeout limits.</p>
 <h3 id="cloud-run-no-cluster">Cloud Run (no cluster)<a class="headerlink" href="#cloud-run-no-cluster" title="Permanent link">&para;</a></h3>
+<p><a href="../gcp/">Deploying on Google Cloud</a> automates this, with a separate manager service and shared storage.</p>
 <p>A single container works on Cloud Run, with CPU or an NVIDIA L4 GPU:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>gcloud<span class="w"> </span>run<span class="w"> </span>deploy<span class="w"> </span>forensix<span class="w"> </span>--image<span class="w"> </span>REGION-docker.pkg.dev/PROJECT/forensix/forensix:gpu-bundled<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>--gpu<span class="w"> </span><span class="m">1</span><span class="w"> </span>--gpu-type<span class="w"> </span>nvidia-l4<span class="w"> </span>--cpu<span class="w"> </span><span class="m">8</span><span class="w"> </span>--memory<span class="w"> </span>32Gi<span class="w"> </span>--no-cpu-throttling<span class="w"> </span><span class="se">\</span>
@@ -2285,13 +2454,13 @@ dataset ZIPs). On other controllers, set the equivalent body-size and read-timeo
         
         
           
-          <a href="../deployment/" class="md-footer__link md-footer__link--next" aria-label="Next: Deployment at scale">
+          <a href="../aws/" class="md-footer__link md-footer__link--next" aria-label="Next: AWS (ECS and EKS)">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Deployment at scale
+                AWS (ECS and EKS)
               </div>
             </div>
             <div class="md-footer__button md-icon">

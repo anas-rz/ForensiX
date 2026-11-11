@@ -668,6 +668,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -840,6 +844,62 @@
     
   
     Physics forensics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/finetuning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning on your data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/peft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameter-efficient fine-tuning (PEFT)
   
 
     
@@ -1168,6 +1228,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
     
     
@@ -1228,6 +1294,90 @@
     
   
     Docker, Kubernetes and cloud
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../aws/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AWS (ECS and EKS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Google Cloud (Cloud Run and GKE)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../azure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure (Container Apps and AKS)
   
 
     
@@ -1530,6 +1680,17 @@
     <span class="md-ellipsis">
       
         Calibration: forensix.calibrate, forensix.calibration, forensix.dataset
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fine-tuning-forensixfinetune-forensixfinetuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fine-tuning: forensix.finetune, forensix.finetuning
       
     </span>
   </a>
@@ -2013,6 +2174,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#fine-tuning-forensixfinetune-forensixfinetuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fine-tuning: forensix.finetune, forensix.finetuning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#provenance-forensixprovenance" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2134,7 +2306,12 @@
 <tr>
 <td><code>load(name, device="cpu", weights_path=None)</code></td>
 <td>detector</td>
-<td>Builds a detector, downloading and hash-checking its weights first. <code>device</code> is <code>"cpu"</code>, <code>"cuda"</code> or <code>"cuda:N"</code>. <code>weights_path</code> uses a local checkpoint instead of the registered one (required for models you train: <code>avcons</code>, <code>avid</code>, <code>id-motion</code>, <code>person-detector</code>; optional for <code>physdf</code>).</td>
+<td>Builds a detector, downloading and hash-checking its weights first. <code>device</code> is <code>"cpu"</code>, <code>"cuda"</code> or <code>"cuda:N"</code>. <code>weights_path</code> uses a local checkpoint instead of the registered one (required for models you train: <code>avcons</code>, <code>avid</code>, <code>id-motion</code>, <code>person-detector</code>; optional for <code>physdf</code>), or a <a href="../guides/finetuning/">fine-tune checkpoint</a>, which is applied on top of the pretrained weights.</td>
+</tr>
+<tr>
+<td><code>finetune(model, dataset=None, real_media=None, fake_media=None, out=None, mode="norm", epochs=5, ...)</code></td>
+<td><code>(detector, report)</code></td>
+<td>Fine-tunes a pretrained image, audio or GenD video detector on labelled media and saves the checkpoint to <code>out</code> (<a href="../guides/finetuning/">Fine-tuning</a>).</td>
 </tr>
 <tr>
 <td><code>list_models(family=None)</code></td>
@@ -2507,6 +2684,41 @@ the media has nothing to compare.</p>
 <tr>
 <td><code>dataset.extract_dataset(zip, dest)</code></td>
 <td>Safe ZIP extraction (no path escapes, size limits); returns the dataset root</td>
+</tr>
+</tbody>
+</table>
+<h2 id="fine-tuning-forensixfinetune-forensixfinetuning">Fine-tuning: <code>forensix.finetune</code>, <code>forensix.finetuning</code><a class="headerlink" href="#fine-tuning-forensixfinetune-forensixfinetuning" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>forensix.finetune(model, dataset=None, real_media=None, fake_media=None, out=None, mode="norm", epochs=5, lr=None, batch_size=16, val_fraction=0.2, max_per_class=None, frames=16, augment=True, seed=0, device="cpu", cache_dir=None, lora_rank=8, lora_alpha=16, lora_dropout=0.05, lora_target_pattern=None)</code></td>
+<td>Fine-tunes and returns <code>(detector, report)</code>: held-out AUC before (<code>base_val_auc</code>) and after (<code>val_auc</code>), <code>best_epoch</code>, per-epoch <code>history</code>, counts and <code>warnings</code></td>
+</tr>
+<tr>
+<td><code>python -m forensix.finetuning MODEL --dataset DATA --out MODEL-ft.safetensors</code></td>
+<td>The same from the command line; also writes <code>MODEL-ft.json</code></td>
+</tr>
+<tr>
+<td><code>finetuning.checkpoint_info(path)</code></td>
+<td>The checkpoint's metadata (model, mode, base weights hash, report), or <code>None</code> if <code>path</code> isn't a fine-tune checkpoint</td>
+</tr>
+<tr>
+<td><code>finetuning.apply(detector, path)</code></td>
+<td>Loads a checkpoint into a detector built with its pretrained weights (what <code>forensix.load(..., weights_path=...)</code> does)</td>
+</tr>
+<tr>
+<td><code>finetuning.trainable_parameters(network, mode)</code></td>
+<td>The parameters a mode trains (<code>head</code>, <code>norm</code>, <code>full</code>)</td>
+</tr>
+<tr>
+<td><code>finetuning.lora_targets(network, pattern=None)</code>, <code>add_lora(...)</code>, <code>merge_lora(network)</code></td>
+<td>LoRA through PEFT: choose layers, inject adapters, fold them back into plain layers (<a href="../guides/peft/">PEFT</a>)</td>
 </tr>
 </tbody>
 </table>
