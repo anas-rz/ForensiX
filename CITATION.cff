@@ -8,6 +8,7 @@ authors:
 repository-code: "https://github.com/anas-rz/ForensiX"
 url: "https://anas-rz.github.io/ForensiX/"
 version: 0.1.0
+license: MIT
 keywords:
   - deepfake detection
   - media forensics

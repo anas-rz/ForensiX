@@ -1035,4 +1035,10 @@ If ForensiX saved you time, a GitHub star helps others find it.
 
 ## License
 
-Each model's code and weights carry their upstream license, listed in the Models table and in the model's directory.
+The ForensiX framework is released under the [MIT License](LICENSE): the library, server, web
+console, deployment templates, scripts and documentation.
+
+Models keep their own licenses. Each model's code carries the license in its directory, and its
+weights carry the license listed in the [Models](#models) table (also in
+`forensix.info(name).license`). All of them allow commercial use; the
+[licensing guide](docs/guides/licensing.md) lists the conditions to check before you ship.

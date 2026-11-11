@@ -1,5 +1,8 @@
 # Licensing and compliance
 
+The ForensiX framework itself (library, server, web console, deployment templates, scripts) is
+MIT-licensed ([LICENSE](../../LICENSE)). The models are licensed separately, as below.
+
 ForensiX includes only code and weights whose licenses allow commercial use. That doesn't mean
 every deployment is automatically fine. This page lists what to check. It's engineering
 guidance, not legal advice: have counsel review a commercial deployment.

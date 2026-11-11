@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]   # PEP 639 license expression
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,6 +7,9 @@ name = "forensix"
 version = "0.1.0"
 description = "End-to-end deepfake detection and media forensics: detect, verify provenance, fine-tune, calibrate, audit and deploy on any cloud"
 readme = "README.md"
+license = "MIT"   # the framework; each model keeps its own license (see LICENSE)
+license-files = ["LICENSE"]
+authors = [{ name = "Muhammad Anas Raza" }]
 requires-python = ">=3.10"
 dependencies = [
     "torch>=2.0",
