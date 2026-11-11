@@ -2140,8 +2140,10 @@
 
 
 <h1 id="forensix">ForensiX<a class="headerlink" href="#forensix" title="Permanent link">&para;</a></h1>
+<p><a href="https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a> <a href="https://anas-rz.github.io/ForensiX/"><img alt="Documentation" src="https://img.shields.io/badge/docs-anas--rz.github.io%2FForensiX-blue" /></a></p>
 <p>A PyTorch model zoo for <strong>deepfake detection and multimodal media forensics</strong>: audio, video, audiovisual, multimodal, physics-based, image, identity-based and graph-based detectors behind one Python API.</p>
 <p>All bundled models and weights are under <strong>commercially usable licenses</strong>.</p>
+<p><strong>Get started:</strong> <a href="https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb">open the Colab notebook</a> to detect, calibrate, evaluate and run the web manager on a free GPU, with no install. Or read the <a href="https://anas-rz.github.io/ForensiX/">documentation</a>.</p>
 <p>It ships with an HTTP server and a web manager for testing, calibrating and monitoring the detectors:</p>
 <p><img alt="The ForensiX web manager: overview dashboard" src="../../images/ui/overview.png" /></p>
 <table>
@@ -2167,8 +2169,9 @@
 <h2 id="leaderboard">Leaderboard<a class="headerlink" href="#leaderboard" title="Permanent link">&para;</a></h2>
 <p>Every model on commercially usable benchmarks (SDFVD face swaps, ASVspoof 2019 LA; Deepfake-Eval-2024 and the ForensiX image set pending), with AUC 95% confidence intervals, false-alarm and detection rates at a fixed threshold, and speed: <a href="../leaderboard/">LEADERBOARD.md</a>. It's recomputed from the raw results by <code>python scripts/build_leaderboard.py</code>, and also shown in the web manager.</p>
 <h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
+<p>The documentation is published at <strong><a href="https://anas-rz.github.io/ForensiX/">anas-rz.github.io/ForensiX</a></strong>. To try everything without installing, use the <a href="https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb">Colab notebook</a>.</p>
 <p>Start with the <a href="../../getting-started/">Quickstart</a>: install, score a file in Python, run the server and use the web manager. <a href="../../">docs/</a> also has the <a href="../../concepts/">concepts</a>, the <a href="../../api-reference/">API reference</a>, <a href="../../recipes/">recipes</a> for common tasks, <a href="../../#guides">guides</a> (choosing detectors, interpreting scores, evaluation, identity, physics, training, Colab, extending, licensing), the <a href="../../server/">HTTP server</a>, <a href="../../calibration/">calibration</a>, <a href="../../provenance/">provenance</a>, <a href="../../fairness/">fairness reports</a>, and <a href="../../deployment/">deployment at scale</a>.</p>
-<p>The same pages build into a searchable documentation site with <a href="https://www.mkdocs.org/">MkDocs</a>:</p>
+<p>The site is built from these pages with <a href="https://www.mkdocs.org/">MkDocs</a> and deployed by <code>.github/workflows/docs.yml</code> on every push to <code>main</code>. To preview it locally:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[docs]"</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>mkdocs<span class="w"> </span>serve<span class="w">        </span><span class="c1"># http://127.0.0.1:8000 (add -a 127.0.0.1:8001 if the ForensiX server is on 8000)</span>
 </code></pre></div>
