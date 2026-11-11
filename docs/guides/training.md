@@ -101,7 +101,7 @@ python scripts/train_physdf.py train --cache /content/drive/MyDrive/physdf_cache
 - **Checkpoint:** stores the feature normalization and the real residual distributions, per input
   condition (audio+video, audio only, video only).
 
-Fit the physics priors too ([Physics guide](physics.md#calibrate-before-you-rely-on-it)).
+Fit the physics priors too ([Physics guide](physics.md#fit-a-reference-on-your-own-media-recommended)).
 
 ## Using your checkpoints
 

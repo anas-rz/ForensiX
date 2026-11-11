@@ -329,8 +329,11 @@ def test_f0_jump_rate_ignores_isolated_octave_errors():
     assert f0_jump_rate(shifted, aper) > 1.0
 
 
+PROVISIONAL = {"format": "forensix-physics-priors/1"}   # an empty priors table: hand-set ranges only
+
+
 def test_voice_detector_synthetic_violations():
-    det = VoiceDetector()
+    det = VoiceDetector(priors=PROVISIONAL)
     assert det.analyze(utterance(), SR)["score"] == 0.0
     cases = {
         "jitter_percent": dict(jitter=0.0, shimmer=0.0, aspiration=0.0),
@@ -344,9 +347,20 @@ def test_voice_detector_synthetic_violations():
 
 def test_voice_detector_no_false_alarm_on_real_speech():
     pred = forensix.load("phys-voice").predict(SPEECH)
-    assert pred.score_type == "anomaly" and pred.fake_prob == 0.0
+    assert pred.score_type == "anomaly" and pred.details["scoring"] == "reference"
+    assert pred.threshold == 0.99 and pred.fake_prob < pred.threshold and pred.label == "real"
     assert 15 < pred.details["voice"]["vocal_tract_length_cm"] < 20
     assert 80 < pred.details["voice"]["f0_median_hz"] < 180
+    assert VoiceDetector(priors=PROVISIONAL).predict(SPEECH).fake_prob == 0.0   # and none under the ranges
+
+
+def test_voice_reference_flags_impossible_voices():
+    det = VoiceDetector()   # the packaged reference
+    assert det.scoring == "reference"
+    for kw in (dict(jitter=0.0, shimmer=0.0, aspiration=0.0), dict(length_cm=28.0)):
+        r = det.analyze(utterance(**kw), SR)
+        assert r["score"] >= 0.99, kw
+        assert max(e["violation"] or 0 for e in r["constraints"].values()) > 0.5, kw
 
 
 # ---- phys-room ---------------------------------------------------------------
@@ -385,7 +399,7 @@ def room_cases():
 
 
 def test_room_detector_synthetic(room_cases):
-    det = RoomDetector()
+    det = RoomDetector(priors=PROVISIONAL)
     r = det.analyze(room_cases["one_room"], SR)
     assert r["score"] == 0.0
     assert abs(r["room"]["rt60_s_median"] - 0.5) < 0.15
@@ -408,8 +422,10 @@ def test_room_detector_chunk_at_end_of_file():
 
 def test_room_detector_no_false_alarm_on_real_speech():
     pred = forensix.load("phys-room").predict(SPEECH)
-    assert pred.score_type == "anomaly" and pred.fake_prob == 0.0
+    assert pred.score_type == "anomaly"
+    assert pred.threshold is None or pred.fake_prob < pred.threshold
     assert pred.details["constraints"]["digital_silence_fraction"]["measured"] == 0.0
+    assert RoomDetector(priors=PROVISIONAL).predict(SPEECH).fake_prob == 0.0
 
 
 # ---- learned priors (phase 3) -------------------------------------------------
@@ -466,7 +482,7 @@ def test_learned_priors_change_scores_and_are_labelled(tmp_path):
 
 
 def test_measure_file_and_split():
-    detectors = {name: DETECTORS[name]() for name in ("phys-voice", "phys-room")}
+    detectors = {name: DETECTORS[name](priors=PROVISIONAL) for name in ("phys-voice", "phys-room")}
     result = measure_file(SPEECH, "audio", detectors)
     assert set(result) == {"phys-voice", "phys-room"}
     assert result["phys-room"]["score"] == 0.0 and "noise_spectrum_change_db" in result["phys-room"]["measured"]
@@ -595,3 +611,50 @@ def test_report_claims_verdict_and_verification():
     # too few applicable checks and only weak violations: abstain
     few = {"score": 0.2, "constraints": {"phys-voice/hnr_db": entry(0.2)}, "status": {}}
     assert build_report(few)["verdict"] == "inconclusive"
+
+
+# ---- reference scoring --------------------------------------------------------
+
+from forensix.physics import reference as Ref  # noqa: E402
+
+
+def test_tail_p_on_a_known_grid():
+    q = list(np.linspace(0, 100, Ref.QUANTILES))          # uniform reference on [0, 100]
+    assert Ref.tail_p(-5, q, 1000) == 1.0
+    assert Ref.tail_p(25, q, 1000) == pytest.approx(0.75, abs=1e-3)
+    assert Ref.tail_p(500, q, 1000) == pytest.approx(1 / 1001)   # beyond the sample: floored
+    ties = [0.0] * 300 + list(np.linspace(0, 1, Ref.QUANTILES - 300))
+    assert Ref.tail_p(0.0, ties, 1000) == 1.0                       # P(X >= 0) with a mass at 0
+
+
+def synthetic_rows(n_groups=60, per_group=20, seed=0):
+    rng = np.random.default_rng(seed)
+    return [{"group": f"g{g}", "detectors": {"phys-voice": {"measured": {
+        "hnr_db": float(rng.normal(10, 3)), "jitter_percent": float(rng.lognormal(0.7, 0.3)),
+        "f0_jump_rate_per_s": None}}}} for g in range(n_groups) for _ in range(per_group)]
+
+
+def test_reference_fit_calibrates_held_out_real_clips():
+    provisional = {"phys-voice": dict(VoiceDetector.provisional_priors)}
+    table = Ref.fit(synthetic_rows(seed=0), provisional)
+    entry = table["detectors"]["phys-voice"]
+    assert set(entry["constraints"]) == {"hnr_db", "jitter_percent"} and "f0_jump_rate_per_s" in entry["kept_provisional"]
+    held = [r["detectors"]["phys-voice"]["measured"] for r in synthetic_rows(seed=1)]
+    scores = np.array([Ref.score(m, entry, provisional["phys-voice"])[0] for m in held])
+    assert abs(np.mean(scores >= 0.9) - 0.1) < 0.04 and np.mean(scores >= 0.99) < 0.03   # ~uniform on new reals
+    # the physics direction: too clean a voice (high HNR, no jitter) is suspicious, not too noisy
+    clean, noisy = {"hnr_db": 40.0, "jitter_percent": 0.05}, {"hnr_db": 2.0, "jitter_percent": 6.0}
+    s_clean, ev = Ref.score(clean, entry, provisional["phys-voice"])
+    assert s_clean >= 0.99 and ev["hnr_db"]["violation"] > 0.5 and ev["hnr_db"]["p_real"] < 0.01
+    assert Ref.score(noisy, entry, provisional["phys-voice"])[0] < 0.5
+    assert ev["f0_jump_rate_per_s"]["prior"] == "provisional" and ev["f0_jump_rate_per_s"]["in_score"] is False
+
+
+def test_reference_skips_detectors_without_enough_real_data():
+    table = Ref.fit(synthetic_rows(n_groups=3, per_group=10), {"phys-voice": dict(VoiceDetector.provisional_priors)})
+    assert "phys-voice" in table["skipped"] and not table["detectors"]
+
+
+def test_explicit_priors_table_forces_range_scoring(tmp_path):
+    det = VoiceDetector(priors=PROVISIONAL)
+    assert det.scoring == "provisional" and det.decision_threshold is None

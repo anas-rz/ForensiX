@@ -17,7 +17,10 @@
    "date": "2026-10-26",
    "commit": "16649a37fd31585fa49641c9f2a3ede17fbbe135",
    "timing": "Seconds per video on the L4. Only univfd and rine were timed alone; the other models shared the GPU with 1-3 other processes, so their times are inflated (upper bounds).",
-   "timed_alone": ["univfd", "rine"],
+   "timed_alone": [
+    "univfd",
+    "rine"
+   ],
    "reproduce": "python scripts/eval_video_folder.py --device cuda --real SDFVD/videos_real --fake SDFVD/videos_fake --dataset SDFVD --out results/sdfvd.json --scores-out results/sdfvd_scores.csv",
    "caveats": [
     "106 videos from one face-swap tool: differences of a few AUC points aren't meaningful (see the confidence intervals).",
@@ -40,7 +43,9 @@
    "commit": null,
    "timing": "Seconds per video with 3 processes sharing one L4 (upper bounds).",
    "reproduce": "python scripts/eval_video_folder.py --device cuda --face-crop --real SDFVD/videos_real --fake SDFVD/videos_fake --dataset SDFVD --models univfd rine rine-ldm commfor commfor-224 safe clipdet --out results/sdfvd_facecrop.json --scores-out results/sdfvd_facecrop_scores.csv",
-   "caveats": ["Same dataset caveats as SDFVD."]
+   "caveats": [
+    "Same dataset caveats as SDFVD."
+   ]
   },
   {
    "id": "asvspoof2019-la",
@@ -79,24 +84,30 @@
    "commit": null,
    "timing": null,
    "reproduce": "python scripts/calibrate_physics.py eval --measurements results/physics/sdfvd_real.jsonl results/physics/sdfvd_fake.jsonl",
-   "caveats": ["Provisional (hand-set) priors; physics detectors aren't calibrated for video yet."]
+   "caveats": [
+    "Provisional (hand-set) ranges: no packaged video reference yet, since fitting one needs real video separate from this evaluation set.",
+    "Cross-validated reference scoring on SDFVD itself fixes the false alarms but stays near chance: face swaps keep the source video's motion and lighting (physics_benchmark.md)."
+   ]
   },
   {
    "id": "physics-asvspoof",
    "name": "ASVspoof 2019 LA, physics detectors",
-   "task": "Spoofed speech, voice and room physics (learned priors)",
+   "task": "Spoofed speech, voice and room physics (reference scoring)",
    "modality": "audio",
    "license": "ODC-By 1.0",
    "dataset_url": "https://datashare.ed.ac.uk/handle/10283/3336",
-   "description": "phys-voice and phys-room with priors learned on real ASVspoof speech.",
-   "results": "physics/asvspoof_eval_learned.json",
+   "description": "phys-voice with the packaged reference: real-media distributions fitted on real ASVspoof 2019 LA train/dev speech plus LibriSpeech dev-clean (no fakes), combined with Fisher's method and calibrated out of fold. phys-room has no packaged reference and uses its provisional ranges. Evaluated on eval-set speakers never used in fitting.",
+   "results": "physics/asvspoof_eval_reference.json",
    "format": "physics",
    "hardware": null,
    "date": null,
    "commit": null,
    "timing": null,
-   "reproduce": "python scripts/calibrate_physics.py eval --measurements <asvspoof measurements> --priors results/physics/learned_priors_asvspoof.json",
-   "caveats": ["phys-room applies only to clips long enough to measure the room (76 of the clips)."]
+   "reproduce": "python scripts/calibrate_physics.py fit-reference --detectors phys-voice --measurements results/physics/asvspoof/fit_*.jsonl results/physics/librispeech/dev_clean.jsonl --out forensix/physics/reference.json && python scripts/calibrate_physics.py eval --measurements results/physics/asvspoof/eval_*.jsonl --out results/physics/asvspoof_eval_reference.json",
+   "caveats": [
+    "phys-voice measures clips with at least 1.5 s of voiced speech (294 real + 369 fake of the 2,001); phys-room needs 6 s (76 clips).",
+    "Fitting a reference on your own real media does better in-domain: fitted on ASVspoof train/dev speech alone, phys-voice reaches AUC 0.741 here (physics_benchmark.md)."
+   ]
   },
   {
    "id": "deepfake-eval-2024",
@@ -107,18 +118,22 @@
    "dataset_url": "https://huggingface.co/datasets/nuriachandra/Deepfake-Eval-2024",
    "status": "pending",
    "reproduce": "python scripts/eval_deepfake_eval_2024.py --data /content/de2024 --modality video --device cuda --max-per-class 250 --out results/de2024_video.json --scores-out results/de2024_video_scores.csv",
-   "caveats": ["Request access on Hugging Face first. Run each modality (video, audio, image)."]
+   "caveats": [
+    "Request access on Hugging Face first. Run each modality (video, audio, image)."
+   ]
   },
   {
    "id": "forensix-image-set",
    "name": "ForensiX image set",
-   "task": "Generated vs real images (SDXL, PixArt-Σ, Kandinsky 2.2, FLUX.1-schnell)",
+   "task": "Generated vs real images (SDXL, PixArt-\u03a3, Kandinsky 2.2, FLUX.1-schnell)",
    "modality": "image",
    "license": "Open Images CC BY 2.0 photos; generators whose outputs allow commercial use",
    "dataset_url": null,
    "status": "pending",
    "reproduce": "python scripts/build_image_eval_set.py --out /content/forensix_image_eval && python scripts/eval_image.py --data /content/forensix_image_eval --device cuda --out results/image_eval.json --scores-out results/image_scores.csv",
-   "caveats": ["Build the set on a GPU first (about 1,000 real and 1,000 generated images)."]
+   "caveats": [
+    "Build the set on a GPU first (about 1,000 real and 1,000 generated images)."
+   ]
   }
  ],
  "throughput": {
@@ -127,6 +142,10 @@
   "description": "Items per second scoring SDFVD (video models) or ASVspoof (audio models): the plain per-file loop, and the batch runner in fp32 and bf16."
  },
  "excluded": [
-  {"name": "LAV-DF", "license": "CC BY-NC 4.0", "reason": "Non-commercial license. Results exist in results/lavdf/ but aren't on this leaderboard."}
+  {
+   "name": "LAV-DF",
+   "license": "CC BY-NC 4.0",
+   "reason": "Non-commercial license. Results exist in results/lavdf/ but aren't on this leaderboard."
+  }
  ]
 }

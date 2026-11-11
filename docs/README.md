@@ -86,7 +86,7 @@ preprocessing details and parity checks against upstream code.
 | audiovisual | `avcons`, `avid` | ForensiX models; you train them ([Training](guides/training.md)) |
 | identity | `id-face` | pretrained (SFace) |
 | identity | `id-motion` | ForensiX model; you train it |
-| physics | `phys-bloodflow`, `phys-motion`, `phys-lighting`, `phys-voice`, `phys-room` | algorithmic; ranges provisional until learned priors are fitted |
+| physics | `phys-bloodflow`, `phys-motion`, `phys-lighting`, `phys-voice`, `phys-room` | algorithmic; `phys-voice` ships a reference fitted on real speech (calibrated scores), the others use provisional ranges until you [fit a reference](guides/physics.md#fit-a-reference-on-your-own-media-recommended) |
 | physics | `physdf` | runs without a graph prior; train the prior for the full system |
 | specialized | `person-detector` | tiny per-person model you train in seconds |
 | provenance | `c2pa`, `watermark-image`, `watermark-audio`, `metadata` | evidence in the file: Content Credentials, SD/SDXL and AudioSeal watermarks, metadata ([Provenance](provenance.md)) |

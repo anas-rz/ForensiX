@@ -1064,7 +1064,8 @@
    "timing": null,
    "reproduce": "python scripts/calibrate_physics.py eval --measurements results/physics/sdfvd_real.jsonl results/physics/sdfvd_fake.jsonl",
    "caveats": [
-    "Provisional (hand-set) priors; physics detectors aren't calibrated for video yet."
+    "Provisional (hand-set) ranges: no packaged video reference yet, since fitting one needs real video separate from this evaluation set.",
+    "Cross-validated reference scoring on SDFVD itself fixes the false alarms but stays near chance: face swaps keep the source video's motion and lighting (physics_benchmark.md)."
    ],
    "status": "done",
    "rows": [
@@ -1146,18 +1147,19 @@
   {
    "id": "physics-asvspoof",
    "name": "ASVspoof 2019 LA, physics detectors",
-   "task": "Spoofed speech, voice and room physics (learned priors)",
+   "task": "Spoofed speech, voice and room physics (reference scoring)",
    "modality": "audio",
    "license": "ODC-By 1.0",
    "dataset_url": "https://datashare.ed.ac.uk/handle/10283/3336",
-   "description": "phys-voice and phys-room with priors learned on real ASVspoof speech.",
+   "description": "phys-voice with the packaged reference: real-media distributions fitted on real ASVspoof 2019 LA train/dev speech plus LibriSpeech dev-clean (no fakes), combined with Fisher's method and calibrated out of fold. phys-room has no packaged reference and uses its provisional ranges. Evaluated on eval-set speakers never used in fitting.",
    "hardware": null,
    "date": null,
    "commit": null,
    "timing": null,
-   "reproduce": "python scripts/calibrate_physics.py eval --measurements <asvspoof measurements> --priors results/physics/learned_priors_asvspoof.json",
+   "reproduce": "python scripts/calibrate_physics.py fit-reference --detectors phys-voice --measurements results/physics/asvspoof/fit_*.jsonl results/physics/librispeech/dev_clean.jsonl --out forensix/physics/reference.json && python scripts/calibrate_physics.py eval --measurements results/physics/asvspoof/eval_*.jsonl --out results/physics/asvspoof_eval_reference.json",
    "caveats": [
-    "phys-room applies only to clips long enough to measure the room (76 of the clips)."
+    "phys-voice measures clips with at least 1.5 s of voiced speech (294 real + 369 fake of the 2,001); phys-room needs 6 s (76 clips).",
+    "Fitting a reference on your own real media does better in-domain: fitted on ASVspoof train/dev speech alone, phys-voice reaches AUC 0.741 here (physics_benchmark.md)."
    ],
    "status": "done",
    "rows": [
@@ -1166,30 +1168,30 @@
      "family": "physics",
      "n_real": 294,
      "n_fake": 369,
-     "auc": 0.6237,
+     "auc": 0.6787,
      "auc_ci": [
-      0.5815,
-      0.6659
+      0.6385,
+      0.7189
      ],
      "auc_ci_method": "Hanley-McNeil",
      "eer": null,
-     "threshold": "any violation",
+     "threshold": "score >= 0.99 (reference)",
      "false_alarm_rate": {
-      "value": 0.0136,
-      "k": 4,
+      "value": 0.0,
+      "k": 0,
       "n": 294,
       "ci": [
-       0.0053,
-       0.0345
+       0.0,
+       0.0129
       ]
      },
      "detection_rate": {
-      "value": 0.2602,
-      "k": 96,
+      "value": 0.0407,
+      "k": 15,
       "n": 369,
       "ci": [
-       0.218,
-       0.3072
+       0.0248,
+       0.066
       ]
      },
      "seconds_per_item": null,
@@ -1229,11 +1231,11 @@
      },
      "seconds_per_item": null,
      "rank": 2,
-     "tied_with_leader": true
+     "tied_with_leader": false
     }
    ],
    "files": [
-    "physics/asvspoof_eval_learned.json"
+    "physics/asvspoof_eval_reference.json"
    ]
   },
   {

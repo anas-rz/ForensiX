@@ -115,7 +115,8 @@ Hardware: not recorded · date: not recorded · commit: `not recorded`
 | 1 | `phys-lighting` | 0.481 [0.364, 0.598] | — | 100.0% [92.4%, 100.0%] | 97.9% [88.9%, 99.6%] | — | — |
 | 2 | `phys-motion` | 0.446 [0.329, 0.562] | — | 42.5% [29.5%, 56.7%] | 31.9% [20.4%, 46.2%] | — | yes |
 
-- Provisional (hand-set) priors; physics detectors aren't calibrated for video yet.
+- Provisional (hand-set) ranges: no packaged video reference yet, since fitting one needs real video separate from this evaluation set.
+- Cross-validated reference scoring on SDFVD itself fixes the false alarms but stays near chance: face swaps keep the source video's motion and lighting (physics_benchmark.md).
 
 Reproduce:
 
@@ -125,23 +126,24 @@ python scripts/calibrate_physics.py eval --measurements results/physics/sdfvd_re
 
 ## ASVspoof 2019 LA, physics detectors
 
-Spoofed speech, voice and room physics (learned priors). License: ODC-By 1.0. [Dataset](https://datashare.ed.ac.uk/handle/10283/3336).
+Spoofed speech, voice and room physics (reference scoring). License: ODC-By 1.0. [Dataset](https://datashare.ed.ac.uk/handle/10283/3336).
 
-phys-voice and phys-room with priors learned on real ASVspoof speech.
+phys-voice with the packaged reference: real-media distributions fitted on real ASVspoof 2019 LA train/dev speech plus LibriSpeech dev-clean (no fakes), combined with Fisher's method and calibrated out of fold. phys-room has no packaged reference and uses its provisional ranges. Evaluated on eval-set speakers never used in fitting.
 
 Hardware: not recorded · date: not recorded · commit: `not recorded`
 
 | # | Model | AUC [95% CI] | EER | False alarms | Detection | s/item | Tied with #1 |
 |---|---|---|---|---|---|---|---|
-| 1 | `phys-voice` | 0.624 [0.582, 0.666] | — | 1.4% [0.5%, 3.5%] | 26.0% [21.8%, 30.7%] | — | — |
-| 2 | `phys-room` | 0.492 [0.354, 0.630] | — | 15.4% [6.2%, 33.5%] | 12.0% [5.6%, 23.8%] | — | yes |
+| 1 | `phys-voice` | 0.679 [0.638, 0.719] | — | 0.0% [0.0%, 1.3%] | 4.1% [2.5%, 6.6%] | — | — |
+| 2 | `phys-room` | 0.492 [0.354, 0.630] | — | 15.4% [6.2%, 33.5%] | 12.0% [5.6%, 23.8%] | — | no |
 
-- phys-room applies only to clips long enough to measure the room (76 of the clips).
+- phys-voice measures clips with at least 1.5 s of voiced speech (294 real + 369 fake of the 2,001); phys-room needs 6 s (76 clips).
+- Fitting a reference on your own real media does better in-domain: fitted on ASVspoof train/dev speech alone, phys-voice reaches AUC 0.741 here (physics_benchmark.md).
 
 Reproduce:
 
 ```bash
-python scripts/calibrate_physics.py eval --measurements <asvspoof measurements> --priors results/physics/learned_priors_asvspoof.json
+python scripts/calibrate_physics.py fit-reference --detectors phys-voice --measurements results/physics/asvspoof/fit_*.jsonl results/physics/librispeech/dev_clean.jsonl --out forensix/physics/reference.json && python scripts/calibrate_physics.py eval --measurements results/physics/asvspoof/eval_*.jsonl --out results/physics/asvspoof_eval_reference.json
 ```
 
 ## Deepfake-Eval-2024

@@ -85,14 +85,20 @@ def measurements_by_detector(rows: list[dict]) -> dict[str, dict[str, list]]:
 
 
 def score_rows(rows: list[dict], detector: str, priors=None) -> tuple[np.ndarray, np.ndarray]:
-    """Anomaly scores of ``detector`` recomputed from stored measurements under
-    ``priors`` (a table, a path, or None for the default), and the row indices."""
-    resolved = resolve(detector, DETECTORS[detector].provisional_priors, priors)
+    """Anomaly scores of ``detector`` recomputed from stored measurements under ``priors`` (a
+    reference or priors table or path, or None for the packaged default), and the row indices."""
+    from forensix.physics import reference
+
+    is_ref = reference.is_reference(priors)
+    resolved = resolve(detector, DETECTORS[detector].provisional_priors, None if is_ref else priors)
+    table = reference.load(priors) if priors is None or is_ref else None
+    entry = (table or {}).get("detectors", {}).get(detector)
     scores, idx = [], []
     for i, row in enumerate(rows):
         measured = row["detectors"].get(detector, {}).get("measured")
         if measured is not None:
-            scores.append(constraint_report({k: measured.get(k) for k in resolved}, resolved)[0])
+            m = {k: measured.get(k) for k in resolved}
+            scores.append(reference.score(m, entry, resolved)[0] if entry else constraint_report(m, resolved)[0])
             idx.append(i)
     return np.array(scores), np.array(idx, dtype=int)
 
@@ -102,7 +108,9 @@ def false_alarm_summary(scores: np.ndarray) -> dict:
     if not len(scores):
         return {"n": 0}
     return {"n": int(len(scores)), "any_violation": round(float(np.mean(scores > 0)), 4),
-            "score_ge_0.5": round(float(np.mean(scores >= 0.5)), 4), "mean_score": round(float(scores.mean()), 4)}
+            "score_ge_0.5": round(float(np.mean(scores >= 0.5)), 4),
+            "score_ge_0.95": round(float(np.mean(scores >= 0.95)), 4),
+            "score_ge_0.99": round(float(np.mean(scores >= 0.99)), 4), "mean_score": round(float(scores.mean()), 4)}
 
 
 def oriented(values, provisional: tuple[float, float]) -> np.ndarray:

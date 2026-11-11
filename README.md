@@ -455,7 +455,7 @@ Most detectors learn the fingerprints of particular generators. physdf instead m
 | `phys-bloodflow` | one heart drives the pulse in all facial skin: plausible heart rate, consistent across regions, coherent signals | done (provisional priors) |
 | `phys-motion` | the head is a rigid body with inertia; the jaw is a hinge | done (provisional priors) |
 | `phys-lighting` | one light field: the face's lighting is stable and follows the scene | done (provisional priors) |
-| `phys-voice` | voice production within anatomical limits: pitch continuity, jitter, noise, vocal-tract length, breathing | done (provisional priors) |
+| `phys-voice` | voice production within anatomical limits: pitch continuity, jitter, noise, vocal-tract length, breathing | done (packaged reference: calibrated scores) |
 | `phys-room` | one room and one microphone: stable reverberation, noise floor, microphone colouration and noise spectrum; never digitally silent | done (provisional priors) |
 | learned priors | expected ranges of every constraint fitted on real media only (`scripts/calibrate_physics.py`) | done (fit on Colab) |
 | `physdf` | all of the above plus a graph-network prior learned from real media only: cross-system and audio-visual articulatory consistency, localization, forensic report | done (train the prior on Colab) |
@@ -472,7 +472,7 @@ pred.details["constraints"]         # {"mean_coherence": {"measured": 0.986, ...
 **`phys-bloodflow`.**
 - **Pipeline:** rPPG pulse signals from 5 skin regions on the MediaPipe mesh (forehead, cheeks, nose, chin) via POS (Wang et al., 2017), with heart rate and SNR from the 42 to 180 bpm band.
 - **What it checks:** that the regions' pulses are coherent (mean correlation), that their heart rates agree, and that a pulse is detectable at all.
-- **Priors:** the ranges are provisional, literature-informed values, labelled as such in `details`, until [learned priors](#learned-priors) are fitted.
+- **Scoring:** `phys-voice` ships a **reference** fitted on real speech (ASVspoof 2019 LA train/dev and LibriSpeech dev-clean, no fakes). Each measurement becomes the share of real media at least as extreme, the constraints are combined with Fisher's method, and the score is calibrated on real media: 0.99 means "more unusual than 99% of real media", which is also its decision threshold. On held-out ASVspoof speakers this raised its AUC from 0.488 to 0.679 ([physics benchmark](physics_benchmark.md)). The other detectors use provisional, literature-informed ranges, labelled as such in `details`, until you fit a reference on real media like yours with `scripts/calibrate_physics.py fit-reference` ([physics guide](docs/guides/physics.md#fit-a-reference-on-your-own-media-recommended)).
 - **Tested on:** synthetic video of a public-domain portrait. A coherent 72 bpm pulse scores 0.00 (72.1 bpm measured), while no pulse and different heart rates on the two halves of the face both score 1.00.
 - **Limits:** rPPG needs about 6 s or more of a steady, visible face, and heavy compression weakens the signal.
 
@@ -598,6 +598,8 @@ python scripts/train_physdf.py train --cache /content/physdf_cache --out physdf_
 The real prior still has to be trained and evaluated on Colab.
 
 ### Learned priors
+
+**Superseded by reference scoring** for detectors that have a reference (see *Scoring* above and the [physics guide](docs/guides/physics.md#how-the-score-is-computed)): it ranks clips far better because it keeps each measurement's information instead of a range check. Learned priors still work with `load_priors`.
 
 The provisional ranges are hand-set, and the physics measurements haven't been checked on real video yet. Learned priors replace each constraint's range with one measured on **real media only**, so no generator's artefacts are learned:
 - **Start of the range:** the real-data quantile 1 − α/K of the constraint, where K is the detector's number of constraints. A real clip then trips any one constraint of a detector with probability of about α (default 1%).

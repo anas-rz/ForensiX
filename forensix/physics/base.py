@@ -36,9 +36,16 @@ def constraint_report(measured: dict[str, float], priors: dict[str, Prior]) -> t
 
 
 class _PriorsMixin:
-    """Priors of a detector: the learned table shipped with the package (or
-    given with ``load_priors``) where it covers a constraint, else the
-    provisional range in the detector's ``provisional_priors``."""
+    """How a detector turns measurements into a score.
+
+    - A **reference** (``forensix.physics.reference``), fitted on real media: calibrated scores
+      (0.99 = more unusual than 99% of real media) and a decision threshold. The packaged
+      reference is used where it covers the detector.
+    - Otherwise **priors**: the learned priors table, else the hand-set provisional ranges
+      (``provisional_priors``); the score is the largest violation and there's no threshold.
+
+    ``load_priors(path_or_table)`` switches: a reference table enables reference scoring, a
+    priors table (``forensix.physics.priors``) forces range scoring."""
 
     name = ""
     provisional_priors: dict[str, tuple[float, float]] = {}
@@ -47,13 +54,31 @@ class _PriorsMixin:
         self.load_priors(priors)
 
     def load_priors(self, priors=None) -> None:
-        """``priors``: a learned-priors JSON path or dict (see
-        ``forensix.physics.priors``); None uses the packaged table if any."""
+        """``priors``: a reference or learned-priors JSON path or dict; None uses the packaged
+        reference (else the packaged priors table, else the provisional ranges)."""
+        from forensix.physics import reference
         from forensix.physics.priors import resolve
 
-        self.priors = resolve(self.name, self.provisional_priors, priors)
+        is_ref = reference.is_reference(priors)
+        table = reference.load(priors) if priors is None or is_ref else None
+        self.reference = (table or {}).get("detectors", {}).get(self.name)
+        self.priors = resolve(self.name, self.provisional_priors, None if is_ref else priors)
+
+    @property
+    def decision_threshold(self) -> float | None:
+        from forensix.physics.reference import THRESHOLD
+
+        return THRESHOLD if self.reference else None
+
+    @property
+    def scoring(self) -> str:
+        return "reference" if self.reference else "provisional"
 
     def report(self, measured: dict[str, float]) -> tuple[float, dict]:
+        if self.reference:
+            from forensix.physics.reference import score
+
+            return score(measured, self.reference, self.priors)
         return constraint_report(measured, self.priors)
 
 
@@ -71,7 +96,8 @@ class PhysicsVideoDetector(_PriorsMixin):
 
         frames, fps = read_video(video)
         result = self.analyze(frames, fps)
-        return Prediction(model=self.name, fake_prob=result["score"], threshold=None,
+        result.setdefault("scoring", self.scoring)
+        return Prediction(model=self.name, fake_prob=result["score"], threshold=self.decision_threshold,
                           score_type="anomaly", details=result)
 
     def predict_batch(self, videos) -> list[Prediction]:
@@ -92,7 +118,8 @@ class PhysicsAudioDetector(_PriorsMixin):
 
         x = load_audio(audio, self.sample_rate, sample_rate)
         result = self.analyze(x, self.sample_rate)
-        return Prediction(model=self.name, fake_prob=result["score"], threshold=None,
+        result.setdefault("scoring", self.scoring)
+        return Prediction(model=self.name, fake_prob=result["score"], threshold=self.decision_threshold,
                           score_type="anomaly", details=result)
 
     def predict_batch(self, inputs, sample_rate: int | None = None) -> list[Prediction]:

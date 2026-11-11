@@ -9,7 +9,7 @@ per benchmark and model:
   the Hanley-McNeil normal approximation;
 - **EER**;
 - **false-alarm rate** (real media flagged) and **detection rate** (fakes caught) at a
-  fixed threshold: 0.5 on ``fake_prob`` for detectors, "any violation" for physics,
+  fixed threshold: 0.5 on ``fake_prob`` for detectors; for physics, 0.99 with reference scoring, else "any violation",
   each with a Wilson 95% interval;
 - **speed**: seconds per item on the recorded hardware;
 - whether the model is **statistically tied** with the top model (overlapping AUC
@@ -126,12 +126,14 @@ def _from_physics(root: Path, spec: dict) -> list[dict]:
         n_real, n_fake = s["n_real"], s["n_fake"]
         lo, hi = hanley_mcneil(s["auc"], n_fake, n_real)
         fa = s["real_false_alarms"]
+        ref = s.get("scoring") == "reference"   # calibrated scores: rates at the 0.99 decision threshold
+        fa_rate, flagged = (fa["score_ge_0.99"], s["fake_flagged_0.99"]) if ref else (fa["any_violation"], s["fake_flagged"])
         rows.append({
             "model": model, "family": "physics", "n_real": n_real, "n_fake": n_fake,
             "auc": s["auc"], "auc_ci": [round(lo, 4), round(hi, 4)], "auc_ci_method": "Hanley-McNeil",
-            "eer": None, "threshold": "any violation",
-            "false_alarm_rate": _rate(round(fa["any_violation"] * fa["n"]), fa["n"]),
-            "detection_rate": _rate(round(s["fake_flagged"] * n_fake), n_fake),
+            "eer": None, "threshold": "score >= 0.99 (reference)" if ref else "any violation",
+            "false_alarm_rate": _rate(round(fa_rate * fa["n"]), fa["n"]),
+            "detection_rate": _rate(round(flagged * n_fake), n_fake),
             "seconds_per_item": None,
         })
     return rows

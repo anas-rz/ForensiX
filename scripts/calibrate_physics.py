@@ -21,6 +21,14 @@ fetches datasets):
        python scripts/calibrate_physics.py fit --measurements measurements/*.jsonl \\
            --alpha 0.01 --out learned_priors.json
 
+2b. fit-reference (recommended): fit reference distributions on the real clips instead of
+   ranges, for calibrated scores (0.99 = more unusual than 99% of real media) that combine every
+   constraint. Write it to ``forensix/physics/reference.json`` to make it the default, or load
+   it with ``detector.load_priors(path)``. See ``forensix.physics.reference``.
+
+       python scripts/calibrate_physics.py fit-reference --measurements measurements/*.jsonl \
+           --out reference.json
+
 3. eval: real vs fake AUC per detector and per constraint, from stored
    measurements. Use real clips that were not used to fit.
 
@@ -66,6 +74,7 @@ from forensix.physics.calibration import (
     oriented,
     score_rows,
 )
+from forensix.physics import reference
 from forensix.physics.priors import fit_priors, provisional_priors
 
 FAKE_WORDS = {"fake", "deepfake", "manipulated", "synthetic", "spoof", "1", "true"}
@@ -177,6 +186,39 @@ def cmd_fit(args) -> None:
     print(f"\npriors -> {args.out}")
 
 
+def cmd_fit_reference(args) -> None:
+    rows = [r for r in read_rows(args.measurements) if r["label"] == "real"]
+    if not rows:
+        sys.exit("No real clips in the measurements")
+    provisional = provisional_priors()
+    if args.detectors:
+        provisional = {d: provisional[d] for d in args.detectors}
+    sources = sorted({r["source"] for r in rows if r.get("source")})
+    fit_rows = [r for r in rows if not in_holdout(r["group"], args.holdout)]
+    held = [r for r in rows if in_holdout(r["group"], args.holdout)]
+    print(f"{len(rows)} real clips from {len({r['group'] for r in rows})} groups; "
+          f"held-out false alarms use {len(held)} clips from groups never seen in fitting or calibration")
+    train = reference.fit(fit_rows, provisional, seed=args.seed, sources=sources)   # held-out groups excluded
+    report = {}
+    for detector in train["detectors"]:
+        s = score_rows(held, detector, train)[0]
+        report[detector] = false_alarm_summary(s)
+        if len(s):
+            print(f"  {detector:15} held-out real: {report[detector]['score_ge_0.99']:.1%} >= 0.99 (target ~1%), "
+                  f"{report[detector]['score_ge_0.95']:.1%} >= 0.95 (n={len(s)})")
+    table = reference.fit(rows, provisional, seed=args.seed, sources=sources)   # final: all real clips
+    table["holdout_false_alarms"] = report
+    for name, entry in table["detectors"].items():
+        print(f"{name}: {len(entry['constraints'])} constraints with references "
+              f"({', '.join(entry['constraints'])}); calibrated on {entry['calibration']['n']} clips"
+              + (f"; provisional kept for {', '.join(entry['kept_provisional'])}" if entry["kept_provisional"] else ""))
+    for name, why in table["skipped"].items():
+        print(f"{name}: no reference ({why})")
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(table, indent=1))
+    print(f"\nreference -> {args.out}")
+
+
 def cmd_eval(args) -> None:
     rows = read_rows(args.measurements)
     real = [r for r in rows if r["label"] == "real"]
@@ -184,6 +226,8 @@ def cmd_eval(args) -> None:
     print(f"{len(real)} real, {len(fake)} fake clips")
     provisional = provisional_priors()
     results = {"priors": str(args.priors) if args.priors else "default", "detectors": {}, "constraints": {}}
+    ref_table = reference.load(args.priors) if args.priors is None or reference.is_reference(args.priors) else None
+    referenced = set((ref_table or {}).get("detectors", {}))
     per_clip = {}  # row id -> max over detectors (physics-max fusion)
     for detector in DETECTORS:
         s_real, i_real = score_rows(real, detector, args.priors)
@@ -196,9 +240,13 @@ def cmd_eval(args) -> None:
             summary["real_false_alarms"] = false_alarm_summary(s_real)
             summary["fake_flagged"] = round(float(np.mean(s_fake > 0)), 4)
             results["detectors"][detector] = summary
+            summary["fake_flagged_0.99"] = round(float(np.mean(s_fake >= 0.99)), 4)
+            summary["scoring"] = "reference" if detector in referenced else "provisional"
             print(f"{detector:15} AUC {summary['auc']:.3f}  AP {summary['ap']:.3f}  "
-                  f"real flagged {summary['real_false_alarms']['any_violation']:.1%}  "
-                  f"fake flagged {summary['fake_flagged']:.1%}  (n={len(s_real)}+{len(s_fake)})")
+                  f"real flagged {summary['real_false_alarms']['any_violation']:.1%} (>0), "
+                  f"{summary['real_false_alarms']['score_ge_0.99']:.1%} (>=0.99)  "
+                  f"fake flagged {summary['fake_flagged']:.1%} (>0), {summary['fake_flagged_0.99']:.1%} (>=0.99)  "
+                  f"(n={len(s_real)}+{len(s_fake)})")
         # per constraint: the raw measurement as a score, on clips where it applies
         vals_r = measurements_by_detector(real).get(detector, {})
         vals_f = measurements_by_detector(fake).get(detector, {})
@@ -246,6 +294,14 @@ def main(argv=None) -> None:
     f.add_argument("--holdout", type=float, default=0.2, help="fraction of groups held out for the report")
     f.add_argument("--out", type=Path, required=True)
     f.set_defaults(func=cmd_fit)
+
+    r = sub.add_parser("fit-reference", help="fit reference distributions on the real clips (calibrated scores)")
+    r.add_argument("--measurements", type=Path, nargs="+", required=True)
+    r.add_argument("--holdout", type=float, default=0.2, help="fraction of groups held out for the false-alarm report")
+    r.add_argument("--seed", type=int, default=0)
+    r.add_argument("--detectors", nargs="+", choices=list(DETECTORS), help="only these detectors (default: all)")
+    r.add_argument("--out", type=Path, required=True)
+    r.set_defaults(func=cmd_fit_reference)
 
     e = sub.add_parser("eval", help="real vs fake AUC from measurements")
     e.add_argument("--measurements", type=Path, nargs="+", required=True)

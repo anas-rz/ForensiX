@@ -37,7 +37,11 @@ Each constraint reports:
 - `measured`: the value in this clip;
 - `expected_range_start` and `worse`: where real media stops, and which direction is suspicious;
 - `violation`: 0 inside the real range, rising to 1 at the end of the range;
-- `prior`: `provisional` (hand-set from the literature) or `learned` (fitted on real media).
+- `p_real` (reference scoring): the share of real media at least this extreme;
+- `prior`: `reference` (a real-media distribution), `learned` (a range fitted on real media) or
+  `provisional` (hand-set from the literature).
+
+`details["scoring"]` says how the score was computed (next section).
 
 `details["timeline"]` gives per-frame or per-stretch values for localizing the problem in time.
 
@@ -65,38 +69,69 @@ Without a trained graph prior, `physdf` runs the five detectors and reports on t
 prior, it adds cross-system residuals: the mouth predicted from the speech, the speech from the
 mouth, each skin region's pulse from the others, and so on ([Training](training.md#physdf)).
 
-## Calibrate before you rely on it
+## How the score is computed
 
-The provisional ranges are hand-set, and the video ranges haven't been checked against a large
-set of real videos. In testing, provisional blood-flow and lighting ranges fired on real
-footage. Until you fit learned priors on real media like yours, treat physics output as leads
-for a human reviewer, not as a detector score.
+**Reference scoring** (`details["scoring"] == "reference"`) compares each measurement with its
+distribution over *real* media:
 
-Learned priors set each constraint's range from real media only, so a real clip trips any one
-constraint of a detector with probability about α (default 1%):
+1. Each constraint becomes a tail probability `p_real`: how much real media is at least this
+   extreme, in the direction the physics says is suspicious (too clean a voice, too long without
+   a breath).
+2. Fisher's method adds the constraints up, so several weak signals count together.
+3. The result is calibrated on real media: the **score is the share of real clips that are less
+   unusual**. A score of 0.99 means "more unusual than 99% of real media". The detector's
+   `threshold` is 0.99, so on media like the reference, about 1% of real clips are flagged.
+
+No fakes are used, so a reference can't overfit one generator. It does encode the recording
+conditions of the real media behind it.
+
+**Range scoring** (`"provisional"`) is the fallback for detectors without a reference: each
+constraint has a hand-set range, and the score is the largest violation. Most clips fall inside
+the ranges and score exactly 0, so range scores rank clips poorly and have no threshold.
+
+| Detector | Packaged default | Measured result |
+|---|---|---|
+| `phys-voice` | **Reference**: real ASVspoof 2019 LA train/dev speech plus LibriSpeech dev-clean | AUC 0.679 on held-out ASVspoof speakers (range scoring: 0.488), with 0.0% false alarms at 0.99 |
+| `phys-room` | Ranges | A general reference wasn't reliable: room acoustics vary too much between recording setups |
+| `phys-bloodflow`, `phys-motion`, `phys-lighting` | Ranges | No real-video corpus to fit a default yet |
+
+The [physics benchmark](../reference/benchmark-physics.md) has the details.
+
+## Fit a reference on your own media (recommended)
+
+A reference fitted on real media *like yours* does better than any general default. Fitted on
+ASVspoof's own real training speech, `phys-voice` reaches AUC 0.741 on that corpus, against 0.679
+for the general default. It's also the only way to get calibrated video physics. You need real
+media only, ideally a few hundred clips from many speakers or sources:
 
 ```bash
-# 1. measure every constraint on real media like yours (resumable JSONL)
-python scripts/calibrate_physics.py measure --media /data/real_videos --kind video --with-audio \
+# 1. measure every constraint on real media like yours (resumable JSONL);
+#    the first folder under --media is the group (speaker, channel), the unit of every split
+python scripts/calibrate_physics.py measure --media /data/real --kind video --with-audio \
     --label real --source my-real --out m/real.jsonl
-# 2. fit priors on real clips; reports held-out false-alarm rates, learned vs provisional
-python scripts/calibrate_physics.py fit --measurements m/real.jsonl --out learned_priors.json
-# 3. optional: real vs fake AUC per detector and per constraint
+# 2. fit the reference; it reports false alarms on held-out groups at 0.99 and 0.95
+python scripts/calibrate_physics.py fit-reference --measurements m/real.jsonl --out reference.json
+# 3. optional, if you have labelled fakes: real vs fake AUC per detector and per constraint
 python scripts/calibrate_physics.py measure --media /data/fakes --kind video --with-audio --label fake --out m/fake.jsonl
-python scripts/calibrate_physics.py eval --measurements m/real.jsonl m/fake.jsonl --priors learned_priors.json
+python scripts/calibrate_physics.py eval --measurements m/real.jsonl m/fake.jsonl --priors reference.json
 ```
 
-Use them:
+Use it:
 
 ```python
 det = forensix.load("phys-bloodflow")
-det.load_priors("learned_priors.json")
+det.load_priors("reference.json")
 ```
 
-To make them the default for every detector, ship the file as
-`forensix/physics/learned_priors.json` (the package already declares it as package data). A
-constraint with fewer than 100 applicable real clips keeps its provisional range;
-`details["constraints"][k]["prior"]` tells you which applied.
+To make it the default everywhere, replace `forensix/physics/reference.json`, which ships as
+package data.
+
+A constraint needs at least 100 real measurements to get a distribution; the rest keep their
+provisional range for the evidence but don't count towards the score. A detector needs 50 real
+clips across at least 5 groups to be calibrated.
+
+Older **learned priors** (`fit`, ranges fitted on real media) still work with `load_priors`, and
+an explicit priors table forces range scoring.
 
 Suggested real data with commercially usable licenses: LibriSpeech (CC BY 4.0) for audio and
 VoxCeleb2 test (CC BY 4.0; video copyright stays with the owners) for video with sound.
@@ -109,5 +144,11 @@ VoxCeleb2 test (CC BY 4.0; video copyright stays with the owners) for video with
   RT60 from a few decays is noisy.
 - **Pitch continuity:** at this tracker quality, it can't separate fast genuine pitch moves from
   an octave-jumping synthetic voice.
+- **Face swaps keep physics:** a swap keeps the source video's head motion and lighting, so
+  `phys-motion` and `phys-lighting` stay near chance on face swaps even with a reference. Blood
+  flow needs at least 6 s of a steady face: on 2–6 s compressed clips, the pulse isn't measurable
+  even in real faces.
+- **Recording conditions:** a reference describes the real media it was fitted on. Phone calls,
+  noisy rooms or heavy compression need their own reference.
 - **No attribution:** the priors know real media only, so the system says *that* physics was
   violated, not *which* generator did it.

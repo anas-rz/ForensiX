@@ -4,20 +4,113 @@ This report evaluates the physics-based detectors (`phys-*`). These are hand-bui
 
 ## Summary
 
-- **SDFVD: no physics detector beats chance.**
-  - `phys-motion` AUC 0.45 and `phys-lighting` 0.48.
-  - `phys-bloodflow` never applies: every clip is under its 6 s minimum.
-  - With the default priors, `phys-lighting` flags 100% of the real clips, so it isn't usable on this footage.
-  - Face swaps keep the source video's head motion and scene lighting. The constraints these detectors check are mostly preserved by construction.
-- **ASVspoof 2019 LA: near chance with the default priors.**
-  - `phys-voice` AUC 0.49 and `phys-room` 0.49.
-  - With priors fitted on ASVspoof's own bona fide train/dev speech, `phys-voice` rises to AUC 0.62. It flags 26% of fakes, with 1.4% of reals violating any constraint.
-  - Coverage is low: `phys-voice` measures 33% of trials (it needs 1.5 s of voiced speech) and `phys-room` measures 4% (it needs 6 s of audio).
-- **The fitted priors are not shipped as the package default.**
-  - They fail the package's own tests: a real 10 s LibriVox recording scores 1.0.
-  - The reason: some ranges learned from ~3 s ASVspoof clips don't transfer to longer speech (details below).
-  - The default stays the provisional, hand-set priors. This is a decision for the maintainer; options are listed at the end.
-- **Camera-consistency feature.** One experimental feature, fixed in advance on a dev split of SDFVD, reached AUC 0.66 [0.50, 0.81] on the held-out test pairs. It is not added to the package (see below).
+**Reference scoring (current default, November 2026).**
+
+- **`phys-voice`: AUC 0.488 → 0.679 [0.638, 0.719]** on held-out ASVspoof 2019 LA eval
+  speakers, with the packaged reference.
+  - False alarms: 0.0% of real eval clips reach the 0.99 decision threshold.
+  - Detection at that strict threshold is modest: 4.1% of fakes.
+  - Fitted on ASVspoof's own real train/dev speech only, the same method reaches **AUC 0.741
+    [0.705, 0.780]**. That's the case for fitting a reference on your own media.
+- **The gain comes from scoring, not new measurements.** The old score was the largest
+  violation of hand-set ranges; most clips scored exactly 0, so the score couldn't rank them.
+  Reference scoring keeps each measurement's information and adds weak signals together.
+- **Calibrated false alarms.** Scores are calibrated on real media out of fold, so 0.99 means
+  "more unusual than 99% of real media". Held-out real speakers: 0.0% at 0.99 and 4.1% at 0.95.
+- **Negative results, not shipped:**
+  - **`phys-room`:** a general reference scored *below* chance (AUC 0.296, 26 + 50 clips). Room
+    acoustics differ too much between corpora. It keeps its ranges.
+  - **`phys-bloodflow` at 3 s:** at a 3-second minimum (fixed in advance: three beats at 60 bpm),
+    it measures 37 SDFVD pairs, but reaches only AUC 0.625 [0.490, 0.756]. Real clips show almost
+    no measurable pulse (median coherence 0.15). The 6-second minimum stays.
+  - **Video motion and lighting:** reference scoring, cross-validated on SDFVD, cuts
+    `phys-lighting`'s false alarms from 70% to 8.5%, but AUC stays at chance (0.51 and 0.54).
+    Face swaps keep the source video's motion and lighting.
+
+**Range scoring (before; kept below for the record).**
+
+- No video detector beat chance on SDFVD; `phys-lighting` flagged 70–100% of real clips.
+- `phys-voice` scored AUC 0.488 on ASVspoof with the provisional ranges, and 0.624 with ranges
+  fitted on ASVspoof train/dev.
+- A camera-noise feature reached AUC 0.66 [0.50, 0.81] on held-out SDFVD pairs; not shipped.
+
+## Reference scoring
+
+### Method (fixed before evaluation)
+
+1. **Reference distributions.** Per constraint, the measurement's distribution over real clips,
+   stored as 401 quantiles.
+2. **Direction from physics.** The suspicious direction of each constraint comes from the
+   detector's provisional range, never from fakes.
+3. **Tail probability.** A clip's measurement becomes `p` = the share of real media at least as
+   extreme.
+4. **Combination.** Fisher's method, `S = Σ −ln p`, over the constraints that apply.
+5. **Calibration.** Cross-fitting over five folds of groups (speakers): each real clip is scored
+   against references built without its group, and the score is the clip's rank among those
+   statistics.
+
+Fisher's method was chosen before any evaluation. The min-p alternative was computed once for
+transparency (same AUC, 0.744 vs 0.743 in the first experiment) and not used.
+
+### Data
+
+| Set | Content | Used for |
+|---|---|---|
+| ASVspoof 2019 LA train + dev, bona fide | 5,128 real clips, 40 speakers | fitting |
+| LibriSpeech dev-clean | 1,200 real utterances (seed 0 of 2,703), 40 speakers, CC BY 4.0 | fitting (packaged default only) |
+| ASVspoof 2019 LA eval subset | 1,000 bona fide + 1,001 spoofed, speakers disjoint from fitting | evaluation |
+| SDFVD | 53 real + 53 face-swapped videos | video, cross-validated by pair |
+
+### Audio: ASVspoof 2019 LA eval subset
+
+| Detector | Scoring | n (real + fake) | AUC [95% CI] | Reals ≥ 0.99 | Fakes ≥ 0.99 |
+|---|---|---|---|---|---|
+| `phys-voice` | ranges, provisional | 294 + 369 | 0.488 [0.472, 0.504] | – | – |
+| `phys-voice` | ranges fitted on ASVspoof train/dev | 294 + 369 | 0.624 | – | – |
+| `phys-voice` | **reference, ASVspoof train/dev** | 294 + 369 | **0.741 [0.705, 0.780]** | 0.7% | 14.9% |
+| `phys-voice` | **reference, ASVspoof + LibriSpeech (packaged)** | 294 + 369 | **0.679 [0.638, 0.719]** | 0.0% | 4.1% |
+| `phys-room` | reference, ASVspoof + LibriSpeech | 26 + 50 | 0.296 | 0.0% | 0.0% |
+
+**Why the packaged default includes LibriSpeech.** An ASVspoof-only reference flags long natural
+speech: the test suite's real 10 s LibriVox reading has an 8.2 s stretch without a pause, longer
+than any real ASVspoof clip, so it would score 1.0. Pooling in longer audiobook speech fixes that
+(it scores 0.78, below the 0.99 threshold), at a cost of 0.06 AUC on ASVspoof.
+
+**Calibration.** On real speakers held out from both fitting and calibration, the packaged
+reference flags 0.0% at 0.99 and 4.1% at 0.95 (n = 438). An earlier version calibrated on a
+single 20% split of the groups flagged 3.2% at 0.99. Cross-fitting on all groups fixed that.
+
+### Video: SDFVD, 5-fold cross-validation by pair
+
+No real video separate from SDFVD was available, so each fold's reference is fitted on the real
+clips of the other folds' pairs.
+
+| Detector | n | AUC, reference [95% CI] | AUC, ranges | Reals flagged |
+|---|---|---|---|---|
+| `phys-motion` | 47 + 47 | 0.544 [0.432, 0.655] | 0.445 | 6.4% at 0.95 (ranges: 10.6% at ≥ 0.5) |
+| `phys-lighting` | 47 + 47 | 0.508 [0.389, 0.631] | 0.481 | 8.5% at 0.95 (ranges: 70.2%) |
+| `phys-bloodflow`, 3 s minimum | 37 + 37 | 0.625 [0.490, 0.756] | – | 10.8% at 0.95 |
+
+Blood-flow constraints at 3 s: coherence AUC 0.455, heart-rate spread 0.608, pulse SNR 0.585. All
+of their intervals include 0.5.
+
+### Reproduce
+
+```bash
+python scripts/calibrate_physics.py measure --media LibriSpeech/dev-clean --kind audio --label real \
+    --source librispeech-dev-clean --detectors phys-voice phys-room --max-files 1200 --seed 0 \
+    --out results/physics/librispeech/dev_clean.jsonl
+python scripts/calibrate_physics.py fit-reference --detectors phys-voice \
+    --measurements results/physics/asvspoof/fit_*.jsonl results/physics/librispeech/dev_clean.jsonl \
+    --out forensix/physics/reference.json
+python scripts/calibrate_physics.py eval --measurements results/physics/asvspoof/eval_*.jsonl \
+    --out results/physics/asvspoof_eval_reference.json
+# in-domain variant: --measurements results/physics/asvspoof/fit_*.jsonl only
+```
+
+# Range scoring (previous evaluation)
+
+The sections below are the evaluation of range scoring, before reference scoring existed.
 
 ## Data
 
