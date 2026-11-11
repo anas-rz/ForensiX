@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Deepfake detection and media forensics. Commercially licensed detectors behind one Python API, an HTTP server and a web manager.">
+        <meta name="description" content="End-to-end deepfake detection and media forensics: 38 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
       
       
       
@@ -2206,17 +2206,13 @@ volumes keep state across restarts: <code>data</code> (calibrations, datasets, g
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>forensix<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-w
 </code></pre></div>
 <h3 id="what-gets-deployed">What gets deployed<a class="headerlink" href="#what-gets-deployed" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>                     Ingress (one host, TLS)
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>        ┌───────────────────┴─────────────────────────┐
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  /ui /docs /v1/datasets /v1/calibrations        /v1/detect and everything else
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>  /v1/jobs /v1/identities /v1/models ...                    │
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        │                                                    │
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>  forensix-manager (1 replica, Recreate)      forensix-inference (2–10 replicas, HPA)
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  admin_endpoints on, UI on                   admin_endpoints off, UI off
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        │   writes                                   │   reads
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>        └──────────────► PVC forensix-data (RWX) ◄───┘
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>                         calibrations, datasets, galleries
-</code></pre></div>
+<p><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../images/diagrams/deployment-dark.svg">
+  <img alt="Deployment: a load balancer routes management paths to one manager and detection to autoscaled inference replicas; the manager writes and the replicas read shared storage. Runs on Docker Compose, Kubernetes, AWS, Google Cloud and Azure." src="../images/diagrams/deployment-light.svg" width="100%">
+</picture></p>
+<p>On Kubernetes the shared storage is a ReadWriteMany volume (Filestore on GKE, EFS on EKS, Azure
+Files on AKS). On ECS it's EFS; on Cloud Run, a Cloud Storage bucket; on Container Apps, an Azure
+Files share.</p>
 <ul>
 <li><strong>The manager</strong> owns the web UI, dataset uploads, calibration jobs and identity enrollment.
   It runs as a single replica, so shared state has exactly one writer.</li>
@@ -2339,11 +2335,11 @@ dataset ZIPs). On other controllers, set the equivalent body-size and read-timeo
 <h3 id="cloud-run-no-cluster">Cloud Run (no cluster)<a class="headerlink" href="#cloud-run-no-cluster" title="Permanent link">&para;</a></h3>
 <p><a href="../gcp/">Deploying on Google Cloud</a> automates this, with a separate manager service and shared storage.</p>
 <p>A single container works on Cloud Run, with CPU or an NVIDIA L4 GPU:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>gcloud<span class="w"> </span>run<span class="w"> </span>deploy<span class="w"> </span>forensix<span class="w"> </span>--image<span class="w"> </span>REGION-docker.pkg.dev/PROJECT/forensix/forensix:gpu-bundled<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>--gpu<span class="w"> </span><span class="m">1</span><span class="w"> </span>--gpu-type<span class="w"> </span>nvidia-l4<span class="w"> </span>--cpu<span class="w"> </span><span class="m">8</span><span class="w"> </span>--memory<span class="w"> </span>32Gi<span class="w"> </span>--no-cpu-throttling<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>--min-instances<span class="w"> </span><span class="m">1</span><span class="w"> </span>--max-instances<span class="w"> </span><span class="m">4</span><span class="w"> </span>--concurrency<span class="w"> </span><span class="m">8</span><span class="w"> </span>--timeout<span class="w"> </span><span class="m">900</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span>--set-env-vars<span class="w"> </span><span class="nv">FORENSIX_SERVER_DEVICE</span><span class="o">=</span>cuda,FORENSIX_SERVER_PRELOAD<span class="o">=</span><span class="s2">"dfdet-clip commfor nes2net-x-itw syncnet"</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span>--set-secrets<span class="w"> </span><span class="nv">FORENSIX_SERVER_API_KEY</span><span class="o">=</span>forensix-api-key:latest,FORENSIX_SERVER_ADMIN_KEY<span class="o">=</span>forensix-admin-key:latest
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>gcloud<span class="w"> </span>run<span class="w"> </span>deploy<span class="w"> </span>forensix<span class="w"> </span>--image<span class="w"> </span>REGION-docker.pkg.dev/PROJECT/forensix/forensix:gpu-bundled<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--gpu<span class="w"> </span><span class="m">1</span><span class="w"> </span>--gpu-type<span class="w"> </span>nvidia-l4<span class="w"> </span>--cpu<span class="w"> </span><span class="m">8</span><span class="w"> </span>--memory<span class="w"> </span>32Gi<span class="w"> </span>--no-cpu-throttling<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>--min-instances<span class="w"> </span><span class="m">1</span><span class="w"> </span>--max-instances<span class="w"> </span><span class="m">4</span><span class="w"> </span>--concurrency<span class="w"> </span><span class="m">8</span><span class="w"> </span>--timeout<span class="w"> </span><span class="m">900</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span>--set-env-vars<span class="w"> </span><span class="nv">FORENSIX_SERVER_DEVICE</span><span class="o">=</span>cuda,FORENSIX_SERVER_PRELOAD<span class="o">=</span><span class="s2">"dfdet-clip commfor nes2net-x-itw syncnet"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span>--set-secrets<span class="w"> </span><span class="nv">FORENSIX_SERVER_API_KEY</span><span class="o">=</span>forensix-api-key:latest,FORENSIX_SERVER_ADMIN_KEY<span class="o">=</span>forensix-admin-key:latest
 </code></pre></div>
 <ul>
 <li><strong>Port:</strong> Cloud Run sets <code>PORT</code>, which the server uses.</li>
