@@ -1,5 +1,8 @@
 # Training models
 
+To adapt a *pretrained* detector (image, audio, or the GenD video models) to your own data, see
+[Fine-tuning on your data](finetuning.md). This page covers the models that ship without weights.
+
 Most ForensiX models ship with pretrained weights. Five ship without, because no commercially
 usable weights exist and ForensiX trains its own:
 

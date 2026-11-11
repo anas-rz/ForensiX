@@ -18,6 +18,7 @@ person = specialized
 __all__ = [
     "ModelSpec",
     "calibrate",
+    "finetune",
     "Prediction",
     "cache_dir",
     "download",
@@ -58,12 +59,22 @@ def load(name: str, device: str = "cpu", weights_path: str | Path | None = None,
     """
     spec = get_spec(name)
     path = Path(weights_path) if weights_path else download(name)
+    finetuned = None
+    if weights_path:
+        from forensix.finetuning import checkpoint_info
+
+        if checkpoint_info(path):  # a forensix.finetune checkpoint: pretrained model + changed tensors
+            finetuned, path = path, download(name)
     try:
         detector = spec.builder(path, device=device, **options)
     except TypeError as e:
         if options and "unexpected keyword" in str(e):
             raise TypeError(f"{name} doesn't take options {sorted(options)}") from e
         raise
+    if finetuned is not None:
+        from forensix.finetuning import apply
+
+        apply(detector, finetuned)
     if calibration is None:
         return detector
     from forensix.calibration import Calibration, CalibratedDetector
@@ -81,6 +92,15 @@ def calibrate(model, real_media=None, fake_media=None, dataset=None, **kwargs):
     from forensix.calibration import calibrate as _calibrate
 
     return _calibrate(model, real_media, fake_media, dataset, **kwargs)
+
+
+def finetune(model, dataset=None, real_media=None, fake_media=None, out=None, **kwargs):
+    """Fine-tune a pretrained detector on labelled media: ``(detector, report)``, saving the
+    checkpoint to ``out``; ``forensix.load(model, weights_path=out)`` loads it later. See
+    ``forensix.finetuning`` for the modes and options."""
+    from forensix.finetuning import finetune as _finetune
+
+    return _finetune(model, dataset, real_media, fake_media, out, **kwargs)
 
 
 def load_fusion(path: str | Path, device: str = "cpu"):

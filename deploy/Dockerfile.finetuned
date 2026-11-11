@@ -1,0 +1,21 @@
+# Your fine-tuned checkpoints and calibrations on top of a published ForensiX image, for any cloud.
+# See docs/guides/finetuning.md. Build from a folder holding models/:
+#
+#   models/dfdet-clip-ft.safetensors          from python -m forensix.finetuning
+#   models/dfdet-clip-ft.calibration.json     optional, from forensix.calibrate on the fine-tuned model
+#
+#   docker build -f deploy/Dockerfile.finetuned -t REGISTRY/forensix:gpu-ft \
+#     --build-arg BASE=ghcr.io/anas-rz/forensix:gpu-bundled \
+#     --build-arg WEIGHTS='{"dfdet-clip": "/opt/forensix/models/dfdet-clip-ft.safetensors"}' \
+#     --build-arg CALIBRATIONS='{"dfdet-clip": "/opt/forensix/models/dfdet-clip-ft.calibration.json"}' \
+#     path/to/folder
+#
+# Fine-tune checkpoints hold only what changed and load on top of the pretrained weights, so use a
+# *-bundled base that has those weights baked in (or allow the download).
+ARG BASE=ghcr.io/anas-rz/forensix:cpu-bundled
+FROM ${BASE}
+COPY --chown=10001:10001 models/ /opt/forensix/models/
+ARG WEIGHTS={}
+ARG CALIBRATIONS={}
+ENV FORENSIX_SERVER_WEIGHTS=${WEIGHTS} \
+    FORENSIX_SERVER_CALIBRATIONS=${CALIBRATIONS}

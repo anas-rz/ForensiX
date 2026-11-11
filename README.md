@@ -631,6 +631,18 @@ python scripts/eval_deepfake_eval_2024.py --data /content/de2024 --modality vide
 
 The script finds the metadata CSV's file and label columns by itself and prints them; `--file-col` and `--label-col` override that. Media a model can't decode is skipped and counted. Audio formats libsndfile can't read (e.g. m4a) are decoded with ffmpeg.
 
+## Fine-tuning
+
+Adapt a pretrained detector to your media, then calibrate, package and deploy it to AWS, Google Cloud or Azure ([guide](docs/guides/finetuning.md)):
+
+```bash
+python -m forensix.finetuning dfdet-clip --dataset train.zip --out models/dfdet-clip-ft.safetensors --mode norm --device cuda
+```
+
+```python
+det = forensix.load("dfdet-clip", weights_path="models/dfdet-clip-ft.safetensors")
+```
+
 ## Calibration
 
 A detector's `fake_prob` and default threshold come from its training data, and they often don't hold on other media: on SDFVD, most detectors call almost every face swap real at 0.5 ([benchmark.md](benchmark.md)). `forensix.calibration` fits a small JSON table on labelled scores of your own media and applies it on top of any detector. Weights and preprocessing are unchanged. Three tools are fitted together:

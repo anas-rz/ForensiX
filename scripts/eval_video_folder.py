@@ -93,6 +93,8 @@ def main() -> None:
     parser.add_argument("--face-crop", action="store_true",
                         help="image detectors score a crop around the largest face (MTCNN) instead of the full frame")
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--weights", nargs="+", default=[], metavar="NAME=PATH",
+                        help="checkpoints to use instead of the pretrained ones, e.g. dfdet-clip=dfdet-clip-ft.safetensors")
     parser.add_argument("--out", type=Path, required=True, help="results JSON (also used to resume)")
     parser.add_argument("--scores-out", type=Path, help="write per-video scores CSV here")
     args = parser.parse_args()
@@ -115,11 +117,12 @@ def main() -> None:
         from forensix.video.mtcnn.mtcnn import MTCNN
 
         face_detector = MTCNN(device=args.device)
+    weights = dict(w.split("=", 1) for w in args.weights)
     for name in args.models:
         if name in results["models"]:
             print(f"  {name}: already done, skipping")
             continue
-        detector = forensix.load(name, device=args.device)
+        detector = forensix.load(name, device=args.device, weights_path=weights.get(name))
         family = forensix.get_spec(name).family
         start = time.perf_counter()
         if family == "image":

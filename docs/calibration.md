@@ -83,6 +83,9 @@ cd parent_dir && zip -r my_dataset.zip my_dataset
 Uploads are validated: unknown labels, missing files, duplicates and files outside the dataset
 are listed as `problems` and skipped; a dataset with no usable items is rejected.
 
+If a model ranks your real and fake media poorly (a low AUC), calibration can't fix that:
+[fine-tune it](guides/finetuning.md) on your data first, then calibrate the fine-tuned model.
+
 ## Python
 
 ```python

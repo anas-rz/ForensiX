@@ -22,6 +22,7 @@ preprocessing details and parity checks against upstream code.
 | Call the detectors over HTTP | [HTTP server](server.md) |
 | Manage, test and calibrate models in the browser | [Web manager](ui.md) |
 | Calibrate models on your own labelled data, and get predictions with confidence | [Calibration](calibration.md) |
+| Fine-tune a detector on your data and deploy it to any cloud | [Fine-tuning on your data](guides/finetuning.md) |
 | Check C2PA credentials, generator watermarks and metadata | [Provenance](provenance.md) |
 | Report false-alarm rates by skin tone, age and gender | [Fairness reports](fairness.md) |
 | Run it in Docker, on Kubernetes or a managed cloud | [Docker, Kubernetes and cloud](cloud.md) |
@@ -40,6 +41,7 @@ preprocessing details and parity checks against upstream code.
 | [Evaluating on your data](guides/evaluation.md) | The eval scripts, metrics, building a fair test set, reading benchmark numbers |
 | [Identity and person models](guides/identity.md) | Enrolling people, verifying media against them, galleries, tiny per-person models |
 | [Physics forensics](guides/physics.md) | The physics detectors, forensic reports, learned priors |
+| [Fine-tuning on your data](guides/finetuning.md) | Fine-tune a pretrained detector on your labelled data, evaluate, calibrate, package and deploy it to AWS, Google Cloud or Azure |
 | [Training models](guides/training.md) | Training the models that ship without weights (avcons, avid, id-motion, physdf) |
 | [Working in Google Colab](guides/colab.md) | GPU choice, Drive, GitHub, Claude Code in Colab |
 | [Extending ForensiX](guides/extending.md) | Adding a model or a family, tests, parity checks |

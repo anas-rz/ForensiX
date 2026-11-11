@@ -23,7 +23,8 @@ import forensix
 
 | Function | Returns | Description |
 |---|---|---|
-| `load(name, device="cpu", weights_path=None)` | detector | Builds a detector, downloading and hash-checking its weights first. `device` is `"cpu"`, `"cuda"` or `"cuda:N"`. `weights_path` uses a local checkpoint instead of the registered one (required for models you train: `avcons`, `avid`, `id-motion`, `person-detector`; optional for `physdf`). |
+| `load(name, device="cpu", weights_path=None)` | detector | Builds a detector, downloading and hash-checking its weights first. `device` is `"cpu"`, `"cuda"` or `"cuda:N"`. `weights_path` uses a local checkpoint instead of the registered one (required for models you train: `avcons`, `avid`, `id-motion`, `person-detector`; optional for `physdf`), or a [fine-tune checkpoint](guides/finetuning.md), which is applied on top of the pretrained weights. |
+| `finetune(model, dataset=None, real_media=None, fake_media=None, out=None, mode="norm", epochs=5, ...)` | `(detector, report)` | Fine-tunes a pretrained image, audio or GenD video detector on labelled media and saves the checkpoint to `out` ([Fine-tuning](guides/finetuning.md)). |
 | `list_models(family=None)` | `list[str]` | Registered model names, sorted, optionally filtered by family. |
 | `info(name)` | `ModelSpec` | Family, license, source, paper, description and weight file of a model. |
 | `download(name, force=False)` | `Path \| None` | Fetches the model's weights and shared backbones into the cache, without building the model. `None` for models without registered weights. |
@@ -174,6 +175,16 @@ Report helpers in `forensix.physics.report`:
 | `calibration.Calibration.save(path)` / `.load(path)` | The calibration table (JSON, `forensix-calibration/1`) |
 | `dataset.read_dataset(folder)` | Reads the [standard dataset format](calibration.md#the-dataset-format): `Dataset(items, layout, problems)` |
 | `dataset.extract_dataset(zip, dest)` | Safe ZIP extraction (no path escapes, size limits); returns the dataset root |
+
+## Fine-tuning: `forensix.finetune`, `forensix.finetuning`
+
+| Name | Description |
+|---|---|
+| `forensix.finetune(model, dataset=None, real_media=None, fake_media=None, out=None, mode="norm", epochs=5, lr=None, batch_size=16, val_fraction=0.2, max_per_class=None, frames=16, augment=True, seed=0, device="cpu", cache_dir=None)` | Fine-tunes and returns `(detector, report)`: held-out AUC before (`base_val_auc`) and after (`val_auc`), `best_epoch`, per-epoch `history`, counts and `warnings` |
+| `python -m forensix.finetuning MODEL --dataset DATA --out MODEL-ft.safetensors` | The same from the command line; also writes `MODEL-ft.json` |
+| `finetuning.checkpoint_info(path)` | The checkpoint's metadata (model, mode, base weights hash, report), or `None` if `path` isn't a fine-tune checkpoint |
+| `finetuning.apply(detector, path)` | Loads a checkpoint into a detector built with its pretrained weights (what `forensix.load(..., weights_path=...)` does) |
+| `finetuning.trainable_parameters(network, mode)` | The parameters a mode trains (`head`, `norm`, `full`) |
 
 ## Provenance: `forensix.provenance`
 
