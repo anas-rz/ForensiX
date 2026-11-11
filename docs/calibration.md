@@ -336,3 +336,5 @@ on `verdict: fake`, send `uncertain` and `out_of_distribution` to a person, and 
 
 These guarantees hold for media exchangeable with the calibration data. When your traffic
 changes, run a drift check.
+
+**Next step:** check that false alarms are even across groups with a [fairness report](fairness.md).

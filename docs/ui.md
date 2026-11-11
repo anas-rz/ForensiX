@@ -111,3 +111,5 @@ you enter in **Settings**: the API key for reading and testing, and the admin ke
 models, uploading datasets and changing calibrations. They're kept in the browser's
 `localStorage` and sent as the `X-API-Key` header. Use HTTPS through a reverse proxy when the
 server isn't on localhost. Turn the UI off with `"ui": false` in the server config.
+
+**Next step:** upload a labelled dataset and [calibrate](calibration.md) a model on your media.

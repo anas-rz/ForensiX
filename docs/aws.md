@@ -233,3 +233,5 @@ for example by downloading calibration tables from the web manager.
 
 Deployments to an AWS account haven't been run from this repository yet. Try a non-production
 account first, and report what needed changing.
+
+**Next step:** open the web manager's [dashboard](ui.md#the-overview-dashboard), then [calibrate](calibration.md) on your media.

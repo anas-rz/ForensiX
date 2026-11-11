@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use ForensiX in your work, please cite it as below. Please also cite the papers of the individual models you use (listed in the README's Models table)."
+title: "ForensiX: end-to-end deepfake detection and media forensics"
+type: software
+authors:
+  - family-names: Raza
+    given-names: Muhammad Anas
+repository-code: "https://github.com/anas-rz/ForensiX"
+url: "https://anas-rz.github.io/ForensiX/"
+version: 0.1.0
+keywords:
+  - deepfake detection
+  - media forensics
+  - synthetic media
+  - content provenance
+  - C2PA
+  - calibration

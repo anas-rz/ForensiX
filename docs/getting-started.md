@@ -29,6 +29,11 @@ hash. To fetch them ahead of time, for example before going offline, run
 
 ## 2. Score a file in Python
 
+From the command line, `python -m forensix FILE` runs the right detectors and provenance checks for
+the file's media type. `python scripts/fetch_samples.py` downloads a small test kit of real and
+fake media to try it on.
+
+
 ```python
 import forensix
 
@@ -150,3 +155,7 @@ pip install -e ".[docs]"
 mkdocs serve          # live preview at http://127.0.0.1:8000 (use -a 127.0.0.1:8001 if the ForensiX server is running)
 mkdocs build          # static site in site/
 ```
+
+**Next step:** measure the models on your own media with [Calibration](calibration.md).
+
+If ForensiX saved you time, a [GitHub star](https://github.com/anas-rz/ForensiX) helps others find it.

@@ -289,3 +289,5 @@ Video and audiovisual models are slow on CPU. Use a GPU for them; see
   client side if the whole file matters.
 - **Video models' "no face" score.** A 0.5 with no faces is reported as `no_face`, not as a
   result.
+
+**Next step:** run it on your infrastructure or cloud: [Docker, Kubernetes and cloud](cloud.md).

@@ -158,3 +158,5 @@ checks aren't calibrated, since there's no score to calibrate.
 
 Without the `provenance` extra, `c2pa` and `watermark-audio` report `unavailable` (with the
 install command) while everything else runs.
+
+**Next step:** pair provenance with calibrated detector scores: [Calibration](calibration.md).

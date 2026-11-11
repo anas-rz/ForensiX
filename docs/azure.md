@@ -173,3 +173,5 @@ share with your datasets and calibrations.
 
 Deployments to an Azure subscription haven't been run from this repository yet. Try a
 non-production subscription first.
+
+**Next step:** open the web manager's [dashboard](ui.md#the-overview-dashboard), then [calibrate](calibration.md) on your media.

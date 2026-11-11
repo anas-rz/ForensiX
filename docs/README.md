@@ -50,6 +50,7 @@ preprocessing details and parity checks against upstream code.
 | Fine-tune the large CLIP/ViT models with LoRA adapters (PEFT) | [Parameter-efficient fine-tuning](guides/peft.md) |
 | Check C2PA credentials, generator watermarks and metadata | [Provenance](provenance.md) |
 | Report false-alarm rates by skin tone, age and gender | [Fairness reports](fairness.md) |
+| Choose a deepfake detection product: the questions to ask any vendor | [Buyer's checklist](guides/buyers-checklist.md) |
 | Run it in Docker, on Kubernetes or a managed cloud | [Docker, Kubernetes and cloud](cloud.md) |
 | Deploy on AWS (ECS or EKS) with one command or one click | [Deploying on AWS](aws.md) |
 | Deploy on Google Cloud (Cloud Run or GKE) | [Deploying on Google Cloud](gcp.md) |
@@ -71,6 +72,7 @@ preprocessing details and parity checks against upstream code.
 | [Training models](guides/training.md) | Training the models that ship without weights (avcons, avid, id-motion, physdf) |
 | [Working in Google Colab](guides/colab.md) | GPU choice, Drive, GitHub, Claude Code in Colab |
 | [Extending ForensiX](guides/extending.md) | Adding a model or a family, tests, parity checks |
+| [Buyer's checklist](guides/buyers-checklist.md) | Vendor-neutral questions to ask any deepfake detection product, with what a good answer looks like |
 | [Licensing and compliance](guides/licensing.md) | What the licenses allow, and what to check before shipping |
 
 ## Status at a glance

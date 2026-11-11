@@ -227,3 +227,5 @@ their `image` input. Redeploying with a new image rolls the services over to it.
 | Video: "no face in ..." | The face detector found no face in the sampled frames. Those videos are skipped; check that they show a face |
 | The served model behaves like the base model | The server didn't get the checkpoint: `GET /v1/server` lists the models with custom weights under `trained_weights`; also check that the path exists inside the container |
 | "fine-tunes X, not Y" | The checkpoint belongs to a different model; checkpoints only load into the model they were trained from |
+
+**Next step:** for the large CLIP and ViT models, try [LoRA adapters](peft.md); or go straight to [deployment](#8-deploy).

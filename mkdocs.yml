@@ -89,6 +89,7 @@ nav:
       - Training models: guides/training.md
       - Extending ForensiX: guides/extending.md
       - Licensing and compliance: guides/licensing.md
+      - "Buyer's checklist": guides/buyers-checklist.md
   - Server and web manager:
       - HTTP server: server.md
       - Web manager: ui.md

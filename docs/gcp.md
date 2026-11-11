@@ -176,3 +176,5 @@ kept, since other deployments may share it. Delete it with
 
 Deployments to a Google Cloud project haven't been run from this repository yet. Try a
 non-production project first.
+
+**Next step:** open the web manager's [dashboard](ui.md#the-overview-dashboard), then [calibrate](calibration.md) on your media.

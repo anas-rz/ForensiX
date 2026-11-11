@@ -163,6 +163,13 @@ Report helpers in `forensix.physics.report`:
 | `PersonDetector.save(path)` / `PersonDetector.load(path, device="cpu")` | safetensors checkpoint. `forensix.load("person-detector", weights_path=path)` also works. |
 | `extract_features(media, modality)` and per-modality `extract_*_features` | The feature extractors, for custom training loops. |
 
+## Command line: `python -m forensix`
+
+| Command | Description |
+|---|---|
+| `python -m forensix FILE [FILE ...] [--models a,b] [--device cuda] [--json]` | Scores files with the server's default models for each media type (or `--models`), plus provenance checks, and prints a line per model or JSON |
+| `python scripts/fetch_samples.py [--out DIR]` | Downloads a labelled test kit of real and fake media (public domain, CC0 and MIT/Apache) with a `SOURCES.md` |
+
 ## Calibration: `forensix.calibrate`, `forensix.calibration`, `forensix.dataset`
 
 | Name | Description |

@@ -126,3 +126,5 @@ Write results up like [benchmark.md](../../benchmark.md):
 
 Keep the raw per-file scores. They let you recompute any metric later without rerunning the
 models.
+
+**Next step:** if accuracy on your media falls short, [fine-tune](finetuning.md); if it ranks well, [calibrate](../calibration.md).

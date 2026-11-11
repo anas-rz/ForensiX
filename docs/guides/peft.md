@@ -206,3 +206,5 @@ time. To experiment with another method:
 | The held-out AUC drops after the first epoch | Overfitting: rank 4, `--lora-dropout 0.1`, fewer epochs, or more data. The best epoch is kept regardless |
 | CUDA out of memory | Lower `--batch-size`, target attention only (`'(q_proj\|v_proj)$'`), or a lower rank. Training on CUDA already uses mixed precision |
 | The loaded model scores like the base model | The run kept the base weights (see the report's `warnings`), or the server isn't using the checkpoint (`trained_weights` in `GET /v1/server`) |
+
+**Next step:** once it's deployed, watch it in the [web manager's dashboard](../ui.md#the-overview-dashboard).

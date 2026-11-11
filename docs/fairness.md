@@ -117,3 +117,5 @@ print(to_markdown(rep))
   between sources, so collect every group from comparable sources.
 - Recalibrating moves the threshold for everyone. Lowering one group's false alarms with a
   per-group threshold is a policy decision with legal implications; ForensiX doesn't do it for you.
+
+**Next step:** take the calibrated, audited setup to production with [Docker, Kubernetes and cloud](cloud.md).

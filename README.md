@@ -10,14 +10,33 @@ generator watermarks and metadata. It **adapts to your own media** and runs as a
 console** on your laptop, your Kubernetes cluster, or **AWS, Google Cloud and Azure**. Every bundled
 model and weight is under a commercially usable license.
 
+### Try it on sample files
+
+```bash
+git clone https://github.com/anas-rz/ForensiX.git && cd ForensiX
+pip install -e ".[provenance]"
+python scripts/fetch_samples.py         # a small, labelled test kit of real and fake media
+python -m forensix forensix-samples/images/fake/dalle3_angry_man.jpg forensix-samples/provenance/c2pa_tampered.jpg
+```
+
+```text
+dalle3_angry_man.jpg (image)
+  commfor          FAKE   0.976  (threshold 0.5)
+  c2pa             no_credentials         No Content Credentials (C2PA) in this file.
+c2pa_tampered.jpg (image)
+  c2pa             tampered               Content Credentials signed by C2PA Test Signing Cert no longer match the content: it was modified after signing.
+```
+
+(Output abridged. The first run downloads model weights.)
+
 **[Try it in Colab: no install](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb)** · **[Read the docs](https://anas-rz.github.io/ForensiX/)** · **[Deploy to your cloud](docs/cloud.md#managed-clouds)**
 
 ## Why teams choose ForensiX
 
 - **Built for commercial use.** Every bundled model and weight is under a commercially usable
   license, documented model by model, with the conditions to check before you ship in the
-  [licensing guide](docs/guides/licensing.md). Research weights with non-commercial terms are left
-  out.
+  [licensing guide](docs/guides/licensing.md). Many published deepfake detectors release weights for
+  research use only; those are left out, so what's here can go into a product.
 - **Every modality, one API.** Image generators, face swaps, cloned voices, lip-sync mismatches,
   physical and physiological inconsistencies, identity and provenance: 38 detectors in 8 families
   behind `forensix.load(name).predict(file)` and a single `/v1/detect` endpoint.
@@ -26,9 +45,7 @@ model and weight is under a commercially usable license.
   "can't tell" when the evidence is mixed. Provenance adds proof that no score can: a signed
   AI-generation declaration, an edit after signing, a generator's watermark.
 - **Proof, not promises.** A public, reproducible [leaderboard](LEADERBOARD.md) with 95% confidence
-  intervals, recomputed from raw result files. For example, `gend-pe` reaches **AUC 0.956
-  [0.919–0.983]** on SDFVD face swaps, and `xlsr-aasist-df` **0.0% EER** on an ASVspoof 2019 LA
-  subset.
+  intervals, recomputed from raw result files ([excerpt below](#how-we-measure)).
 - **Fairness you can show.** [Fairness reports](docs/fairness.md) give false-alarm rates by skin
   tone, age and gender, with confidence intervals and significance tests: the evidence buyers and
   regulators ask for.
@@ -38,6 +55,33 @@ model and weight is under a commercially usable license.
 - **Production-ready on day one.** The API keeps models loaded, batches requests and caches
   results, and comes with a web console, Prometheus metrics, Docker and Kubernetes manifests, and
   [one-command or one-click deployment](docs/cloud.md#managed-clouds) to AWS, Google Cloud and Azure.
+
+## How we measure
+
+| Benchmark | Top models (AUC or EER, 95% interval) |
+|---|---|
+| **SDFVD face swaps**: 53 real and 53 face-swapped videos | `gend-pe` AUC 0.956 [0.919, 0.983] · `gend` 0.919 [0.864, 0.961] · `dfdet-clip` 0.916 [0.861, 0.963] |
+| **ASVspoof 2019 LA subset**: 2,001 trials | `xlsr-aasist-df` EER 0.0% [0.0, 0.2] · `nes2net-x-itw` 0.1% [0.0, 0.2] · `nes2net-x` 0.2% [0.0, 0.4] |
+
+These are small public benchmarks, and the ASVspoof attacks are older ones, so treat them as a
+starting point, not a promise for your media. At the default threshold of 0.5, `gend-pe` also
+flags 24.5% of the real SDFVD videos, which is why ForensiX
+[calibrates](docs/calibration.md) the threshold on your own data.
+
+- **Intervals, not single numbers:** bootstrap intervals for AUC and Wilson intervals for rates,
+  with dataset sizes stated.
+- **Recomputable:** every number is rebuilt from saved per-item scores by
+  `python scripts/build_leaderboard.py`, and each benchmark lists the command that produced it.
+- **Faithful ports:** each ported model is checked for parity against its upstream implementation
+  ([verification](#verification)).
+- **Licensed test data:** only benchmarks whose license allows commercial use.
+
+The work lines up with public standards and practice, without claiming certification:
+[C2PA](https://c2pa.org/specifications/) Content Credentials for provenance; transparency duties
+for AI-generated content such as Article 50 of the
+[EU AI Act](https://eur-lex.europa.eu/eli/reg/2024/1689/oj); and per-group error reporting, as in
+NIST's [face recognition evaluations](https://pages.nist.gov/frvt/html/frvt_demographics.html),
+for fairness.
 
 ## How it works
 
@@ -74,11 +118,11 @@ not just a number.
 
 | Team | Use ForensiX to |
 |---|---|
-| **Trust & safety, marketplaces, social platforms** | Flag AI-generated images and face-swapped video at upload, and read signed AI declarations |
-| **Identity verification and KYC** | Check selfie videos for face swaps and lip-sync, and confirm the face matches the enrolled person |
-| **Fraud teams and contact centers** | Detect cloned voices in calls and voicemails |
-| **Newsrooms and fact-checkers** | Verify Content Credentials, spot edits after signing, and explain the evidence |
-| **Compliance and procurement** | Show licenses, reproducible benchmarks and fairness reports |
+| **Trust & safety, marketplaces, social platforms** | Catch AI-generated profile photos, fake listings and face-swapped videos at upload, and honor signed "made with AI" labels |
+| **Identity verification and KYC** | Stop face-swap and replayed selfie videos during onboarding, and confirm the face belongs to the account holder |
+| **Fraud teams and contact centers** | Spot cloned voices in calls and voicemails: "it's me, approve the wire transfer" |
+| **Newsrooms and fact-checkers** | Check where an image came from, whether it was edited after signing, and show readers the evidence |
+| **Compliance and procurement** | Answer due-diligence questions with licenses, reproducible benchmarks and fairness reports ([buyer's checklist](docs/guides/buyers-checklist.md)) |
 
 ## See it in action
 
@@ -101,25 +145,25 @@ The web console tests files, manages and calibrates models, and monitors the ser
   </tr>
 </table>
 
-## Get started
+## Get started, one step at a time
 
-**No install:** the [Colab notebook](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb)
-detects, calibrates, evaluates and runs the web console on a free GPU, with sample media.
+Each step builds on the last, and you can stop at any of them.
 
-**On your machine:**
-
-```bash
-git clone https://github.com/anas-rz/ForensiX.git && cd ForensiX
-pip install -e ".[server]"
-python -m forensix.server --preload commfor nes2net-x-itw      # then open http://localhost:8000/ui/
-```
-
-**In containers:** `docker compose up -d --build`, or deploy to [AWS](docs/aws.md),
-[Google Cloud](docs/gcp.md) or [Azure](docs/azure.md) with one command.
+1. **Score a file.** Run the [sample commands above](#try-it-on-sample-files) on the test kit or
+   your own files, or open the [Colab notebook](https://colab.research.google.com/github/anas-rz/ForensiX/blob/main/notebooks/ForensiX_Get_Started.ipynb) with nothing installed.
+2. **Run the web console.** `pip install -e ".[server]"`, then
+   `python -m forensix.server --preload commfor nes2net-x-itw` and open http://localhost:8000/ui/.
+   The [Quickstart](docs/getting-started.md) walks through it.
+3. **Measure and calibrate on your media.** Upload a labelled set in the console, or follow
+   [Calibration](docs/calibration.md), to see how the models do on *your* data and set your
+   false-alarm budget.
+4. **Adapt if needed.** If accuracy on your data isn't enough, [fine-tune](docs/guides/finetuning.md),
+   including with [LoRA](docs/guides/peft.md).
+5. **Deploy.** Run `docker compose up -d --build`, or deploy to [AWS](docs/aws.md),
+   [Google Cloud](docs/gcp.md) or [Azure](docs/azure.md) with one command.
 
 Weights download on first use into `~/.cache/forensix` (override with `FORENSIX_CACHE`) and are
 checked against SHA-256 hashes. To fetch them ahead of time, run `python scripts/download_weights.py`.
-The [Quickstart](docs/getting-started.md) walks through all of it.
 
 ## Leaderboard
 
@@ -963,6 +1007,31 @@ scripts/
 2. Wrap it in a detector (e.g. subclass `AudioDetector` and implement `_fake_probs`).
 3. `register(ModelSpec(...))` with the weight URL and SHA-256, license, source and paper.
 4. Add tests and a row in the Models table, then run the family's eval script.
+
+## Why ForensiX exists
+
+> *Draft for the maintainer to edit:* When I looked for deepfake detection to build into products,
+> the strongest research models were often released for research use only, and the commercial
+> options gave me a score without the evidence or the numbers behind it. ForensiX brings together
+> the models that *can* be used commercially, measures them in the open, and adds what a real
+> deployment needs: provenance checks, calibration, fairness reports and a way to run it all on
+> your own infrastructure. — Muhammad Anas Raza
+
+## Community
+
+ForensiX is for the people who keep synthetic media from doing harm: trust and safety analysts,
+fraud investigators, identity teams, journalists and researchers. You can help in several ways:
+
+- **Report a miss or a false alarm.** An [issue](https://github.com/anas-rz/ForensiX/issues) with a
+  file you're allowed to share improves the benchmarks for everyone.
+- **Add a model or a benchmark** with a commercially usable license: see [CONTRIBUTING.md](CONTRIBUTING.md)
+  and [Extending ForensiX](docs/guides/extending.md).
+- **Improve the docs,** or share how you deployed it.
+- **Cite it** in your work: GitHub's "Cite this repository" button uses [CITATION.cff](CITATION.cff).
+
+If ForensiX saved you time, a GitHub star helps others find it.
+
+[![Contributors](https://contrib.rocks/image?repo=anas-rz/ForensiX)](https://github.com/anas-rz/ForensiX/graphs/contributors)
 
 ## License
 
