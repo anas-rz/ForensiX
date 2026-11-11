@@ -1,0 +1,23 @@
+# GKE Autopilot on NVIDIA L4 GPUs, deployed by deploy/gcp/deploy.sh gke-gpu (see docs/gcp.md).
+# Autopilot creates a GPU node for each pod that asks for one and adds the matching tolerations.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../gke
+images:
+  - name: forensix
+    newName: ghcr.io/anas-rz/forensix
+    newTag: gpu-bundled
+patches:
+  - path: gpu.yaml
+    target: { kind: Deployment, name: forensix-manager }
+  - path: gpu.yaml
+    target: { kind: Deployment, name: forensix-inference }
+  - target: { kind: HorizontalPodAutoscaler, name: forensix-inference }
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 4

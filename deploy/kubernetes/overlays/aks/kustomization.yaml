@@ -1,0 +1,26 @@
+# AKS on CPU nodes, deployed by deploy/azure/deploy.sh aks (see docs/azure.md): Azure Files for
+# the shared volume and the application routing add-on (managed NGINX) for the Ingress.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: forensix
+    newName: ghcr.io/anas-rz/forensix
+    newTag: cpu-bundled
+patches:
+  - target: { kind: PersistentVolumeClaim, name: forensix-data }
+    patch: |-
+      - op: add
+        path: /spec/storageClassName
+        value: azurefile-csi
+  # no host (served on the load balancer's IP) and plain HTTP until you add a certificate
+  - target: { kind: Ingress, name: forensix }
+    patch: |-
+      - op: replace
+        path: /spec/ingressClassName
+        value: webapprouting.kubernetes.azure.com
+      - op: remove
+        path: /spec/tls
+      - op: remove
+        path: /spec/rules/0/host

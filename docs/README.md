@@ -26,6 +26,8 @@ preprocessing details and parity checks against upstream code.
 | Report false-alarm rates by skin tone, age and gender | [Fairness reports](fairness.md) |
 | Run it in Docker, on Kubernetes or a managed cloud | [Docker, Kubernetes and cloud](cloud.md) |
 | Deploy on AWS (ECS or EKS) with one command or one click | [Deploying on AWS](aws.md) |
+| Deploy on Google Cloud (Cloud Run or GKE) | [Deploying on Google Cloud](gcp.md) |
+| Deploy on Azure (Container Apps or AKS) | [Deploying on Azure](azure.md) |
 | Run ForensiX as a service over large volumes of media | [Deployment at scale](deployment.md) |
 
 ## Guides

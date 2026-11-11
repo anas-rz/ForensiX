@@ -1,0 +1,17 @@
+# Load balancer settings for the ForensiX services: long requests (videos, dataset uploads) and
+# a health check on /ready, so a pod gets traffic only once its models are loaded.
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: forensix
+spec:
+  timeoutSec: 900
+  connectionDraining:
+    drainingTimeoutSec: 60
+  healthCheck:
+    type: HTTP
+    requestPath: /ready
+    port: 8000
+    checkIntervalSec: 15
+    healthyThreshold: 2
+    unhealthyThreshold: 5

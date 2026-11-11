@@ -1,0 +1,66 @@
+# One-click Google Cloud deployment: Actions -> deploy-gcp -> Run workflow, pick a target and action.
+# Runs deploy/gcp/deploy.sh (see docs/gcp.md). One-time setup: Workload Identity Federation for this
+# repository, stored as the GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_SERVICE_ACCOUNT and GCP_PROJECT_ID secrets.
+name: deploy-gcp
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Where to run ForensiX
+        type: choice
+        options: [cloudrun, cloudrun-gpu, gke, gke-gpu]
+        default: cloudrun
+      action:
+        type: choice
+        options: [deploy, destroy]
+        default: deploy
+      name:
+        description: Service / cluster name
+        default: forensix
+      region:
+        description: Region (GPU targets need an L4 region, e.g. us-central1, europe-west4)
+        default: us-central1
+      image:
+        description: "Image; empty = ghcr.io/anas-rz/forensix:{cpu,gpu}-bundled"
+        required: false
+
+permissions:
+  contents: read
+  id-token: write   # Workload Identity Federation, no stored service account keys
+
+concurrency:
+  group: deploy-gcp-${{ inputs.name }}-${{ inputs.region }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: gcp   # add required reviewers to this environment to gate deploys
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: gke-gcloud-auth-plugin,kubectl
+
+      - name: ${{ inputs.action }} ${{ inputs.target }}
+        env:
+          TARGET: ${{ inputs.target }}
+          ACTION: ${{ inputs.action }}
+          NAME: ${{ inputs.name }}
+          REGION: ${{ inputs.region }}
+          IMAGE: ${{ inputs.image }}
+          PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          args=("$TARGET" --name "$NAME" --region "$REGION" --project "$PROJECT")
+          if [[ -n "$IMAGE" ]]; then args+=(--image "$IMAGE"); fi
+          if [[ "$ACTION" == destroy ]]; then args+=(--destroy); fi
+          deploy/gcp/deploy.sh "${args[@]}"

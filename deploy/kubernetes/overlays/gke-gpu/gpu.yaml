@@ -1,0 +1,11 @@
+# One NVIDIA L4 per pod on GKE Autopilot (it adds the GPU toleration itself).
+- op: add
+  path: /spec/template/spec/containers/0/resources/limits/nvidia.com~1gpu
+  value: 1
+- op: replace
+  path: /spec/template/spec/containers/0/env/1
+  value: { name: FORENSIX_SERVER_DEVICE, value: cuda }
+- op: add
+  path: /spec/template/spec/nodeSelector
+  value:
+    cloud.google.com/gke-accelerator: nvidia-l4

@@ -1,0 +1,13 @@
+# The GKE Ingress instead of ingress-nginx: no host (served on the load balancer's IP) and plain
+# HTTP until you add a certificate (a ManagedCertificate and the networking.gke.io/managed-certificates
+# annotation, with a host that points at the IP).
+- op: remove
+  path: /spec/ingressClassName
+- op: remove
+  path: /spec/tls
+- op: remove
+  path: /spec/rules/0/host
+- op: replace
+  path: /metadata/annotations
+  value:
+    kubernetes.io/ingress.class: gce

@@ -1,0 +1,65 @@
+# One-click Azure deployment: Actions -> deploy-azure -> Run workflow, pick a target and action.
+# Runs deploy/azure/deploy.sh (see docs/azure.md). One-time setup: a Microsoft Entra app with a
+# federated credential for this repository, stored as the AZURE_CLIENT_ID, AZURE_TENANT_ID and
+# AZURE_SUBSCRIPTION_ID secrets.
+name: deploy-azure
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Where to run ForensiX
+        type: choice
+        options: [aca, aca-gpu, aks, aks-gpu]
+        default: aca
+      action:
+        type: choice
+        options: [deploy, destroy]
+        default: deploy
+      name:
+        description: Resource group and resource name prefix
+        default: forensix
+      location:
+        description: Region (aca-gpu needs a serverless-GPU region, e.g. westus3, swedencentral)
+        default: eastus
+      image:
+        description: "Image; empty = ghcr.io/anas-rz/forensix:{cpu,gpu}-bundled"
+        required: false
+
+permissions:
+  contents: read
+  id-token: write   # OpenID Connect to Microsoft Entra, no stored client secrets
+
+concurrency:
+  group: deploy-azure-${{ inputs.name }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: azure   # add required reviewers to this environment to gate deploys
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - uses: azure/setup-kubectl@v4
+        if: startsWith(inputs.target, 'aks')
+
+      - name: ${{ inputs.action }} ${{ inputs.target }}
+        env:
+          TARGET: ${{ inputs.target }}
+          ACTION: ${{ inputs.action }}
+          NAME: ${{ inputs.name }}
+          LOCATION: ${{ inputs.location }}
+          IMAGE: ${{ inputs.image }}
+        run: |
+          args=("$TARGET" --name "$NAME" --location "$LOCATION")
+          if [[ -n "$IMAGE" ]]; then args+=(--image "$IMAGE"); fi
+          if [[ "$ACTION" == destroy ]]; then args+=(--destroy); fi
+          deploy/azure/deploy.sh "${args[@]}"

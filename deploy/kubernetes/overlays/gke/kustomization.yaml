@@ -1,0 +1,31 @@
+# GKE Autopilot on CPU, deployed by deploy/gcp/deploy.sh gke (see docs/gcp.md): Filestore for the
+# shared volume and the GKE Ingress (an external Application Load Balancer).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - backendconfig.yaml
+images:
+  - name: forensix
+    newName: ghcr.io/anas-rz/forensix
+    newTag: cpu-bundled
+patches:
+  # Filestore basic HDD has a 1 TiB minimum
+  - target: { kind: PersistentVolumeClaim, name: forensix-data }
+    patch: |-
+      - op: add
+        path: /spec/storageClassName
+        value: standard-rwx
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 1Ti
+  - path: ingress-gce.yaml
+    target: { kind: Ingress, name: forensix }
+  # the load balancer's timeout and health check (backendconfig.yaml) for both services
+  - target: { kind: Service }
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          cloud.google.com/backend-config: '{"default": "forensix"}'
+          cloud.google.com/neg: '{"ingress": true}'

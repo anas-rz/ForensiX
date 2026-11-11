@@ -13,6 +13,8 @@ large-scale service (queues, worker pools, thresholds, monitoring), see
 | [`deploy/kubernetes/`](../deploy/kubernetes/) | Kustomize base plus `cpu` and `gpu` overlays |
 | [`.github/workflows/docker.yml`](../.github/workflows/docker.yml) | CI: tests, image builds, publishing to GHCR on version tags |
 | [`deploy/aws/`](../deploy/aws/) | AWS: ECS (Fargate or GPU) and EKS Auto Mode, one command or one click ([Deploying on AWS](aws.md)) |
+| [`deploy/gcp/`](../deploy/gcp/) | Google Cloud: Cloud Run (CPU or L4) and GKE Autopilot ([Deploying on Google Cloud](gcp.md)) |
+| [`deploy/azure/`](../deploy/azure/) | Azure: Container Apps (CPU or T4) and AKS ([Deploying on Azure](azure.md)) |
 
 ## The image
 
@@ -142,8 +144,11 @@ platform supports it (e.g. GKE image streaming).
 
 ## Managed clouds
 
-On AWS, [Deploying on AWS](aws.md) does all of this for you: ECS on Fargate or GPU instances, or an
-EKS Auto Mode cluster, deployed with one command or one click.
+Each cloud has a one-command, one-click deployment that sets all of this up:
+
+- [AWS](aws.md): ECS on Fargate or GPU instances, or EKS Auto Mode.
+- [Google Cloud](gcp.md): Cloud Run (CPU or L4), or GKE Autopilot.
+- [Azure](azure.md): Container Apps (CPU or T4), or AKS.
 
 | | GKE | EKS | AKS |
 |---|---|---|---|
@@ -156,6 +161,8 @@ The base Ingress targets ingress-nginx (its upload size and timeout annotations 
 dataset ZIPs). On other controllers, set the equivalent body-size and read-timeout limits.
 
 ### Cloud Run (no cluster)
+
+[Deploying on Google Cloud](gcp.md) automates this, with a separate manager service and shared storage.
 
 A single container works on Cloud Run, with CPU or an NVIDIA L4 GPU:
 

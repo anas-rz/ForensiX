@@ -1,0 +1,402 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.0",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.49.2.45890",
+      "templateHash": "18247783829680456234"
+    }
+  },
+  "functions": [
+    {
+      "namespace": "__bicep",
+      "members": {
+        "environmentVariables": {
+          "parameters": [
+            {
+              "type": "string",
+              "name": "device"
+            },
+            {
+              "type": "string",
+              "name": "preload"
+            },
+            {
+              "type": "string",
+              "name": "admin"
+            }
+          ],
+          "output": {
+            "type": "array",
+            "value": [
+              {
+                "name": "FORENSIX_SERVER_DEVICE",
+                "value": "[parameters('device')]"
+              },
+              {
+                "name": "FORENSIX_SERVER_PRELOAD",
+                "value": "[parameters('preload')]"
+              },
+              {
+                "name": "FORENSIX_SERVER_CALIBRATION_DIR",
+                "value": "/data/calibration"
+              },
+              {
+                "name": "FORENSIX_SERVER_GALLERY_DIR",
+                "value": "/data/galleries"
+              },
+              {
+                "name": "FORENSIX_SERVER_ADMIN_ENDPOINTS",
+                "value": "[parameters('admin')]"
+              },
+              {
+                "name": "FORENSIX_SERVER_UI",
+                "value": "[parameters('admin')]"
+              },
+              {
+                "name": "FORENSIX_SERVER_API_KEY",
+                "secretRef": "api-key"
+              },
+              {
+                "name": "FORENSIX_SERVER_ADMIN_KEY",
+                "secretRef": "admin-key"
+              },
+              {
+                "name": "LOG_FORMAT",
+                "value": "json"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "parameters": {
+    "name": {
+      "type": "string",
+      "defaultValue": "forensix",
+      "metadata": {
+        "description": "Prefix for every resource"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "compute": {
+      "type": "string",
+      "defaultValue": "cpu",
+      "allowedValues": [
+        "cpu",
+        "gpu"
+      ]
+    },
+    "image": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Image repository and tag; empty = ghcr.io/anas-rz/forensix:{cpu,gpu}-bundled"
+      }
+    },
+    "preload": {
+      "type": "string",
+      "defaultValue": "dfdet-clip commfor nes2net-x-itw syncnet c2pa watermark-image watermark-audio metadata"
+    },
+    "inferenceMinReplicas": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1
+    },
+    "inferenceMaxReplicas": {
+      "type": "int",
+      "defaultValue": 6,
+      "minValue": 1
+    },
+    "apiKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "X-API-Key for /v1/detect and reads (deploy.sh generates it once and reuses it)"
+      }
+    },
+    "adminKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin key: datasets, calibration, model loading"
+      }
+    }
+  },
+  "variables": {
+    "gpu": "[equals(parameters('compute'), 'gpu')]",
+    "containerImage": "[if(empty(parameters('image')), format('ghcr.io/anas-rz/forensix:{0}', if(variables('gpu'), 'gpu-bundled', 'cpu-bundled')), parameters('image'))]",
+    "gpuProfile": {
+      "name": "gpu",
+      "workloadProfileType": "Consumption-GPU-NC8as-T4"
+    },
+    "cpuProfile": {
+      "name": "compute",
+      "workloadProfileType": "D8",
+      "minimumCount": 1,
+      "maximumCount": "[add(parameters('inferenceMaxReplicas'), 1)]"
+    },
+    "profile": "[if(variables('gpu'), variables('gpuProfile'), variables('cpuProfile'))]",
+    "resources": "[if(variables('gpu'), createObject('cpu', json('8'), 'memory', '56Gi'), createObject('cpu', json('7'), 'memory', '28Gi'))]",
+    "secrets": [
+      {
+        "name": "api-key",
+        "value": "[parameters('apiKey')]"
+      },
+      {
+        "name": "admin-key",
+        "value": "[parameters('adminKey')]"
+      }
+    ],
+    "volumes": [
+      {
+        "name": "data",
+        "storageType": "AzureFile",
+        "storageName": "data",
+        "mountOptions": "uid=10001,gid=10001,dir_mode=0750,file_mode=0640"
+      }
+    ],
+    "probes": [
+      {
+        "type": "Startup",
+        "httpGet": {
+          "path": "/ready",
+          "port": 8000
+        },
+        "periodSeconds": 90,
+        "failureThreshold": 10,
+        "timeoutSeconds": 5
+      },
+      {
+        "type": "Readiness",
+        "httpGet": {
+          "path": "/ready",
+          "port": 8000
+        },
+        "periodSeconds": 10,
+        "timeoutSeconds": 5
+      },
+      {
+        "type": "Liveness",
+        "httpGet": {
+          "path": "/health",
+          "port": 8000
+        },
+        "periodSeconds": 20,
+        "timeoutSeconds": 5,
+        "failureThreshold": 3
+      }
+    ]
+  },
+  "resources": {
+    "logs": {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2023-09-01",
+      "name": "[format('{0}-logs', parameters('name'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 30
+      }
+    },
+    "storage": {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-05-01",
+      "name": "[take(format('{0}{1}', replace(parameters('name'), '-', ''), uniqueString(resourceGroup().id)), 24)]",
+      "location": "[parameters('location')]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "properties": {
+        "minimumTlsVersion": "TLS1_2",
+        "allowBlobPublicAccess": false,
+        "supportsHttpsTrafficOnly": true
+      }
+    },
+    "fileService": {
+      "type": "Microsoft.Storage/storageAccounts/fileServices",
+      "apiVersion": "2023-05-01",
+      "name": "[format('{0}/{1}', take(format('{0}{1}', replace(parameters('name'), '-', ''), uniqueString(resourceGroup().id)), 24), 'default')]",
+      "dependsOn": [
+        "storage"
+      ]
+    },
+    "share": {
+      "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+      "apiVersion": "2023-05-01",
+      "name": "[format('{0}/{1}/{2}', take(format('{0}{1}', replace(parameters('name'), '-', ''), uniqueString(resourceGroup().id)), 24), 'default', 'forensix-data')]",
+      "properties": {
+        "shareQuota": 1024
+      },
+      "dependsOn": [
+        "fileService"
+      ]
+    },
+    "environment": {
+      "type": "Microsoft.App/managedEnvironments",
+      "apiVersion": "2024-03-01",
+      "name": "[format('{0}-env', parameters('name'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "appLogsConfiguration": {
+          "destination": "log-analytics",
+          "logAnalyticsConfiguration": {
+            "customerId": "[reference('logs').customerId]",
+            "sharedKey": "[listKeys('logs', '2023-09-01').primarySharedKey]"
+          }
+        },
+        "workloadProfiles": [
+          {
+            "name": "Consumption",
+            "workloadProfileType": "Consumption"
+          },
+          "[variables('profile')]"
+        ]
+      },
+      "dependsOn": [
+        "logs"
+      ]
+    },
+    "environmentStorage": {
+      "type": "Microsoft.App/managedEnvironments/storages",
+      "apiVersion": "2024-03-01",
+      "name": "[format('{0}/{1}', format('{0}-env', parameters('name')), 'data')]",
+      "properties": {
+        "azureFile": {
+          "accountName": "[take(format('{0}{1}', replace(parameters('name'), '-', ''), uniqueString(resourceGroup().id)), 24)]",
+          "accountKey": "[listKeys('storage', '2023-05-01').keys[0].value]",
+          "shareName": "forensix-data",
+          "accessMode": "ReadWrite"
+        }
+      },
+      "dependsOn": [
+        "environment",
+        "share",
+        "storage"
+      ]
+    },
+    "manager": {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2024-03-01",
+      "name": "[format('{0}-manager', parameters('name'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "environmentId": "[resourceId('Microsoft.App/managedEnvironments', format('{0}-env', parameters('name')))]",
+        "workloadProfileName": "[variables('profile').name]",
+        "configuration": {
+          "activeRevisionsMode": "Single",
+          "secrets": "[variables('secrets')]",
+          "ingress": {
+            "external": true,
+            "targetPort": 8000,
+            "transport": "auto",
+            "allowInsecure": false
+          }
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "forensix",
+              "image": "[variables('containerImage')]",
+              "resources": "[variables('resources')]",
+              "env": "[__bicep.environmentVariables(if(variables('gpu'), 'cuda', 'cpu'), parameters('preload'), 'true')]",
+              "volumeMounts": [
+                {
+                  "volumeName": "data",
+                  "mountPath": "/data"
+                }
+              ],
+              "probes": "[variables('probes')]"
+            }
+          ],
+          "volumes": "[variables('volumes')]",
+          "scale": {
+            "minReplicas": 1,
+            "maxReplicas": 1
+          }
+        }
+      },
+      "dependsOn": [
+        "environment",
+        "environmentStorage"
+      ]
+    },
+    "inference": {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2024-03-01",
+      "name": "[format('{0}-inference', parameters('name'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "environmentId": "[resourceId('Microsoft.App/managedEnvironments', format('{0}-env', parameters('name')))]",
+        "workloadProfileName": "[variables('profile').name]",
+        "configuration": {
+          "activeRevisionsMode": "Single",
+          "secrets": "[variables('secrets')]",
+          "ingress": {
+            "external": true,
+            "targetPort": 8000,
+            "transport": "auto",
+            "allowInsecure": false
+          }
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "forensix",
+              "image": "[variables('containerImage')]",
+              "resources": "[variables('resources')]",
+              "env": "[__bicep.environmentVariables(if(variables('gpu'), 'cuda', 'cpu'), parameters('preload'), 'false')]",
+              "volumeMounts": [
+                {
+                  "volumeName": "data",
+                  "mountPath": "/data"
+                }
+              ],
+              "probes": "[variables('probes')]"
+            }
+          ],
+          "volumes": "[variables('volumes')]",
+          "scale": {
+            "minReplicas": "[parameters('inferenceMinReplicas')]",
+            "maxReplicas": "[parameters('inferenceMaxReplicas')]",
+            "rules": [
+              {
+                "name": "concurrent-requests",
+                "http": {
+                  "metadata": {
+                    "concurrentRequests": "4"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "dependsOn": [
+        "environment",
+        "environmentStorage"
+      ]
+    }
+  },
+  "outputs": {
+    "managerUrl": {
+      "type": "string",
+      "value": "[format('https://{0}/ui/', reference('manager').configuration.ingress.fqdn)]"
+    },
+    "detectUrl": {
+      "type": "string",
+      "value": "[format('https://{0}/v1/detect', reference('inference').configuration.ingress.fqdn)]"
+    },
+    "logAnalyticsWorkspace": {
+      "type": "string",
+      "value": "[format('{0}-logs', parameters('name'))]"
+    }
+  }
+}

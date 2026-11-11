@@ -92,6 +92,8 @@ nav:
   - Deployment:
       - Docker, Kubernetes and cloud: cloud.md
       - AWS (ECS and EKS): aws.md
+      - Google Cloud (Cloud Run and GKE): gcp.md
+      - Azure (Container Apps and AKS): azure.md
       - Deployment at scale: deployment.md
   - Reference:
       - API reference: api-reference.md
