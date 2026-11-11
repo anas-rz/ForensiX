@@ -1,0 +1,16 @@
+# EKS Auto Mode cluster for ForensiX (deploy/aws/deploy.sh fills in __NAME__ and __REGION__).
+# Auto Mode manages nodes (Karpenter), the ALB ingress controller, and GPU drivers, so the
+# cluster scales nodes up and down with the pods the HPA asks for.
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: __NAME__
+  region: __REGION__
+autoModeConfig:
+  enabled: true          # default node pools: general-purpose and system
+iam:
+  withOIDC: true
+addons:
+  - name: aws-efs-csi-driver   # shared ReadWriteMany volume for datasets and calibrations
+    wellKnownPolicies:
+      efsCSIController: true

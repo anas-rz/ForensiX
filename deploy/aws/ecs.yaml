@@ -1,0 +1,513 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  ForensiX on Amazon ECS: a manager (web UI, datasets, calibration) and autoscaled inference tasks
+  behind an Application Load Balancer, with shared state on EFS and generated API keys in Secrets
+  Manager. Fargate for CPU, or EC2 GPU instances. See docs/aws.md.
+
+Parameters:
+  Compute:
+    Type: String
+    AllowedValues: [Fargate, GPU]
+    Default: Fargate
+    Description: Fargate runs on CPU with no servers to manage. GPU runs on EC2 GPU instances (one NVIDIA GPU per task).
+  ImageRepository:
+    Type: String
+    Default: ghcr.io/anas-rz/forensix
+    Description: Image without a tag. Published to GHCR by .github/workflows/docker.yml on v* tags; or an ECR repository.
+  ImageTag:
+    Type: String
+    Default: auto
+    Description: "auto: cpu-bundled on Fargate, gpu-bundled on GPU."
+  Preload:
+    Type: String
+    Default: dfdet-clip commfor nes2net-x-itw syncnet c2pa watermark-image watermark-audio metadata
+    Description: Models loaded at startup. Keep them to the models baked into the image.
+  InferenceMinTasks:
+    Type: Number
+    Default: 2
+    MinValue: 1
+  InferenceMaxTasks:
+    Type: Number
+    Default: 6
+    MinValue: 1
+  GpuMaxInstances:
+    Type: Number
+    Default: 7
+    MinValue: 2
+    Description: GPU only. Upper bound of the instance group, one task each (manager + inference maximum).
+  GpuInstanceType:
+    Type: String
+    Default: g6.2xlarge
+    Description: GPU only. One task per instance; g6.2xlarge has one 24 GB L4, 8 vCPUs and 32 GiB.
+  GpuAmi:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ecs/optimized-ami/amazon-linux-2023/gpu/recommended/image_id
+    Description: GPU only. The ECS-optimized GPU AMI (NVIDIA driver and container runtime included).
+  CertificateArn:
+    Type: String
+    Default: ""
+    Description: Optional ACM certificate for HTTPS. Without one, the load balancer serves plain HTTP.
+  AllowedCidr:
+    Type: String
+    Default: 0.0.0.0/0
+    Description: Who can reach the load balancer. Narrow it (e.g. your office range) for a private deployment.
+
+Conditions:
+  IsGpu: !Equals [!Ref Compute, GPU]
+  IsFargate: !Equals [!Ref Compute, Fargate]
+  AutoTag: !Equals [!Ref ImageTag, auto]
+  HasCert: !Not [!Equals [!Ref CertificateArn, ""]]
+
+Mappings:
+  # Per task. Fargate matches the Kubernetes CPU pods (4 vCPUs, 16 GiB holds the default models);
+  # GPU tasks leave headroom on a 32 GiB g6.2xlarge for the ECS agent.
+  Size:
+    Fargate: { Cpu: "4096", Memory: "16384", Device: cpu, Threads: "4" }
+    GPU: { Cpu: "7168", Memory: "24576", Device: cuda, Threads: "6" }
+
+Resources:
+  # -- network: a VPC with two public subnets; tasks reach the internet to pull the image ----------
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.40.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags: [{ Key: Name, Value: !Ref AWS::StackName }]
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: { VpcId: !Ref Vpc, InternetGatewayId: !Ref InternetGateway }
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.40.0.0/20
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags: [{ Key: Name, Value: !Sub "${AWS::StackName}-a" }]
+  SubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.40.16.0/20
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags: [{ Key: Name, Value: !Sub "${AWS::StackName}-b" }]
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: { VpcId: !Ref Vpc }
+  DefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties: { RouteTableId: !Ref RouteTable, DestinationCidrBlock: 0.0.0.0/0, GatewayId: !Ref InternetGateway }
+  SubnetARoutes:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: { SubnetId: !Ref SubnetA, RouteTableId: !Ref RouteTable }
+  SubnetBRoutes:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: { SubnetId: !Ref SubnetB, RouteTableId: !Ref RouteTable }
+
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ForensiX load balancer
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: !Ref AllowedCidr }
+        - { IpProtocol: tcp, FromPort: 443, ToPort: 443, CidrIp: !Ref AllowedCidr }
+  TaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ForensiX tasks (port 8000 from the load balancer only)
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 8000, ToPort: 8000, SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup }
+  FileSystemSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ForensiX EFS (NFS from the tasks only)
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 2049, ToPort: 2049, SourceSecurityGroupId: !Ref TaskSecurityGroup }
+
+  # -- shared state: datasets, calibration versions, fairness reports, identity galleries ---------
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      ThroughputMode: elastic
+      FileSystemTags: [{ Key: Name, Value: !Sub "${AWS::StackName}-data" }]
+  MountTargetA:
+    Type: AWS::EFS::MountTarget
+    Properties: { FileSystemId: !Ref FileSystem, SubnetId: !Ref SubnetA, SecurityGroups: [!Ref FileSystemSecurityGroup] }
+  MountTargetB:
+    Type: AWS::EFS::MountTarget
+    Properties: { FileSystemId: !Ref FileSystem, SubnetId: !Ref SubnetB, SecurityGroups: [!Ref FileSystemSecurityGroup] }
+  AccessPoint:   # the image runs as uid/gid 10001
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId: !Ref FileSystem
+      PosixUser: { Uid: "10001", Gid: "10001" }
+      RootDirectory:
+        Path: /forensix
+        CreationInfo: { OwnerUid: "10001", OwnerGid: "10001", Permissions: "750" }
+
+  # -- keys: generated once, never in the template or logs ----------------------------------------
+  ApiKey:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: !Sub "ForensiX API key (${AWS::StackName}): X-API-Key for /v1/detect and reads"
+      GenerateSecretString: { PasswordLength: 40, ExcludePunctuation: true }
+  AdminKey:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: !Sub "ForensiX admin key (${AWS::StackName}): datasets, calibration, model loading"
+      GenerateSecretString: { PasswordLength: 40, ExcludePunctuation: true }
+
+  # -- ECS ------------------------------------------------------------------------------------------
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterSettings: [{ Name: containerInsights, Value: enabled }]
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: { LogGroupName: !Sub "/forensix/${AWS::StackName}", RetentionInDays: 30 }
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement: [{ Effect: Allow, Principal: { Service: ecs-tasks.amazonaws.com }, Action: sts:AssumeRole }]
+      ManagedPolicyArns: [arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy]
+      Policies:
+        - PolicyName: read-keys
+          PolicyDocument:
+            Statement: [{ Effect: Allow, Action: secretsmanager:GetSecretValue, Resource: [!Ref ApiKey, !Ref AdminKey] }]
+
+  ManagerTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${AWS::StackName}-manager"
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [!If [IsGpu, EC2, FARGATE]]
+      Cpu: !FindInMap [Size, !Ref Compute, Cpu]
+      Memory: !FindInMap [Size, !Ref Compute, Memory]
+      EphemeralStorage: !If [IsFargate, { SizeInGiB: 100 }, !Ref AWS::NoValue]   # image layers and dataset staging
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      Volumes:
+        - Name: data
+          EFSVolumeConfiguration:
+            FilesystemId: !Ref FileSystem
+            TransitEncryption: ENABLED
+            AuthorizationConfig: { AccessPointId: !Ref AccessPoint }
+        - Name: tmp
+      ContainerDefinitions:
+        - Name: forensix
+          Image: !Sub
+            - "${ImageRepository}:${Tag}"
+            - Tag: !If [AutoTag, !If [IsGpu, gpu-bundled, cpu-bundled], !Ref ImageTag]
+          Command: [python, -m, forensix.server]
+          PortMappings: [{ ContainerPort: 8000 }]
+          ReadonlyRootFilesystem: true
+          ResourceRequirements: !If [IsGpu, [{ Type: GPU, Value: "1" }], !Ref AWS::NoValue]
+          Environment:
+            - { Name: FORENSIX_SERVER_DEVICE, Value: !FindInMap [Size, !Ref Compute, Device] }
+            - { Name: FORENSIX_SERVER_PRELOAD, Value: !Ref Preload }
+            - { Name: FORENSIX_SERVER_MAX_LOADED, Value: "8" }
+            - { Name: FORENSIX_SERVER_CALIBRATION_DIR, Value: /data/calibration }
+            - { Name: FORENSIX_SERVER_GALLERY_DIR, Value: /data/galleries }
+            - { Name: FORENSIX_SERVER_TMP_DIR, Value: /tmp/forensix }
+            - { Name: FORENSIX_SERVER_ADMIN_ENDPOINTS, Value: "true" }
+            - { Name: FORENSIX_SERVER_UI, Value: "true" }
+            - { Name: OMP_NUM_THREADS, Value: !FindInMap [Size, !Ref Compute, Threads] }
+          Secrets:
+            - { Name: FORENSIX_SERVER_API_KEY, ValueFrom: !Ref ApiKey }
+            - { Name: FORENSIX_SERVER_ADMIN_KEY, ValueFrom: !Ref AdminKey }
+          MountPoints:
+            - { SourceVolume: data, ContainerPath: /data }
+            - { SourceVolume: tmp, ContainerPath: /tmp }
+          LogConfiguration:
+            LogDriver: awslogs
+            Options: { awslogs-group: !Ref LogGroup, awslogs-region: !Ref AWS::Region, awslogs-stream-prefix: manager }
+
+  InferenceTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${AWS::StackName}-inference"
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [!If [IsGpu, EC2, FARGATE]]
+      Cpu: !FindInMap [Size, !Ref Compute, Cpu]
+      Memory: !FindInMap [Size, !Ref Compute, Memory]
+      EphemeralStorage: !If [IsFargate, { SizeInGiB: 100 }, !Ref AWS::NoValue]
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      Volumes:
+        - Name: data
+          EFSVolumeConfiguration:
+            FilesystemId: !Ref FileSystem
+            TransitEncryption: ENABLED
+            AuthorizationConfig: { AccessPointId: !Ref AccessPoint }
+        - Name: tmp
+      ContainerDefinitions:
+        - Name: forensix
+          Image: !Sub
+            - "${ImageRepository}:${Tag}"
+            - Tag: !If [AutoTag, !If [IsGpu, gpu-bundled, cpu-bundled], !Ref ImageTag]
+          Command: [python, -m, forensix.server]
+          PortMappings: [{ ContainerPort: 8000 }]
+          ReadonlyRootFilesystem: true
+          ResourceRequirements: !If [IsGpu, [{ Type: GPU, Value: "1" }], !Ref AWS::NoValue]
+          # Prediction only: no writes to shared state (HTTP 409), no UI. Reads the shared volume, so
+          # a calibration activated on the manager applies here on the next request.
+          Environment:
+            - { Name: FORENSIX_SERVER_DEVICE, Value: !FindInMap [Size, !Ref Compute, Device] }
+            - { Name: FORENSIX_SERVER_PRELOAD, Value: !Ref Preload }
+            - { Name: FORENSIX_SERVER_MAX_LOADED, Value: "8" }
+            - { Name: FORENSIX_SERVER_CALIBRATION_DIR, Value: /data/calibration }
+            - { Name: FORENSIX_SERVER_GALLERY_DIR, Value: /data/galleries }
+            - { Name: FORENSIX_SERVER_TMP_DIR, Value: /tmp/forensix }
+            - { Name: FORENSIX_SERVER_ADMIN_ENDPOINTS, Value: "false" }
+            - { Name: FORENSIX_SERVER_UI, Value: "false" }
+            - { Name: OMP_NUM_THREADS, Value: !FindInMap [Size, !Ref Compute, Threads] }
+          Secrets:
+            - { Name: FORENSIX_SERVER_API_KEY, ValueFrom: !Ref ApiKey }
+            - { Name: FORENSIX_SERVER_ADMIN_KEY, ValueFrom: !Ref AdminKey }
+          MountPoints:
+            - { SourceVolume: data, ContainerPath: /data }
+            - { SourceVolume: tmp, ContainerPath: /tmp }
+          LogConfiguration:
+            LogDriver: awslogs
+            Options: { awslogs-group: !Ref LogGroup, awslogs-region: !Ref AWS::Region, awslogs-stream-prefix: inference }
+
+  # -- GPU capacity: an Auto Scaling group of ECS GPU instances, scaled by ECS ---------------------
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Condition: IsGpu
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement: [{ Effect: Allow, Principal: { Service: ec2.amazonaws.com }, Action: sts:AssumeRole }]
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Condition: IsGpu
+    Properties: { Roles: [!Ref InstanceRole] }
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Condition: IsGpu
+    Properties:
+      GroupDescription: ForensiX GPU instances (outbound only; tasks have their own interfaces)
+      VpcId: !Ref Vpc
+  LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Condition: IsGpu
+    Properties:
+      LaunchTemplateData:
+        ImageId: !Ref GpuAmi
+        InstanceType: !Ref GpuInstanceType
+        IamInstanceProfile: { Arn: !GetAtt InstanceProfile.Arn }
+        SecurityGroupIds: [!Ref InstanceSecurityGroup]
+        MetadataOptions: { HttpTokens: required }
+        BlockDeviceMappings:   # the GPU image with baked-in weights needs room
+          - DeviceName: /dev/xvda
+            Ebs: { VolumeSize: 200, VolumeType: gp3, Encrypted: true }
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            echo "ECS_CLUSTER=${Cluster}" >> /etc/ecs/ecs.config
+            echo "ECS_ENABLE_GPU_SUPPORT=true" >> /etc/ecs/ecs.config
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Condition: IsGpu
+    Properties:
+      VPCZoneIdentifier: [!Ref SubnetA, !Ref SubnetB]
+      LaunchTemplate: { LaunchTemplateId: !Ref LaunchTemplate, Version: !GetAtt LaunchTemplate.LatestVersionNumber }
+      MinSize: "0"            # ECS managed scaling sets the desired count from the tasks it must place
+      MaxSize: !Ref GpuMaxInstances
+      NewInstancesProtectedFromScaleIn: false
+      Tags: [{ Key: Name, Value: !Sub "${AWS::StackName}-gpu", PropagateAtLaunch: true }]
+  CapacityProvider:
+    Type: AWS::ECS::CapacityProvider
+    Condition: IsGpu
+    Properties:
+      AutoScalingGroupProvider:
+        AutoScalingGroupArn: !Ref AutoScalingGroup
+        ManagedScaling: { Status: ENABLED, TargetCapacity: 100 }
+        ManagedTerminationProtection: DISABLED
+  ClusterCapacity:
+    Type: AWS::ECS::ClusterCapacityProviderAssociations
+    Condition: IsGpu
+    Properties:
+      Cluster: !Ref Cluster
+      CapacityProviders: [!Ref CapacityProvider]
+      DefaultCapacityProviderStrategy: [{ CapacityProvider: !Ref CapacityProvider, Weight: 1 }]
+
+  # -- load balancer: management paths to the manager, everything else to inference ---------------
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      Subnets: [!Ref SubnetA, !Ref SubnetB]
+      SecurityGroups: [!Ref LoadBalancerSecurityGroup]
+      LoadBalancerAttributes:
+        - { Key: idle_timeout.timeout_seconds, Value: "900" }   # long videos and dataset uploads
+  ManagerTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref Vpc
+      TargetType: ip
+      Protocol: HTTP
+      Port: 8000
+      HealthCheckPath: /ready   # 503 until the preloaded models are in memory
+      HealthCheckIntervalSeconds: 15
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      TargetGroupAttributes: [{ Key: deregistration_delay.timeout_seconds, Value: "60" }]
+  InferenceTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref Vpc
+      TargetType: ip
+      Protocol: HTTP
+      Port: 8000
+      HealthCheckPath: /ready
+      HealthCheckIntervalSeconds: 15
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      TargetGroupAttributes: [{ Key: deregistration_delay.timeout_seconds, Value: "60" }]
+  HttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Protocol: HTTP
+      Port: 80
+      DefaultActions: !If
+        - HasCert
+        - [{ Type: redirect, RedirectConfig: { Protocol: HTTPS, Port: "443", StatusCode: HTTP_301 } }]
+        - [{ Type: forward, TargetGroupArn: !Ref InferenceTargetGroup }]
+  HttpsListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Condition: HasCert
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Protocol: HTTPS
+      Port: 443
+      Certificates: [{ CertificateArn: !Ref CertificateArn }]
+      SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+      DefaultActions: [{ Type: forward, TargetGroupArn: !Ref InferenceTargetGroup }]
+  # Same split as deploy/kubernetes/base/ingress.yaml (at most five paths per rule)
+  ManagerRule1:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !If [HasCert, !Ref HttpsListener, !Ref HttpListener]
+      Priority: 10
+      Conditions: [{ Field: path-pattern, PathPatternConfig: { Values: [/ui*, /docs*, /openapi.json, /v1/datasets*, /v1/calibrations*] } }]
+      Actions: [{ Type: forward, TargetGroupArn: !Ref ManagerTargetGroup }]
+  ManagerRule2:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !If [HasCert, !Ref HttpsListener, !Ref HttpListener]
+      Priority: 20
+      Conditions: [{ Field: path-pattern, PathPatternConfig: { Values: [/v1/jobs*, /v1/identities*, /v1/models*, /v1/fairness*, /v1/stats*] } }]
+      Actions: [{ Type: forward, TargetGroupArn: !Ref ManagerTargetGroup }]
+  ManagerRule3:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !If [HasCert, !Ref HttpsListener, !Ref HttpListener]
+      Priority: 30
+      Conditions: [{ Field: path-pattern, PathPatternConfig: { Values: [/v1/server*, /v1/benchmarks*, /] } }]
+      Actions: [{ Type: forward, TargetGroupArn: !Ref ManagerTargetGroup }]
+
+  # -- services --------------------------------------------------------------------------------------
+  ManagerService:
+    Type: AWS::ECS::Service
+    DependsOn: [ManagerRule1, ManagerRule2, ManagerRule3, MountTargetA, MountTargetB]
+    Properties:
+      Cluster: !Ref Cluster
+      # referencing the GPU capacity association makes the service wait for it (DependsOn can't
+      # name a resource that may not exist)
+      Tags: [{ Key: forensix:capacity, Value: !If [IsGpu, !Ref ClusterCapacity, fargate] }]
+      TaskDefinition: !Ref ManagerTaskDefinition
+      DesiredCount: 1
+      LaunchType: !If [IsFargate, FARGATE, !Ref AWS::NoValue]
+      CapacityProviderStrategy: !If [IsGpu, [{ CapacityProvider: !Ref CapacityProvider, Weight: 1 }], !Ref AWS::NoValue]
+      # one writer of shared state: stop the old task before starting the new one
+      DeploymentConfiguration: { MinimumHealthyPercent: 0, MaximumPercent: 100 }
+      HealthCheckGracePeriodSeconds: 1200   # loading models takes minutes, longer on CPU
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: [!Ref SubnetA, !Ref SubnetB]
+          SecurityGroups: [!Ref TaskSecurityGroup]
+          AssignPublicIp: !If [IsFargate, ENABLED, DISABLED]   # EC2 tasks pull through the instance
+      LoadBalancers: [{ ContainerName: forensix, ContainerPort: 8000, TargetGroupArn: !Ref ManagerTargetGroup }]
+  InferenceService:
+    Type: AWS::ECS::Service
+    DependsOn: [ManagerRule1, MountTargetA, MountTargetB]   # ManagerRule1 waits for the listener that forwards here
+    Properties:
+      Cluster: !Ref Cluster
+      Tags: [{ Key: forensix:capacity, Value: !If [IsGpu, !Ref ClusterCapacity, fargate] }]
+      TaskDefinition: !Ref InferenceTaskDefinition
+      DesiredCount: !Ref InferenceMinTasks
+      LaunchType: !If [IsFargate, FARGATE, !Ref AWS::NoValue]
+      CapacityProviderStrategy: !If [IsGpu, [{ CapacityProvider: !Ref CapacityProvider, Weight: 1 }], !Ref AWS::NoValue]
+      DeploymentConfiguration: { MinimumHealthyPercent: 100, MaximumPercent: 200 }
+      HealthCheckGracePeriodSeconds: 1200
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: [!Ref SubnetA, !Ref SubnetB]
+          SecurityGroups: [!Ref TaskSecurityGroup]
+          AssignPublicIp: !If [IsFargate, ENABLED, DISABLED]
+      LoadBalancers: [{ ContainerName: forensix, ContainerPort: 8000, TargetGroupArn: !Ref InferenceTargetGroup }]
+
+  # -- autoscaling: CPU utilization on Fargate; requests per task on GPU (GPU work doesn't show as CPU)
+  InferenceScaling:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      ServiceNamespace: ecs
+      ScalableDimension: ecs:service:DesiredCount
+      ResourceId: !Sub "service/${Cluster}/${InferenceService.Name}"
+      MinCapacity: !Ref InferenceMinTasks
+      MaxCapacity: !Ref InferenceMaxTasks
+  InferenceScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-inference"
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref InferenceScaling
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: !If [IsGpu, 120, 60]   # GPU: requests per task per minute; Fargate: CPU %
+        ScaleOutCooldown: 120
+        ScaleInCooldown: 600                 # new tasks take minutes to load models: don't flap
+        PredefinedMetricSpecification: !If
+          - IsGpu
+          - PredefinedMetricType: ALBRequestCountPerTarget
+            ResourceLabel: !Sub "${LoadBalancer.LoadBalancerFullName}/${InferenceTargetGroup.TargetGroupFullName}"
+          - PredefinedMetricType: ECSServiceAverageCPUUtilization
+
+Outputs:
+  Url:
+    Description: Web manager (allow a few minutes after the stack completes for models to load)
+    Value: !Sub
+      - "${Scheme}://${LoadBalancer.DNSName}/ui/"
+      - Scheme: !If [HasCert, https, http]
+  ApiUrl:
+    Description: Detection endpoint (send X-API-Key)
+    Value: !Sub
+      - "${Scheme}://${LoadBalancer.DNSName}/v1/detect"
+      - Scheme: !If [HasCert, https, http]
+  LoadBalancerDns:
+    Description: Point your domain's CNAME (or Route 53 alias) here when you add a certificate
+    Value: !GetAtt LoadBalancer.DNSName
+  ApiKeySecret:
+    Description: "aws secretsmanager get-secret-value --query SecretString --output text --secret-id <this>"
+    Value: !Ref ApiKey
+  AdminKeySecret:
+    Description: Admin key, read the same way
+    Value: !Ref AdminKey
+  LogGroup:
+    Description: "CloudWatch Logs: aws logs tail --follow <this>"
+    Value: !Ref LogGroup
+  FileSystem:
+    Description: EFS with datasets and calibrations (deleted with the stack; back it up first)
+    Value: !Ref FileSystem

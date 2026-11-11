@@ -24,6 +24,7 @@ spec:
           - { path: /v1/calibrations, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
           - { path: /v1/jobs, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
           - { path: /v1/identities, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
+          - { path: /v1/fairness, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
           - { path: /v1/models, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
           - { path: /v1/stats, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }
           - { path: /v1/server, pathType: Prefix, backend: { service: { name: forensix-manager, port: { name: http } } } }

@@ -1,0 +1,15 @@
+# As overlays/gpu/gpu.yaml, with the node label EKS Auto Mode puts on NVIDIA nodes.
+- op: add
+  path: /spec/template/spec/containers/0/resources/limits/nvidia.com~1gpu
+  value: 1
+- op: replace
+  path: /spec/template/spec/containers/0/env/1
+  value: { name: FORENSIX_SERVER_DEVICE, value: cuda }
+- op: add
+  path: /spec/template/spec/tolerations
+  value:
+    - { key: nvidia.com/gpu, operator: Exists, effect: NoSchedule }
+- op: add
+  path: /spec/template/spec/nodeSelector
+  value:
+    eks.amazonaws.com/instance-gpu-manufacturer: nvidia

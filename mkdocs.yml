@@ -91,6 +91,7 @@ nav:
       - Fairness reports: fairness.md
   - Deployment:
       - Docker, Kubernetes and cloud: cloud.md
+      - AWS (ECS and EKS): aws.md
       - Deployment at scale: deployment.md
   - Reference:
       - API reference: api-reference.md

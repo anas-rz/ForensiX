@@ -1,0 +1,16 @@
+# The Auto Mode ALB instead of ingress-nginx: no host (served on the load balancer's DNS name)
+# and plain HTTP until you add a certificate (alb.ingress.kubernetes.io/certificate-arn and
+# listen-ports '[{"HTTP": 80}, {"HTTPS": 443}]').
+- op: replace
+  path: /spec/ingressClassName
+  value: alb
+- op: remove
+  path: /spec/tls
+- op: remove
+  path: /spec/rules/0/host
+- op: replace
+  path: /metadata/annotations
+  value:
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /ready
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=900

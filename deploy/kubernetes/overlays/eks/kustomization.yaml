@@ -1,0 +1,18 @@
+# EKS Auto Mode on CPU nodes, deployed by deploy/aws/deploy.sh eks (see docs/aws.md):
+# EFS for the shared volume and an Application Load Balancer for the Ingress.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: forensix
+    newName: ghcr.io/anas-rz/forensix
+    newTag: cpu-bundled
+patches:
+  - target: { kind: PersistentVolumeClaim, name: forensix-data }
+    patch: |-
+      - op: add
+        path: /spec/storageClassName
+        value: efs-sc
+  - path: ingress-alb.yaml
+    target: { kind: Ingress, name: forensix }

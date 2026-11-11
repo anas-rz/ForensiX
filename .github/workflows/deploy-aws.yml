@@ -1,0 +1,77 @@
+# One-click AWS deployment: Actions -> deploy-aws -> Run workflow, pick a target and action.
+# Runs deploy/aws/deploy.sh (see docs/aws.md). One-time setup: an IAM role this repository can
+# assume through GitHub OIDC, stored as the AWS_DEPLOY_ROLE_ARN secret.
+name: deploy-aws
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Where to run ForensiX
+        type: choice
+        options: [ecs, ecs-gpu, eks, eks-gpu]
+        default: ecs
+      action:
+        type: choice
+        options: [deploy, destroy]
+        default: deploy
+      name:
+        description: Stack / cluster name
+        default: forensix
+      region:
+        default: us-east-1
+      image:
+        description: "Image (repo:tag); empty = ghcr.io/anas-rz/forensix:{cpu,gpu}-bundled"
+        required: false
+      certificate_arn:
+        description: "ECS only: ACM certificate ARN for HTTPS (optional)"
+        required: false
+      admin_arn:
+        description: "EKS only: IAM user/role ARN to give cluster-admin access, e.g. yours (optional)"
+        required: false
+
+permissions:
+  contents: read
+  id-token: write   # GitHub OIDC -> AWS role, no stored access keys
+
+concurrency:
+  group: deploy-aws-${{ inputs.name }}-${{ inputs.region }}
+  cancel-in-progress: false   # never interrupt a half-finished deploy or teardown
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: aws   # add required reviewers to this environment to gate deploys
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ inputs.region }}
+          role-duration-seconds: 7200
+
+      - name: Install eksctl and kubectl
+        if: startsWith(inputs.target, 'eks')
+        run: |
+          curl -sSL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz" | sudo tar xz -C /usr/local/bin eksctl
+          curl -sSLo kubectl "https://dl.k8s.io/release/$(curl -sSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          sudo install -m 0755 kubectl /usr/local/bin/kubectl && rm kubectl
+          eksctl version && kubectl version --client
+
+      - name: ${{ inputs.action }} ${{ inputs.target }}
+        env:
+          TARGET: ${{ inputs.target }}
+          ACTION: ${{ inputs.action }}
+          NAME: ${{ inputs.name }}
+          IMAGE: ${{ inputs.image }}
+          CERT: ${{ inputs.certificate_arn }}
+          ADMIN_ARN: ${{ inputs.admin_arn }}
+        run: |
+          args=("$TARGET" --name "$NAME" --region "$AWS_REGION")
+          if [[ -n "$IMAGE" ]]; then args+=(--image "$IMAGE"); fi
+          if [[ -n "$CERT" ]]; then args+=(--certificate-arn "$CERT"); fi
+          if [[ -n "$ADMIN_ARN" ]]; then args+=(--admin-arn "$ADMIN_ARN"); fi
+          if [[ "$ACTION" == destroy ]]; then args+=(--destroy); fi
+          deploy/aws/deploy.sh "${args[@]}"

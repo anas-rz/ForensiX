@@ -74,7 +74,7 @@ curl -F file=@clip.mp4 -F models=dfdet-clip,syncnet http://localhost:8000/v1/det
 
 Models stay loaded between requests, concurrent image and audio requests are batched, and results are cached by file hash. See [docs/server.md](docs/server.md). The server also hosts a web manager at `http://localhost:8000/ui/` for testing, loading, calibrating and monitoring models ([docs/ui.md](docs/ui.md)).
 
-Containers: `docker compose up -d --build` runs the server and manager locally, and `kubectl apply -k deploy/kubernetes/overlays/cpu` (or `gpu`) deploys a manager plus autoscaled inference replicas. See [docs/cloud.md](docs/cloud.md). Benchmark results are in [benchmark.md](benchmark.md).
+Containers: `docker compose up -d --build` runs the server and manager locally, and `kubectl apply -k deploy/kubernetes/overlays/cpu` (or `gpu`) deploys a manager plus autoscaled inference replicas. See [docs/cloud.md](docs/cloud.md). On AWS, `deploy/aws/deploy.sh ecs` (or `ecs-gpu`, `eks`, `eks-gpu`) deploys everything with one command, and the `deploy-aws` GitHub Actions workflow does it with one click: [docs/aws.md](docs/aws.md). Benchmark results are in [benchmark.md](benchmark.md).
 
 ## Usage
 

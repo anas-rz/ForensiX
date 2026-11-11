@@ -25,6 +25,7 @@ preprocessing details and parity checks against upstream code.
 | Check C2PA credentials, generator watermarks and metadata | [Provenance](provenance.md) |
 | Report false-alarm rates by skin tone, age and gender | [Fairness reports](fairness.md) |
 | Run it in Docker, on Kubernetes or a managed cloud | [Docker, Kubernetes and cloud](cloud.md) |
+| Deploy on AWS (ECS or EKS) with one command or one click | [Deploying on AWS](aws.md) |
 | Run ForensiX as a service over large volumes of media | [Deployment at scale](deployment.md) |
 
 ## Guides

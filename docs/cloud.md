@@ -12,6 +12,7 @@ large-scale service (queues, worker pools, thresholds, monitoring), see
 | [`deploy/forensix.env.example`](../deploy/forensix.env.example) | Keys and settings as environment variables |
 | [`deploy/kubernetes/`](../deploy/kubernetes/) | Kustomize base plus `cpu` and `gpu` overlays |
 | [`.github/workflows/docker.yml`](../.github/workflows/docker.yml) | CI: tests, image builds, publishing to GHCR on version tags |
+| [`deploy/aws/`](../deploy/aws/) | AWS: ECS (Fargate or GPU) and EKS Auto Mode, one command or one click ([Deploying on AWS](aws.md)) |
 
 ## The image
 
@@ -140,6 +141,9 @@ slowly (10-minute window) so replicas don't flap. Pre-pull the image on GPU node
 platform supports it (e.g. GKE image streaming).
 
 ## Managed clouds
+
+On AWS, [Deploying on AWS](aws.md) does all of this for you: ECS on Fargate or GPU instances, or an
+EKS Auto Mode cluster, deployed with one command or one click.
 
 | | GKE | EKS | AKS |
 |---|---|---|---|

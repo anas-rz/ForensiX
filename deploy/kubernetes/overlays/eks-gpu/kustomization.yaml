@@ -1,0 +1,24 @@
+# EKS Auto Mode on NVIDIA GPU nodes, deployed by deploy/aws/deploy.sh eks-gpu (see docs/aws.md).
+# Pods ask for one GPU; the gpu NodePool (deploy/aws/eks/gpu-nodepool.yaml) launches a node for each.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../eks
+images:
+  - name: forensix
+    newName: ghcr.io/anas-rz/forensix
+    newTag: gpu-bundled
+patches:
+  - path: gpu.yaml
+    target: { kind: Deployment, name: forensix-manager }
+  - path: gpu.yaml
+    target: { kind: Deployment, name: forensix-inference }
+  # one GPU per pod: a fixed range rather than CPU-based scaling (see base/hpa.yaml)
+  - target: { kind: HorizontalPodAutoscaler, name: forensix-inference }
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 4

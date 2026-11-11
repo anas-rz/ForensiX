@@ -1,0 +1,16 @@
+# EFS for the forensix-data volume (deploy/aws/deploy.sh fills in __FILE_SYSTEM_ID__). Each
+# volume gets an access point owned by the image's user (10001).
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: efs-sc
+provisioner: efs.csi.aws.com
+parameters:
+  provisioningMode: efs-ap
+  fileSystemId: __FILE_SYSTEM_ID__
+  directoryPerms: "750"
+  uid: "10001"
+  gid: "10001"
+  basePath: /forensix
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
