@@ -15,7 +15,7 @@ from typing import Any
 
 import cv2
 import numpy as np
-from scipy.signal import spectrogram
+from scipy.signal import correlate, spectrogram
 
 from forensix.audio.io import load_audio
 from forensix.hub import fetch
@@ -215,7 +215,8 @@ def extract_audio_features(media_input: str | PathLike | np.ndarray, target_sr: 
     # 3. Autocorrelation-based pitch / harmonic statistics (16 stats)
     max_lag = min(len(waveform) // 2, int(target_sr / 50))  # down to 50 Hz
     min_lag = max(1, int(target_sr / 500))  # up to 500 Hz
-    corr = np.correlate(waveform[: min(len(waveform), target_sr * 2)], waveform[: min(len(waveform), target_sr * 2)], mode="full")
+    head = waveform[: min(len(waveform), target_sr * 2)]
+    corr = correlate(head, head, mode="full", method="fft")  # same as np.correlate, O(n log n)
     mid = len(corr) // 2
     r_xx = corr[mid + min_lag : mid + max_lag]
     if len(r_xx) >= 16:

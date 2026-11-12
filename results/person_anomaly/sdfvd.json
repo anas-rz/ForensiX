@@ -1,0 +1,31 @@
+{
+ "dataset": "SDFVD",
+ "protocol": "enroll on the first half of each real clip's frames; test on its last 40% and on the face swap made from it",
+ "threshold_similarity": 0.363,
+ "frames": {
+  "n_real": 2117,
+  "n_fake": 5281,
+  "people": 53,
+  "auc": 0.992,
+  "auc_ci95": [
+   0.98,
+   1.0
+  ],
+  "false_alarms_at_threshold": 0.011,
+  "fakes_caught_at_threshold": 0.765,
+  "fakes_caught_at_5pct_false_alarms": 1.0
+ },
+ "clips": {
+  "n_real": 53,
+  "n_fake": 53,
+  "people": 53,
+  "auc": 0.989,
+  "auc_ci95": [
+   0.963,
+   1.0
+  ],
+  "false_alarms_at_threshold": 0.019,
+  "fakes_caught_at_threshold": 0.774,
+  "fakes_caught_at_5pct_false_alarms": 1.0
+ }
+}

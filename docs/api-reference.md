@@ -64,6 +64,7 @@ Models and their score conventions:
 | `id-motion` | anomaly (1 − similarity) | EER threshold from training | one per 4 s window | `window_similarity`, `window_start_s` |
 | `phys-*` | anomaly in [0, 1] | `None` | none | `constraints` (measured value, expected range, violation), `timeline`, per-detector summaries |
 | `physdf` | anomaly in [0, 1] | `None` | none | `constraints`, `localization`, `report`, `detectors`, `modalities`, `status` |
+| `person-anomaly` | anomaly (1 − similarity to the person) | 0.637 (faces), 0.75 (voice) | one per frame or speech segment | `similarity`, `item_similarity`, `person_percentile`, `frame_time_s` / `segment_start_s` |
 | `person-detector` | probability | from training (default 0.5) | per frame (video) | `target_person`, `modality` |
 
 ## Detector interfaces
@@ -152,6 +153,17 @@ Report helpers in `forensix.physics.report`:
 | `to_markdown(report)` | The report as Markdown (also in `details["report"]["markdown"]`). |
 | `verify_report(report, result)` | Re-derives every claim, the score and the verdict from the evidence; returns a list of problems (empty means it checks out). |
 | `render_figures(result, out_dir)` | Draws the residual timeline; needs matplotlib. Returns the written paths. |
+
+## Per-person anomaly models: `forensix.identity.anomaly`
+
+| Function / class | Description |
+|---|---|
+| `fit_person(person, real_media, kind="auto", device="cpu", folds=3, verbose=False)` | Enrolls a person from their real media (`kind` is `"face"`, `"voice"` or `"auto"`) and returns a `PersonAnomaly`. No fakes and no training. |
+| `PersonAnomaly.from_embeddings(person, kind, embeddings, groups=None, folds=3)` | The same from precomputed unit embeddings; `groups` (e.g. the source file of each row) keeps a file in one calibration fold. |
+| `PersonAnomaly.predict(media)` | `Prediction` with `fake_prob = 1 − similarity` and the population threshold (SFace 0.363, ECAPA 0.25). |
+| `PersonAnomaly.score_embeddings(E)` | `similarity` (median), `item_similarity`, `person_percentile`. |
+| `PersonAnomaly.save(path)` / `PersonAnomaly.load(path)` | JSON (`forensix-person-anomaly/1`), shared with the [browser studio](guides/studio.md). `forensix.load("person-anomaly", weights_path=path)` also works. |
+| `export_ecapa_onnx(path)` | Exports the voice encoder for the studio. |
 
 ## Person-specialized models: `forensix.specialized`
 

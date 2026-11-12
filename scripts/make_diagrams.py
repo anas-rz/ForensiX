@@ -131,7 +131,7 @@ def architecture(t):
     s.text(48, 216, "FORENSIX ENGINE", size=11, weight=700, color="faint", spacing="1.2")
     steps = [
         (48, "Prepare", ["Decode, sample frames,", "find faces, cut audio", "into windows"], "blue"),
-        (268, "Detect", ["38 detectors: image, video,", "audio, lip-sync, physics,", "identity"], "blue"),
+        (268, "Detect", ["39 detectors: image, video,", "audio, lip-sync, physics,", "identity"], "blue"),
         (488, "Fuse", ["Optional: one score from", "several models, with", "fitted weights"], "violet"),
         (708, "Calibrate", ["Probability, a threshold", "for your false-alarm rate,", "a confidence verdict"], "violet"),
     ]

@@ -3,7 +3,7 @@
 ForensiX is an end-to-end media forensics platform: it takes you from the first suspicious file
 to a calibrated, monitored detection service on your own infrastructure or any major cloud.
 
-- **Detect** manipulated and AI-generated images, video and voices with 38 commercially licensed
+- **Detect** manipulated and AI-generated images, video and voices with 39 commercially licensed
   detectors, including face swaps, lip-sync mismatches, cloned voices and physical
   inconsistencies. They all sit behind one API: `forensix.load(name).predict(media)` in Python, or
   `POST /v1/detect` over HTTP.
@@ -66,6 +66,7 @@ preprocessing details and parity checks against upstream code.
 | [Interpreting scores](guides/interpreting-scores.md) | `fake_prob`, thresholds, anomaly scores, calibration, localization, `details` |
 | [Evaluating on your data](guides/evaluation.md) | The eval scripts, metrics, building a fair test set, reading benchmark numbers |
 | [Identity and person models](guides/identity.md) | Enrolling people, verifying media against them, galleries, tiny per-person models |
+| [Studio](guides/studio.md) | Build a detector for one person in your browser from their real media, and test it on real and fake files; nothing is uploaded |
 | [Physics forensics](guides/physics.md) | The physics detectors, forensic reports, learned priors |
 | [Parameter-efficient fine-tuning (PEFT)](guides/peft.md) | LoRA adapters with Hugging Face PEFT: train about 1% of a large model's parameters, merge for full-speed serving, deploy to any cloud |
 | [Fine-tuning on your data](guides/finetuning.md) | Fine-tune a pretrained detector on your labelled data, evaluate, calibrate, package and deploy it to AWS, Google Cloud or Azure |
@@ -84,11 +85,12 @@ preprocessing details and parity checks against upstream code.
 | video | `gend`, `gend-pe`, `dfdet-clip`, `dfdc-selim`, `dfdc-wm` | pretrained, parity-checked, [benchmarked on SDFVD](../benchmark.md) |
 | audiovisual | `avad`, `syncnet`, `stablesyncnet` | pretrained, parity-checked |
 | audiovisual | `avcons`, `avid` | ForensiX models; you train them ([Training](guides/training.md)) |
-| identity | `id-face` | pretrained (SFace) |
+| identity | `person-anomaly` | per-person detector from real media only; enroll in Python or the [browser studio](guides/studio.md) |
+| identity | `id-face`, `id-voice` | pretrained (SFace, ECAPA) |
 | identity | `id-motion` | ForensiX model; you train it |
 | physics | `phys-bloodflow`, `phys-motion`, `phys-lighting`, `phys-voice`, `phys-room` | algorithmic; `phys-voice` ships a reference fitted on real speech (calibrated scores), the others use provisional ranges until you [fit a reference](guides/physics.md#fit-a-reference-on-your-own-media-recommended) |
 | physics | `physdf` | runs without a graph prior; train the prior for the full system |
-| specialized | `person-detector` | tiny per-person model you train in seconds |
+| specialized | `person-detector` | tiny per-person model you train in seconds; superseded by `person-anomaly` ([why](guides/identity.md#person-detector)) |
 | provenance | `c2pa`, `watermark-image`, `watermark-audio`, `metadata` | evidence in the file: Content Credentials, SD/SDXL and AudioSeal watermarks, metadata ([Provenance](provenance.md)) |
 | multimodal, graph-based | none yet | planned |
 

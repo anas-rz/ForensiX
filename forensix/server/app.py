@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import PlainTextResponse, RedirectResponse
+from fastapi.responses import FileResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from typing import Literal
 
@@ -635,6 +635,21 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
 
     if config.ui:
         static = Path(__file__).parent / "static"
+        export_lock = asyncio.Lock()
+
+        @app.get("/ui/studio/models/ecapa.onnx", include_in_schema=False)
+        async def studio_ecapa():
+            """The voice encoder for the browser studio, exported once from the id-voice checkpoint."""
+            from forensix.hub import cache_dir
+            from forensix.identity.anomaly import export_ecapa_onnx
+
+            path = cache_dir() / "studio" / "ecapa.onnx"
+            async with export_lock:
+                if not path.exists():
+                    await asyncio.to_thread(export_ecapa_onnx, path)
+            return FileResponse(path, media_type="application/octet-stream",
+                                headers={"Cache-Control": "public, max-age=604800"})
+
         app.mount("/ui", StaticFiles(directory=static, html=True), name="ui")
 
         @app.get("/", include_in_schema=False)

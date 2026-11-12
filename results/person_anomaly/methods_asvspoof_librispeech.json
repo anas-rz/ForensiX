@@ -1,0 +1,204 @@
+{
+ "asvspoof": {
+  "person-detector(raw fake_prob)": {
+   "auc": 0.66,
+   "ci": [
+    0.631,
+    0.694
+   ],
+   "tpr_at_5fa": 0.258,
+   "fa_z233": 0.0,
+   "tpr_z233": 0.0
+  },
+  "person-detector": {
+   "auc": 0.462,
+   "ci": [
+    0.426,
+    0.499
+   ],
+   "tpr_at_5fa": 0.055,
+   "fa_z233": 0.072,
+   "tpr_z233": 0.08
+  },
+  "hand-knn": {
+   "auc": 0.81,
+   "ci": [
+    0.783,
+    0.839
+   ],
+   "tpr_at_5fa": 0.397,
+   "fa_z233": 0.048,
+   "tpr_z233": 0.39
+  },
+  "ecapa-centroid": {
+   "auc": 0.905,
+   "ci": [
+    0.889,
+    0.92
+   ],
+   "tpr_at_5fa": 0.641,
+   "fa_z233": 0.058,
+   "tpr_z233": 0.648
+  },
+  "ae-base(frozen)": {
+   "auc": 0.404,
+   "ci": [
+    0.361,
+    0.451
+   ],
+   "tpr_at_5fa": 0.025,
+   "fa_z233": 0.062,
+   "tpr_z233": 0.036
+  },
+  "ae-scratch": {
+   "auc": 0.517,
+   "ci": [
+    0.478,
+    0.557
+   ],
+   "tpr_at_5fa": 0.08,
+   "fa_z233": 0.027,
+   "tpr_z233": 0.033
+  },
+  "ae-base-ft": {
+   "auc": 0.445,
+   "ci": [
+    0.409,
+    0.487
+   ],
+   "tpr_at_5fa": 0.029,
+   "fa_z233": 0.062,
+   "tpr_z233": 0.033
+  },
+  "ecapa+ae-base-ft": {
+   "auc": 0.83,
+   "ci": [
+    0.798,
+    0.861
+   ],
+   "tpr_at_5fa": 0.482,
+   "fa_z233": 0.092,
+   "tpr_z233": 0.56
+  }
+ },
+ "asvspoof_by_attack": {
+  "ecapa-centroid": {
+   "A07": 0.49,
+   "A08": 0.74,
+   "A09": 1.0,
+   "A10": 0.31,
+   "A11": 0.33,
+   "A12": 0.55,
+   "A13": 0.87,
+   "A14": 0.45,
+   "A15": 0.32,
+   "A16": 0.17,
+   "A17": 1.0,
+   "A18": 0.99,
+   "A19": 0.99
+  },
+  "ae-base-ft": {
+   "A07": 0.02,
+   "A08": 0.01,
+   "A09": 0.02,
+   "A10": 0.0,
+   "A11": 0.0,
+   "A12": 0.02,
+   "A13": 0.02,
+   "A14": 0.01,
+   "A15": 0.01,
+   "A16": 0.02,
+   "A17": 0.14,
+   "A18": 0.0,
+   "A19": 0.09
+  },
+  "ecapa+ae-base-ft": {
+   "A07": 0.25,
+   "A08": 0.53,
+   "A09": 0.96,
+   "A10": 0.15,
+   "A11": 0.13,
+   "A12": 0.33,
+   "A13": 0.59,
+   "A14": 0.26,
+   "A15": 0.09,
+   "A16": 0.11,
+   "A17": 0.99,
+   "A18": 0.9,
+   "A19": 0.81
+  },
+  "hand-knn": {
+   "A07": 0.56,
+   "A08": 0.32,
+   "A09": 0.37,
+   "A10": 0.5,
+   "A11": 0.53,
+   "A12": 0.26,
+   "A13": 0.68,
+   "A14": 0.48,
+   "A15": 0.34,
+   "A16": 0.22,
+   "A17": 0.27,
+   "A18": 0.28,
+   "A19": 0.37
+  }
+ },
+ "thr5": {
+  "person-detector": 2.763596534729004,
+  "hand-knn": 2.2638752460479736,
+  "ecapa-centroid": 2.388284921646118,
+  "ae-base(frozen)": 2.7154984227312657,
+  "ae-scratch": 1.2399960113318782,
+  "ae-base-ft": 2.5330125960750007,
+  "ecapa+ae-base-ft": 3.1515400861510874
+ },
+ "librispeech": {
+  "person-detector": {
+   "fa_same": 0.059,
+   "fa_cross": 0.119,
+   "median_z_same": -0.41,
+   "median_z_cross": -0.33
+  },
+  "hand-knn": {
+   "fa_same": 0.029,
+   "fa_cross": 0.209,
+   "median_z_same": -0.54,
+   "median_z_cross": 0.17
+  },
+  "ecapa-centroid": {
+   "fa_same": 0.145,
+   "fa_cross": 0.313,
+   "median_z_same": 0.31,
+   "median_z_cross": 1.46
+  },
+  "ae-base(frozen)": {
+   "fa_same": 0.015,
+   "fa_cross": 0.032,
+   "median_z_same": -0.18,
+   "median_z_cross": -0.39
+  },
+  "ae-scratch": {
+   "fa_same": 0.091,
+   "fa_cross": 0.197,
+   "median_z_same": -0.67,
+   "median_z_cross": -0.08
+  },
+  "ae-base-ft": {
+   "fa_same": 0.029,
+   "fa_cross": 0.07,
+   "median_z_same": -0.33,
+   "median_z_cross": 0.0
+  },
+  "ecapa+ae-base-ft": {
+   "fa_same": 0.113,
+   "fa_cross": 0.244,
+   "median_z_same": 0.09,
+   "median_z_cross": 1.44
+  }
+ },
+ "librispeech_n": {
+  "speakers": 18,
+  "same": 408,
+  "cross": 402
+ }
+}

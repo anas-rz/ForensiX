@@ -1,5 +1,5 @@
 site_name: ForensiX
-site_description: "End-to-end deepfake detection and media forensics: 38 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure."
+site_description: "End-to-end deepfake detection and media forensics: 39 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure."
 site_url: https://anas-rz.github.io/ForensiX/
 repo_url: https://github.com/anas-rz/ForensiX
 repo_name: anas-rz/ForensiX
@@ -83,6 +83,7 @@ nav:
       - Interpreting scores: guides/interpreting-scores.md
       - Evaluating on your data: guides/evaluation.md
       - Identity and person models: guides/identity.md
+      - "Studio: a detector for one person in your browser": guides/studio.md
       - Physics forensics: guides/physics.md
       - Fine-tuning on your data: guides/finetuning.md
       - Parameter-efficient fine-tuning (PEFT): guides/peft.md
@@ -111,3 +112,4 @@ nav:
           - Audiovisual: reference/benchmark-audiovisual.md
           - Identity: reference/benchmark-identity.md
           - Physics: reference/benchmark-physics.md
+          - Per-person detectors: reference/benchmark-person-anomaly.md

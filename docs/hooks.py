@@ -8,8 +8,13 @@ In the built site those targets don't exist, so at build time:
 - links to any other file outside docs/ (Dockerfile, scripts, deploy/) go to it on GitHub.
 
 The sources stay unchanged, so both GitHub and the site keep working. Wired up in mkdocs.yml.
+
+The browser studio (forensix/server/static/studio/) is published at studio/, with the web manager's
+stylesheet it builds on. Its voice model is too big for the repository: when STUDIO_ECAPA points at
+an exported ECAPA ONNX file (the docs workflow makes one), it's published at studio/models/ecapa.onnx.
 """
 
+import os
 import posixpath
 import re
 from pathlib import Path
@@ -26,7 +31,11 @@ ROOT_PAGES = {  # repository file -> page in the site
     "av_benchmark.md": "reference/benchmark-audiovisual.md",
     "identity_benchmark.md": "reference/benchmark-identity.md",
     "physics_benchmark.md": "reference/benchmark-physics.md",
+    "person_anomaly_benchmark.md": "reference/benchmark-person-anomaly.md",
 }
+STATIC = ROOT / "forensix" / "server" / "static"
+STUDIO_FILES = {"studio/index.html": "studio/index.html", "studio/engine.js": "studio/engine.js",
+                "studio/studio.js": "studio/studio.js", "studio/studio.css": "studio/studio.css", "style.css": "style.css"}
 SOURCE_OF = {page: repo_file for repo_file, page in ROOT_PAGES.items()}
 LINK = re.compile(r"(!?\[[^\]]*\]\()([^)\s]+)(\))|(<(?:img\s[^>]*?src|source\s[^>]*?srcset)=\")([^\"]+)(\")")
 FENCE = re.compile(r"^(```|~~~)")
@@ -35,6 +44,11 @@ FENCE = re.compile(r"^(```|~~~)")
 def on_files(files, config):
     for repo_file, page in ROOT_PAGES.items():
         files.append(File.generated(config, page, content=(ROOT / repo_file).read_text(encoding="utf-8")))
+    for src, dest in STUDIO_FILES.items():
+        files.append(File.generated(config, dest, abs_src_path=str(STATIC / src)))
+    ecapa = os.environ.get("STUDIO_ECAPA")
+    if ecapa and Path(ecapa).exists():
+        files.append(File.generated(config, "studio/models/ecapa.onnx", abs_src_path=str(Path(ecapa).resolve())))
     return files
 
 

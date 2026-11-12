@@ -1,0 +1,131 @@
+{
+ "dataset": "ASVspoof 2019 LA eval (one shard)",
+ "threshold_similarity": 0.25,
+ "asvspoof": {
+  "n_real": 292,
+  "n_fake": 1680,
+  "people": 42,
+  "auc": 0.914,
+  "auc_ci95": [
+   0.898,
+   0.929
+  ],
+  "false_alarms_at_threshold": 0.0,
+  "fakes_caught_at_threshold": 0.192,
+  "fakes_caught_at_5pct_false_alarms": 0.655
+ },
+ "asvspoof_by_attack": {
+  "A07": {
+   "n": 122,
+   "caught_at_threshold": 0.008,
+   "caught_at_5pct_false_alarms": 0.541
+  },
+  "A08": {
+   "n": 117,
+   "caught_at_threshold": 0.017,
+   "caught_at_5pct_false_alarms": 0.872
+  },
+  "A09": {
+   "n": 134,
+   "caught_at_threshold": 0.791,
+   "caught_at_5pct_false_alarms": 1.0
+  },
+  "A10": {
+   "n": 123,
+   "caught_at_threshold": 0.0,
+   "caught_at_5pct_false_alarms": 0.309
+  },
+  "A11": {
+   "n": 123,
+   "caught_at_threshold": 0.0,
+   "caught_at_5pct_false_alarms": 0.309
+  },
+  "A12": {
+   "n": 121,
+   "caught_at_threshold": 0.008,
+   "caught_at_5pct_false_alarms": 0.603
+  },
+  "A13": {
+   "n": 129,
+   "caught_at_threshold": 0.008,
+   "caught_at_5pct_false_alarms": 0.899
+  },
+  "A14": {
+   "n": 137,
+   "caught_at_threshold": 0.0,
+   "caught_at_5pct_false_alarms": 0.511
+  },
+  "A15": {
+   "n": 122,
+   "caught_at_threshold": 0.0,
+   "caught_at_5pct_false_alarms": 0.246
+  },
+  "A16": {
+   "n": 132,
+   "caught_at_threshold": 0.0,
+   "caught_at_5pct_false_alarms": 0.121
+  },
+  "A17": {
+   "n": 145,
+   "caught_at_threshold": 0.731,
+   "caught_at_5pct_false_alarms": 1.0
+  },
+  "A18": {
+   "n": 136,
+   "caught_at_threshold": 0.544,
+   "caught_at_5pct_false_alarms": 1.0
+  },
+  "A19": {
+   "n": 139,
+   "caught_at_threshold": 0.23,
+   "caught_at_5pct_false_alarms": 0.978
+  }
+ },
+ "asvspoof_threshold_curve": {
+  "0.25": {
+   "false_alarms": 0.0,
+   "fakes_caught": 0.192
+  },
+  "0.30": {
+   "false_alarms": 0.0,
+   "fakes_caught": 0.24
+  },
+  "0.40": {
+   "false_alarms": 0.0,
+   "fakes_caught": 0.34
+  },
+  "0.50": {
+   "false_alarms": 0.014,
+   "fakes_caught": 0.451
+  },
+  "0.60": {
+   "false_alarms": 0.048,
+   "fakes_caught": 0.642
+  }
+ },
+ "librispeech_sessions": {
+  "speakers": 18,
+  "n_same_session": 176,
+  "n_other_session": 332,
+  "0.25": {
+   "false_alarms_same_session": 0.0,
+   "false_alarms_other_session": 0.0
+  },
+  "0.30": {
+   "false_alarms_same_session": 0.0,
+   "false_alarms_other_session": 0.0
+  },
+  "0.40": {
+   "false_alarms_same_session": 0.0,
+   "false_alarms_other_session": 0.003
+  },
+  "0.50": {
+   "false_alarms_same_session": 0.0,
+   "false_alarms_other_session": 0.021
+  },
+  "0.60": {
+   "false_alarms_same_session": 0.011,
+   "false_alarms_other_session": 0.154
+  }
+ }
+}

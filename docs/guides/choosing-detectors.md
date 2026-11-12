@@ -13,7 +13,7 @@ evidence is left in the media**, then confirm on data like yours.
 | Dubbed video, voice replaced | The audio track | `syncnet`, `stablesyncnet`, `avcons`, `avad`, `avid` (voice doesn't fit the face); the audio models | Face models |
 | Lip-sync generation (Wav2Lip-style) | The mouth region, driven by new audio | `avad`, `avcons`, face models; `syncnet` and `stablesyncnet` only if the sync is imperfect | Generators trained against a SyncNet can pass the sync models |
 | Voice swap + lip-sync | Audio and mouth | `avid` (identity mismatch), audio models, `id-face` with references | Sync models (the sync is good) |
-| Impersonation of a known person | The identity | `id-face`, `id-motion`, `person-detector` | Detectors without references can't know who it should be |
+| Impersonation of a known person | The identity | `person-anomaly` (or the [browser studio](studio.md)), `id-face`, `id-voice`, `id-motion` | Detectors without references can't know who it should be |
 | Spliced or edited recording | A segment | Window/segment scores of audio models, `phys-room` (room or microphone change), `avcons` localization, `physdf` localization | Clip-level scores alone |
 
 ## Measured results

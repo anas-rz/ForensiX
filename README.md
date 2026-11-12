@@ -38,7 +38,7 @@ c2pa_tampered.jpg (image)
   [licensing guide](docs/guides/licensing.md). Many published deepfake detectors release weights for
   research use only; those are left out, so what's here can go into a product.
 - **Every modality, one API.** Image generators, face swaps, cloned voices, lip-sync mismatches,
-  physical and physiological inconsistencies, identity and provenance: 38 detectors in 8 families
+  physical and physiological inconsistencies, identity and provenance: 39 detectors in 8 families
   behind `forensix.load(name).predict(file)` and a single `/v1/detect` endpoint.
 - **Decisions you can defend.** Calibrate on your own data to get real probabilities, a threshold
   with a statistical guarantee on the false-alarm rate you choose (split conformal), and an explicit
@@ -52,6 +52,9 @@ c2pa_tampered.jpg (image)
 - **Adapts to your media.** [Fine-tune](docs/guides/finetuning.md) any image, audio or face-video
   detector on your own data, including [LoRA with PEFT](docs/guides/peft.md). The result is a
   checkpoint of a few megabytes that serves at full speed.
+- **Protect one person, from your browser.** [ForensiX Studio](docs/guides/studio.md) builds a
+  detector for one person from their real photos, videos or voice recordings, on your own GPU or CPU,
+  and tests it on your real and fake files. Nothing is uploaded, and the saved model runs in Python too.
 - **Production-ready on day one.** The API keeps models loaded, batches requests and caches
   results, and comes with a web console, Prometheus metrics, Docker and Kubernetes manifests, and
   [one-command or one-click deployment](docs/cloud.md#managed-clouds) to AWS, Google Cloud and Azure.
@@ -703,6 +706,14 @@ det.predict("new.mp4", identity="alice").details["window_similarity"]
   - **Synthetic people:** each has a personal motion style, and each video adds session effects. After 300 steps, held-out people verify at EER 7.5% (AUC 0.97; genuine similarity 0.53 vs 0.09 for impostors).
   - **Real clip:** on a real talking-face clip, features are plausible (head rotation varying by 2–3°, jaw opening 0–0.42), and enrollment and verification run end to end.
 - **Limits:** motion identity needs a few seconds of natural, talking behaviour in both references and query. Short clips, or a person who hardly moves, give weak evidence. ID-Reveal reported strong results on its benchmarks; ForensiX's own numbers will come from your Colab run.
+
+**`person-anomaly`** (ForensiX): a per-person detector from real media only. The person is described by a frozen face (SFace) or speaker (ECAPA) encoder; enrolling stores their mean embedding and how much their own media varies, and new media is flagged below the encoder's published threshold. On held-out people it scored AUC 0.99 on SDFVD face swaps (1 of 53 real videos flagged, 77% of swaps caught) and 0.91 on ASVspoof 2019 voice spoofs (no real clips flagged, 19% of spoofs caught at the conservative default; 65% at 5% false alarms) ([benchmark](person_anomaly_benchmark.md)). Small networks trained on the person's own media, including `person-detector`, measured worse. The [browser studio](docs/guides/studio.md) enrolls and tests people without installing anything, in the same file format:
+
+```python
+from forensix.identity.anomaly import fit_person
+fit_person("alice", ["alice_1.mp4", "alice_2.jpg"]).save("alice.face.json")
+forensix.load("person-anomaly", weights_path="alice.face.json").predict("new.mp4").details["similarity"]
+```
 
 **Evaluation** (`scripts/eval_identity.py`, any data you have the rights to use): enroll from `references/<person>/`, then score `queries/<person>/real/` (should pass), `queries/<person>/fake/` (deepfakes of them) and other people's real queries (impostors). Reports AUC, AP, EER and accuracy for real vs fake and real vs impostor. There's no commercially usable deepfake benchmark with per-person references; VoxCeleb2 test (CC BY 4.0) alone already measures the impostor rate.
 
