@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="End-to-end deepfake detection and media forensics: 38 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
+        <meta name="description" content="End-to-end deepfake detection and media forensics: 39 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
       
       
       
@@ -15,6 +15,8 @@
       
         <link rel="prev" href="../benchmark-identity/">
       
+      
+        <link rel="next" href="../benchmark-person-anomaly/">
       
       
         
@@ -672,6 +674,8 @@
       
         
       
+        
+      
     
     
     
@@ -816,6 +820,34 @@
     
   
     Identity and person models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Studio: a detector for one person in your browser
   
 
     
@@ -1624,6 +1656,8 @@
       
         
       
+        
+      
     
     
     
@@ -1834,6 +1868,29 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#reference-scoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference scoring
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference scoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#method-fixed-before-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method (fixed before evaluation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#data" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1843,74 +1900,30 @@
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#video-sdfvd-default-priors" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#audio-asvspoof-2019-la-eval-subset" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Video: SDFVD (default priors)
+        Audio: ASVspoof 2019 LA eval subset
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#audio-asvspoof-2019-la-subset" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#video-sdfvd-5-fold-cross-validation-by-pair" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Audio: ASVspoof 2019 LA subset
+        Video: SDFVD, 5-fold cross-validation by pair
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#why-the-fitted-priors-are-not-the-package-default" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why the fitted priors are not the package default
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#experiment-camera-consistency-on-sdfvd" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Experiment: camera consistency on SDFVD
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fixes-made-during-this-evaluation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fixes made during this evaluation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#caveats" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Caveats
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#reproduce" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1920,11 +1933,44 @@
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
     </ul>
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmark-person-anomaly/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-person detectors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1983,6 +2029,29 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#reference-scoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference scoring
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference scoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#method-fixed-before-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method (fixed before evaluation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#data" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1992,74 +2061,30 @@
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#video-sdfvd-default-priors" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#audio-asvspoof-2019-la-eval-subset" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Video: SDFVD (default priors)
+        Audio: ASVspoof 2019 LA eval subset
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#audio-asvspoof-2019-la-subset" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#video-sdfvd-5-fold-cross-validation-by-pair" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Audio: ASVspoof 2019 LA subset
+        Video: SDFVD, 5-fold cross-validation by pair
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#why-the-fitted-priors-are-not-the-package-default" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why the fitted priors are not the package default
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#experiment-camera-consistency-on-sdfvd" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Experiment: camera consistency on SDFVD
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fixes-made-during-this-evaluation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fixes made during this evaluation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#caveats" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Caveats
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#reproduce" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2067,6 +2092,11 @@
       
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2090,23 +2120,199 @@
 <h1 id="physics-detectors-sdfvd-and-asvspoof-2019-la">Physics detectors: SDFVD and ASVspoof 2019 LA<a class="headerlink" href="#physics-detectors-sdfvd-and-asvspoof-2019-la" title="Permanent link">&para;</a></h1>
 <p>This report evaluates the physics-based detectors (<code>phys-*</code>). These are hand-built checks on physical constraints, with no trained classifier. They ran on SDFVD (video) and a subset of ASVspoof 2019 LA (audio). It also tests whether priors fitted on real data improve them. For the learned detectors, see <a href="../benchmark-video-image/">benchmark.md</a>.</p>
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<p><strong>Reference scoring (current default, November 2026).</strong></p>
 <ul>
-<li><strong>SDFVD: no physics detector beats chance.</strong></li>
-<li><code>phys-motion</code> AUC 0.45 and <code>phys-lighting</code> 0.48.</li>
-<li><code>phys-bloodflow</code> never applies: every clip is under its 6 s minimum.</li>
-<li>With the default priors, <code>phys-lighting</code> flags 100% of the real clips, so it isn't usable on this footage.</li>
-<li>Face swaps keep the source video's head motion and scene lighting. The constraints these detectors check are mostly preserved by construction.</li>
-<li><strong>ASVspoof 2019 LA: near chance with the default priors.</strong></li>
-<li><code>phys-voice</code> AUC 0.49 and <code>phys-room</code> 0.49.</li>
-<li>With priors fitted on ASVspoof's own bona fide train/dev speech, <code>phys-voice</code> rises to AUC 0.62. It flags 26% of fakes, with 1.4% of reals violating any constraint.</li>
-<li>Coverage is low: <code>phys-voice</code> measures 33% of trials (it needs 1.5 s of voiced speech) and <code>phys-room</code> measures 4% (it needs 6 s of audio).</li>
-<li><strong>The fitted priors are not shipped as the package default.</strong></li>
-<li>They fail the package's own tests: a real 10 s LibriVox recording scores 1.0.</li>
-<li>The reason: some ranges learned from ~3 s ASVspoof clips don't transfer to longer speech (details below).</li>
-<li>The default stays the provisional, hand-set priors. This is a decision for the maintainer; options are listed at the end.</li>
-<li><strong>Camera-consistency feature.</strong> One experimental feature, fixed in advance on a dev split of SDFVD, reached AUC 0.66 [0.50, 0.81] on the held-out test pairs. It is not added to the package (see below).</li>
+<li><strong><code>phys-voice</code>: AUC 0.488 → 0.679 [0.638, 0.719]</strong> on held-out ASVspoof 2019 LA eval
+  speakers, with the packaged reference.</li>
+<li>False alarms: 0.0% of real eval clips reach the 0.99 decision threshold.</li>
+<li>Detection at that strict threshold is modest: 4.1% of fakes.</li>
+<li>Fitted on ASVspoof's own real train/dev speech only, the same method reaches <strong>AUC 0.741
+    [0.705, 0.780]</strong>. That's the case for fitting a reference on your own media.</li>
+<li><strong>The gain comes from scoring, not new measurements.</strong> The old score was the largest
+  violation of hand-set ranges; most clips scored exactly 0, so the score couldn't rank them.
+  Reference scoring keeps each measurement's information and adds weak signals together.</li>
+<li><strong>Calibrated false alarms.</strong> Scores are calibrated on real media out of fold, so 0.99 means
+  "more unusual than 99% of real media". Held-out real speakers: 0.0% at 0.99 and 4.1% at 0.95.</li>
+<li><strong>Negative results, not shipped:</strong></li>
+<li><strong><code>phys-room</code>:</strong> a general reference scored <em>below</em> chance (AUC 0.296, 26 + 50 clips). Room
+    acoustics differ too much between corpora. It keeps its ranges.</li>
+<li><strong><code>phys-bloodflow</code> at 3 s:</strong> at a 3-second minimum (fixed in advance: three beats at 60 bpm),
+    it measures 37 SDFVD pairs, but reaches only AUC 0.625 [0.490, 0.756]. Real clips show almost
+    no measurable pulse (median coherence 0.15). The 6-second minimum stays.</li>
+<li><strong>Video motion and lighting:</strong> reference scoring, cross-validated on SDFVD, cuts
+    <code>phys-lighting</code>'s false alarms from 70% to 8.5%, but AUC stays at chance (0.51 and 0.54).
+    Face swaps keep the source video's motion and lighting.</li>
 </ul>
-<h2 id="data">Data<a class="headerlink" href="#data" title="Permanent link">&para;</a></h2>
+<p><strong>Range scoring (before; kept below for the record).</strong></p>
+<ul>
+<li>No video detector beat chance on SDFVD; <code>phys-lighting</code> flagged 70–100% of real clips.</li>
+<li><code>phys-voice</code> scored AUC 0.488 on ASVspoof with the provisional ranges, and 0.624 with ranges
+  fitted on ASVspoof train/dev.</li>
+<li>A camera-noise feature reached AUC 0.66 [0.50, 0.81] on held-out SDFVD pairs; not shipped.</li>
+</ul>
+<h2 id="reference-scoring">Reference scoring<a class="headerlink" href="#reference-scoring" title="Permanent link">&para;</a></h2>
+<h3 id="method-fixed-before-evaluation">Method (fixed before evaluation)<a class="headerlink" href="#method-fixed-before-evaluation" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Reference distributions.</strong> Per constraint, the measurement's distribution over real clips,
+   stored as 401 quantiles.</li>
+<li><strong>Direction from physics.</strong> The suspicious direction of each constraint comes from the
+   detector's provisional range, never from fakes.</li>
+<li><strong>Tail probability.</strong> A clip's measurement becomes <code>p</code> = the share of real media at least as
+   extreme.</li>
+<li><strong>Combination.</strong> Fisher's method, <code>S = Σ −ln p</code>, over the constraints that apply.</li>
+<li><strong>Calibration.</strong> Cross-fitting over five folds of groups (speakers): each real clip is scored
+   against references built without its group, and the score is the clip's rank among those
+   statistics.</li>
+</ol>
+<p>Fisher's method was chosen before any evaluation. The min-p alternative was computed once for
+transparency (same AUC, 0.744 vs 0.743 in the first experiment) and not used.</p>
+<h3 id="data">Data<a class="headerlink" href="#data" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Set</th>
+<th>Content</th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ASVspoof 2019 LA train + dev, bona fide</td>
+<td>5,128 real clips, 40 speakers</td>
+<td>fitting</td>
+</tr>
+<tr>
+<td>LibriSpeech dev-clean</td>
+<td>1,200 real utterances (seed 0 of 2,703), 40 speakers, CC BY 4.0</td>
+<td>fitting (packaged default only)</td>
+</tr>
+<tr>
+<td>ASVspoof 2019 LA eval subset</td>
+<td>1,000 bona fide + 1,001 spoofed, speakers disjoint from fitting</td>
+<td>evaluation</td>
+</tr>
+<tr>
+<td>SDFVD</td>
+<td>53 real + 53 face-swapped videos</td>
+<td>video, cross-validated by pair</td>
+</tr>
+</tbody>
+</table>
+<h3 id="audio-asvspoof-2019-la-eval-subset">Audio: ASVspoof 2019 LA eval subset<a class="headerlink" href="#audio-asvspoof-2019-la-eval-subset" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Detector</th>
+<th>Scoring</th>
+<th>n (real + fake)</th>
+<th>AUC [95% CI]</th>
+<th>Reals ≥ 0.99</th>
+<th>Fakes ≥ 0.99</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>phys-voice</code></td>
+<td>ranges, provisional</td>
+<td>294 + 369</td>
+<td>0.488 [0.472, 0.504]</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
+<td><code>phys-voice</code></td>
+<td>ranges fitted on ASVspoof train/dev</td>
+<td>294 + 369</td>
+<td>0.624</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
+<td><code>phys-voice</code></td>
+<td><strong>reference, ASVspoof train/dev</strong></td>
+<td>294 + 369</td>
+<td><strong>0.741 [0.705, 0.780]</strong></td>
+<td>0.7%</td>
+<td>14.9%</td>
+</tr>
+<tr>
+<td><code>phys-voice</code></td>
+<td><strong>reference, ASVspoof + LibriSpeech (packaged)</strong></td>
+<td>294 + 369</td>
+<td><strong>0.679 [0.638, 0.719]</strong></td>
+<td>0.0%</td>
+<td>4.1%</td>
+</tr>
+<tr>
+<td><code>phys-room</code></td>
+<td>reference, ASVspoof + LibriSpeech</td>
+<td>26 + 50</td>
+<td>0.296</td>
+<td>0.0%</td>
+<td>0.0%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why the packaged default includes LibriSpeech.</strong> An ASVspoof-only reference flags long natural
+speech: the test suite's real 10 s LibriVox reading has an 8.2 s stretch without a pause, longer
+than any real ASVspoof clip, so it would score 1.0. Pooling in longer audiobook speech fixes that
+(it scores 0.78, below the 0.99 threshold), at a cost of 0.06 AUC on ASVspoof.</p>
+<p><strong>Calibration.</strong> On real speakers held out from both fitting and calibration, the packaged
+reference flags 0.0% at 0.99 and 4.1% at 0.95 (n = 438). An earlier version calibrated on a
+single 20% split of the groups flagged 3.2% at 0.99. Cross-fitting on all groups fixed that.</p>
+<h3 id="video-sdfvd-5-fold-cross-validation-by-pair">Video: SDFVD, 5-fold cross-validation by pair<a class="headerlink" href="#video-sdfvd-5-fold-cross-validation-by-pair" title="Permanent link">&para;</a></h3>
+<p>No real video separate from SDFVD was available, so each fold's reference is fitted on the real
+clips of the other folds' pairs.</p>
+<table>
+<thead>
+<tr>
+<th>Detector</th>
+<th>n</th>
+<th>AUC, reference [95% CI]</th>
+<th>AUC, ranges</th>
+<th>Reals flagged</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>phys-motion</code></td>
+<td>47 + 47</td>
+<td>0.544 [0.432, 0.655]</td>
+<td>0.445</td>
+<td>6.4% at 0.95 (ranges: 10.6% at ≥ 0.5)</td>
+</tr>
+<tr>
+<td><code>phys-lighting</code></td>
+<td>47 + 47</td>
+<td>0.508 [0.389, 0.631]</td>
+<td>0.481</td>
+<td>8.5% at 0.95 (ranges: 70.2%)</td>
+</tr>
+<tr>
+<td><code>phys-bloodflow</code>, 3 s minimum</td>
+<td>37 + 37</td>
+<td>0.625 [0.490, 0.756]</td>
+<td>–</td>
+<td>10.8% at 0.95</td>
+</tr>
+</tbody>
+</table>
+<p>Blood-flow constraints at 3 s: coherence AUC 0.455, heart-rate spread 0.608, pulse SNR 0.585. All
+of their intervals include 0.5.</p>
+<h3 id="reproduce">Reproduce<a class="headerlink" href="#reproduce" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>LibriSpeech/dev-clean<span class="w"> </span>--kind<span class="w"> </span>audio<span class="w"> </span>--label<span class="w"> </span>real<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span>--source<span class="w"> </span>librispeech-dev-clean<span class="w"> </span>--detectors<span class="w"> </span>phys-voice<span class="w"> </span>phys-room<span class="w"> </span>--max-files<span class="w"> </span><span class="m">1200</span><span class="w"> </span>--seed<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span>--out<span class="w"> </span>results/physics/librispeech/dev_clean.jsonl
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>fit-reference<span class="w"> </span>--detectors<span class="w"> </span>phys-voice<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span>--measurements<span class="w"> </span>results/physics/asvspoof/fit_*.jsonl<span class="w"> </span>results/physics/librispeech/dev_clean.jsonl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span>--out<span class="w"> </span>forensix/physics/reference.json
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>results/physics/asvspoof/eval_*.jsonl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span>--out<span class="w"> </span>results/physics/asvspoof_eval_reference.json
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1"># in-domain variant: --measurements results/physics/asvspoof/fit_*.jsonl only</span>
+</code></pre></div>
+<h1 id="range-scoring-previous-evaluation">Range scoring (previous evaluation)<a class="headerlink" href="#range-scoring-previous-evaluation" title="Permanent link">&para;</a></h1>
+<p>The sections below are the evaluation of range scoring, before reference scoring existed.</p>
+<h2 id="data_1">Data<a class="headerlink" href="#data_1" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -2415,8 +2621,8 @@
 <li>This was fitted on only 106 clips.</li>
 </ol>
 <p>The gate did its job: priors fitted on one corpus encode that corpus's recording conditions. The package therefore keeps the provisional priors. The fitted table stays in <code>results/</code> for anyone scoring ASVspoof-like audio:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"phys-voice"</span><span class="p">)</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">det</span><span class="o">.</span><span class="n">load_priors</span><span class="p">(</span><span class="s2">"results/physics/learned_priors_asvspoof.json"</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"phys-voice"</span><span class="p">)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">det</span><span class="o">.</span><span class="n">load_priors</span><span class="p">(</span><span class="s2">"results/physics/learned_priors_asvspoof.json"</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="experiment-camera-consistency-on-sdfvd">Experiment: camera consistency on SDFVD<a class="headerlink" href="#experiment-camera-consistency-on-sdfvd" title="Permanent link">&para;</a></h2>
 <p><strong>Idea.</strong> A face swap pastes a generated face into a real frame. The face region and its surroundings should then carry different sensor noise.</p>
@@ -2486,34 +2692,34 @@
 <li>Every physics result here is close to chance, apart from <code>phys-voice</code> with in-domain priors. Use the physics detectors as interpretable side evidence, not as a primary detector.</li>
 <li>No priors were fitted for video, because no separate labelled real video was available.</li>
 </ul>
-<h2 id="reproduce">Reproduce<a class="headerlink" href="#reproduce" title="Permanent link">&para;</a></h2>
+<h2 id="reproduce_1">Reproduce<a class="headerlink" href="#reproduce_1" title="Permanent link">&para;</a></h2>
 <p>These commands use the files in this repo. The data downloads are described in <a href="../benchmark-video-image/">benchmark.md</a>; ASVspoof 2019 LA is <code>LA.zip</code> from the Edinburgh DataShare (sha256 <code>208a7e4e…5e4ec</code>).</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">FORENSIX_CACHE</span><span class="o">=</span>/content/drive/MyDrive/forensix_cache
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># SDFVD</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">for</span><span class="w"> </span>lab<span class="w"> </span><span class="k">in</span><span class="w"> </span>real<span class="w"> </span>fake<span class="p">;</span><span class="w"> </span><span class="k">do</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/content/sdfvd/SDFVD/videos_<span class="nv">$lab</span><span class="w"> </span>--kind<span class="w"> </span>video<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">      </span>--label<span class="w"> </span><span class="nv">$lab</span><span class="w"> </span>--source<span class="w"> </span>sdfvd<span class="w"> </span>--out<span class="w"> </span>results/physics/sdfvd_<span class="nv">$lab</span>.jsonl
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="k">done</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>results/physics/sdfvd_<span class="o">{</span>real,fake<span class="o">}</span>.jsonl<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span>--out<span class="w"> </span>results/physics/sdfvd_eval_provisional.json
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># ASVspoof 2019 LA: symlink layout (fit = train+dev bona fide by speaker, eval = the README subset)</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>python<span class="w"> </span>results/physics/asvspoof/make_layout.py<span class="w"> </span>/content/asvspoof/LA<span class="w"> </span>/content/asvspoof/layout<span class="w"> </span>.<span class="w"> </span>--shards<span class="w"> </span><span class="m">6</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="k">for</span><span class="w"> </span>i<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w">   </span><span class="c1"># one process per shard; can run in parallel</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">  </span>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/content/asvspoof/layout/fit_<span class="nv">$i</span><span class="w"> </span>--kind<span class="w"> </span>audio<span class="w"> </span>--label<span class="w"> </span>real<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">      </span>--source<span class="w"> </span>asvspoof2019-la-train-dev<span class="w"> </span>--out<span class="w"> </span>results/physics/asvspoof/fit_<span class="nv">$i</span>.jsonl
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">  </span>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/content/asvspoof/layout/eval_<span class="nv">$i</span><span class="w"> </span>--kind<span class="w"> </span>audio<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">      </span>--labels-csv<span class="w"> </span>/content/asvspoof/layout/eval_labels.csv<span class="w"> </span>--source<span class="w"> </span>asvspoof2019-la-eval<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">      </span>--out<span class="w"> </span>results/physics/asvspoof/eval_<span class="nv">$i</span>.jsonl
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="k">done</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>fit<span class="w"> </span>--measurements<span class="w"> </span>results/physics/asvspoof/fit_*.jsonl<span class="w"> </span>--alpha<span class="w"> </span><span class="m">0</span>.01<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">    </span>--out<span class="w"> </span>results/physics/learned_priors_asvspoof.json
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>results/physics/asvspoof/eval_*.jsonl<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">    </span>--out<span class="w"> </span>results/physics/asvspoof_eval_provisional.json
-<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>results/physics/asvspoof/eval_*.jsonl<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">    </span>--priors<span class="w"> </span>results/physics/learned_priors_asvspoof.json<span class="w"> </span>--out<span class="w"> </span>results/physics/asvspoof_eval_learned.json
-<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="c1"># camera experiment</span>
-<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>python<span class="w"> </span>results/physics/camera_experiment/camera_features.py<span class="w"> </span>.<span class="w"> </span>/content/sdfvd/SDFVD<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="w">    </span>results/physics/camera_experiment/split.json<span class="w"> </span>out_test.json<span class="w"> </span><span class="nb">test</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">FORENSIX_CACHE</span><span class="o">=</span>/content/drive/MyDrive/forensix_cache
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># SDFVD</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">for</span><span class="w"> </span>lab<span class="w"> </span><span class="k">in</span><span class="w"> </span>real<span class="w"> </span>fake<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/content/sdfvd/SDFVD/videos_<span class="nv">$lab</span><span class="w"> </span>--kind<span class="w"> </span>video<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">      </span>--label<span class="w"> </span><span class="nv">$lab</span><span class="w"> </span>--source<span class="w"> </span>sdfvd<span class="w"> </span>--out<span class="w"> </span>results/physics/sdfvd_<span class="nv">$lab</span>.jsonl
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">done</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>results/physics/sdfvd_<span class="o">{</span>real,fake<span class="o">}</span>.jsonl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span>--out<span class="w"> </span>results/physics/sdfvd_eval_provisional.json
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># ASVspoof 2019 LA: symlink layout (fit = train+dev bona fide by speaker, eval = the README subset)</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>python<span class="w"> </span>results/physics/asvspoof/make_layout.py<span class="w"> </span>/content/asvspoof/LA<span class="w"> </span>/content/asvspoof/layout<span class="w"> </span>.<span class="w"> </span>--shards<span class="w"> </span><span class="m">6</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="k">for</span><span class="w"> </span>i<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w">   </span><span class="c1"># one process per shard; can run in parallel</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">  </span>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/content/asvspoof/layout/fit_<span class="nv">$i</span><span class="w"> </span>--kind<span class="w"> </span>audio<span class="w"> </span>--label<span class="w"> </span>real<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">      </span>--source<span class="w"> </span>asvspoof2019-la-train-dev<span class="w"> </span>--out<span class="w"> </span>results/physics/asvspoof/fit_<span class="nv">$i</span>.jsonl
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">  </span>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/content/asvspoof/layout/eval_<span class="nv">$i</span><span class="w"> </span>--kind<span class="w"> </span>audio<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">      </span>--labels-csv<span class="w"> </span>/content/asvspoof/layout/eval_labels.csv<span class="w"> </span>--source<span class="w"> </span>asvspoof2019-la-eval<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">      </span>--out<span class="w"> </span>results/physics/asvspoof/eval_<span class="nv">$i</span>.jsonl
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="k">done</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>fit<span class="w"> </span>--measurements<span class="w"> </span>results/physics/asvspoof/fit_*.jsonl<span class="w"> </span>--alpha<span class="w"> </span><span class="m">0</span>.01<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span>--out<span class="w"> </span>results/physics/learned_priors_asvspoof.json
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>results/physics/asvspoof/eval_*.jsonl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">    </span>--out<span class="w"> </span>results/physics/asvspoof_eval_provisional.json
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>results/physics/asvspoof/eval_*.jsonl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">    </span>--priors<span class="w"> </span>results/physics/learned_priors_asvspoof.json<span class="w"> </span>--out<span class="w"> </span>results/physics/asvspoof_eval_learned.json
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="c1"># camera experiment</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>python<span class="w"> </span>results/physics/camera_experiment/camera_features.py<span class="w"> </span>.<span class="w"> </span>/content/sdfvd/SDFVD<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="w">    </span>results/physics/camera_experiment/split.json<span class="w"> </span>out_test.json<span class="w"> </span><span class="nb">test</span>
 </code></pre></div>
 
 
@@ -2565,6 +2771,22 @@
             </div>
           </a>
         
+        
+          
+          <a href="../benchmark-person-anomaly/" class="md-footer__link md-footer__link--next" aria-label="Next: Per-person detectors">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Per-person detectors
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
         
       </nav>
     

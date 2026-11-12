@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="End-to-end deepfake detection and media forensics: 38 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
+        <meta name="description" content="End-to-end deepfake detection and media forensics: 39 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
       
       
       
@@ -676,6 +676,8 @@
       
         
       
+        
+      
     
     
     
@@ -823,6 +825,34 @@
     
   
     Identity and person models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Studio: a detector for one person in your browser
   
 
     
@@ -1759,6 +1789,8 @@
       
         
       
+        
+      
     
     
     
@@ -1903,6 +1935,34 @@
     
   
     Physics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/benchmark-person-anomaly/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-person detectors
   
 
     
@@ -2218,7 +2278,7 @@ held-out sets by person, so held-out results measure unseen people.</p>
 <li><strong>Checkpoint:</strong> stores the feature normalization and the real residual distributions, per input
   condition (audio+video, audio only, video only).</li>
 </ul>
-<p>Fit the physics priors too (<a href="../physics/#calibrate-before-you-rely-on-it">Physics guide</a>).</p>
+<p>Fit the physics priors too (<a href="../physics/#fit-a-reference-on-your-own-media-recommended">Physics guide</a>).</p>
 <h2 id="using-your-checkpoints">Using your checkpoints<a class="headerlink" href="#using-your-checkpoints" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"avcons"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"avcons.safetensors"</span><span class="p">)</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"avid"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"avid.safetensors"</span><span class="p">)</span>

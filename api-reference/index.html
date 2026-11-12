@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="End-to-end deepfake detection and media forensics: 38 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
+        <meta name="description" content="End-to-end deepfake detection and media forensics: 39 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
       
       
       
@@ -674,6 +674,8 @@
       
         
       
+        
+      
     
     
     
@@ -818,6 +820,34 @@
     
   
     Identity and person models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Studio: a detector for one person in your browser
   
 
     
@@ -1695,6 +1725,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#per-person-anomaly-models-forensixidentityanomaly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-person anomaly models: forensix.identity.anomaly
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#person-specialized-models-forensixspecialized" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1886,6 +1927,8 @@
       
         
       
+        
+      
     
     
     
@@ -2046,6 +2089,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/benchmark-person-anomaly/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-person detectors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2186,6 +2257,17 @@
     <span class="md-ellipsis">
       
         Physics detectors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#per-person-anomaly-models-forensixidentityanomaly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-person anomaly models: forensix.identity.anomaly
       
     </span>
   </a>
@@ -2543,6 +2625,13 @@
 <td><code>constraints</code>, <code>localization</code>, <code>report</code>, <code>detectors</code>, <code>modalities</code>, <code>status</code></td>
 </tr>
 <tr>
+<td><code>person-anomaly</code></td>
+<td>anomaly (1 − similarity to the person)</td>
+<td>0.637 (faces), 0.75 (voice)</td>
+<td>one per frame or speech segment</td>
+<td><code>similarity</code>, <code>item_similarity</code>, <code>person_percentile</code>, <code>frame_time_s</code> / <code>segment_start_s</code></td>
+</tr>
+<tr>
 <td><code>person-detector</code></td>
 <td>probability</td>
 <td>from training (default 0.5)</td>
@@ -2662,6 +2751,41 @@ the media has nothing to compare.</p>
 <tr>
 <td><code>render_figures(result, out_dir)</code></td>
 <td>Draws the residual timeline; needs matplotlib. Returns the written paths.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="per-person-anomaly-models-forensixidentityanomaly">Per-person anomaly models: <code>forensix.identity.anomaly</code><a class="headerlink" href="#per-person-anomaly-models-forensixidentityanomaly" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Function / class</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fit_person(person, real_media, kind="auto", device="cpu", folds=3, verbose=False)</code></td>
+<td>Enrolls a person from their real media (<code>kind</code> is <code>"face"</code>, <code>"voice"</code> or <code>"auto"</code>) and returns a <code>PersonAnomaly</code>. No fakes and no training.</td>
+</tr>
+<tr>
+<td><code>PersonAnomaly.from_embeddings(person, kind, embeddings, groups=None, folds=3)</code></td>
+<td>The same from precomputed unit embeddings; <code>groups</code> (e.g. the source file of each row) keeps a file in one calibration fold.</td>
+</tr>
+<tr>
+<td><code>PersonAnomaly.predict(media)</code></td>
+<td><code>Prediction</code> with <code>fake_prob = 1 − similarity</code> and the population threshold (SFace 0.363, ECAPA 0.25).</td>
+</tr>
+<tr>
+<td><code>PersonAnomaly.score_embeddings(E)</code></td>
+<td><code>similarity</code> (median), <code>item_similarity</code>, <code>person_percentile</code>.</td>
+</tr>
+<tr>
+<td><code>PersonAnomaly.save(path)</code> / <code>PersonAnomaly.load(path)</code></td>
+<td>JSON (<code>forensix-person-anomaly/1</code>), shared with the <a href="../guides/studio/">browser studio</a>. <code>forensix.load("person-anomaly", weights_path=path)</code> also works.</td>
+</tr>
+<tr>
+<td><code>export_ecapa_onnx(path)</code></td>
+<td>Exports the voice encoder for the studio.</td>
 </tr>
 </tbody>
 </table>

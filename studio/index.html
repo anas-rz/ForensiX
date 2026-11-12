@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ForensiX Studio</title>
+  <meta name="description" content="Train a small deepfake detector for one person on your own device, from their real photos, videos or voice recordings, then test it on real and fake media. Nothing is uploaded.">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="studio.css">
+  <script>
+    try { const t = localStorage.getItem("fx.theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+</head>
+<body>
+  <header class="studio-top">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">F</span>ForensiX Studio</div>
+    <span class="badge" id="privacy"><span class="dot" style="background:var(--good)"></span>Runs on this device · nothing is uploaded</span>
+    <div class="spacer"></div>
+    <a class="small" href="../" id="console-link">Web manager</a>
+    <a class="small" href="https://anas-rz.github.io/ForensiX/guides/studio/">Guide</a>
+  </header>
+
+  <main class="studio">
+    <section class="intro">
+      <h1>A deepfake detector for one person, built in your browser</h1>
+      <p class="sub">Give it real photos, videos or voice recordings of one person. It learns their face or voice,
+        then flags media that doesn't match them, without ever seeing a fake. It runs on your GPU or CPU, tests on
+        your own real and fake files, and saves a small model you can use again here or in Python.</p>
+    </section>
+
+    <!-- 1 -->
+    <section class="card step" id="step-person">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h2>Who, and what to learn</h2>
+        <div class="form-grid">
+          <label class="field">Person
+            <input type="text" id="person" placeholder="e.g. alice" autocomplete="off">
+          </label>
+          <div class="field"><span>Learn their</span>
+            <div class="segmented" role="group" aria-label="Modality" id="kind">
+              <button type="button" data-v="face" aria-pressed="true">Face · photos and video</button>
+              <button type="button" data-v="voice" aria-pressed="false">Voice · audio and video sound</button>
+            </div>
+          </div>
+        </div>
+        <p class="small muted" id="kind-note"></p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="card step" id="step-real">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h2>Their real media</h2>
+        <label class="drop" id="drop-real" tabindex="0">
+          <input type="file" id="files-real" multiple hidden>
+          <strong>Drop real files of the person</strong> or click to choose
+          <div class="small muted" id="real-hint"></div>
+        </label>
+        <div class="row small">
+          <button type="button" class="small" id="folder-real">Choose a folder…</button>
+          <button type="button" class="small" id="clear-real" disabled>Clear</button>
+          <span class="muted" id="real-status"></span>
+        </div>
+        <div class="thumbs" id="real-thumbs" aria-label="Samples the model will learn from"></div>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="card step" id="step-train">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h2>Train</h2>
+        <div class="form-grid">
+          <div class="field"><span>Run on</span>
+            <div class="segmented" role="group" aria-label="Device" id="device">
+              <button type="button" data-v="auto" aria-pressed="true">Auto</button>
+              <button type="button" data-v="webgpu" aria-pressed="false">GPU (WebGPU)</button>
+              <button type="button" data-v="wasm" aria-pressed="false">CPU (WebAssembly)</button>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button type="button" class="primary" id="train" disabled>Train model</button>
+          <button type="button" id="save" disabled>Save model</button>
+          <label class="btn small-btn" for="load-file">Load a model…</label>
+          <input type="file" id="load-file" accept=".json,application/json" hidden>
+          <span class="small muted" id="train-status"></span>
+        </div>
+        <div class="tiles" id="train-tiles" hidden></div>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="card step" id="step-test">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h2>Test on real and fake media</h2>
+        <label class="drop" id="drop-test" tabindex="0">
+          <input type="file" id="files-test" multiple hidden>
+          <strong>Drop files to check</strong> or click to choose
+          <div class="small muted">Files in folders named <code>real</code> or <code>fake</code> (or with those words in their names) are scored as labelled, so you get accuracy figures.</div>
+        </label>
+        <div class="row small">
+          <button type="button" class="small" id="folder-test">Choose a folder…</button>
+          <button type="button" class="small" id="clear-test" disabled>Clear</button>
+          <span class="muted" id="test-status"></span>
+        </div>
+        <div id="test-results" hidden>
+          <div class="row threshold-row">
+            <label class="field grow-field">Flag when similarity to the person is below <strong id="thr-val"></strong>
+              <input type="range" id="thr" min="-0.2" max="1" step="0.001">
+            </label>
+            <button type="button" class="small" id="thr-reset">Reset to the default</button>
+            <button type="button" class="small" id="export-csv">Download CSV</button>
+          </div>
+          <div class="tiles" id="test-tiles"></div>
+          <div class="chart" id="hist" aria-label="Score distribution"></div>
+          <div class="table-wrap"><table id="test-table">
+            <thead><tr><th>File</th><th>Label</th><th class="num">Similarity</th><th>Verdict</th><th>Notes</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="how small muted">
+      <h3>How it works</h3>
+      <p><strong>Faces:</strong> each frame's face is found (YuNet), aligned and described by a face-recognition
+        network (SFace). <strong>Voice:</strong> each few seconds of speech is described by a speaker-recognition
+        network (ECAPA-TDNN). Training learns the person's profile, the average of their descriptions, and how much
+        their own media varies. A file's similarity is its median match to that profile; below the network's published
+        threshold (0.363 for faces, 0.25 for voices) it's flagged.</p>
+      <p>Both networks are pretrained and run here unchanged: in our tests, training a small network on one person's
+        media did worse than this. Expect it to catch face swaps and voice clones that don't fully reach the person's
+        identity, and to miss ones that do; pair it with a deepfake detector. Real media recorded very differently
+        (another camera, room or microphone) can also score lower, so train on varied real media and check the
+        false-alarm rate on real files it hasn't seen.</p>
+    </section>
+  </main>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <script type="module" src="studio.js"></script>
+</body>
+</html>

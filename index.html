@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="End-to-end deepfake detection and media forensics: 38 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
+        <meta name="description" content="End-to-end deepfake detection and media forensics: 39 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
       
       
       
@@ -774,6 +774,8 @@
       
         
       
+        
+      
     
     
     
@@ -918,6 +920,34 @@
     
   
     Identity and person models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="guides/studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Studio: a detector for one person in your browser
   
 
     
@@ -1719,6 +1749,8 @@
       
         
       
+        
+      
     
     
     
@@ -1876,6 +1908,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/benchmark-person-anomaly/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-person detectors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2001,7 +2061,7 @@
 <p>ForensiX is an end-to-end media forensics platform: it takes you from the first suspicious file
 to a calibrated, monitored detection service on your own infrastructure or any major cloud.</p>
 <ul>
-<li><strong>Detect</strong> manipulated and AI-generated images, video and voices with 38 commercially licensed
+<li><strong>Detect</strong> manipulated and AI-generated images, video and voices with 39 commercially licensed
   detectors, including face swaps, lip-sync mismatches, cloned voices and physical
   inconsistencies. They all sit behind one API: <code>forensix.load(name).predict(media)</code> in Python, or
   <code>POST /v1/detect</code> over HTTP.</li>
@@ -2146,6 +2206,10 @@ preprocessing details and parity checks against upstream code.</p>
 <td>Enrolling people, verifying media against them, galleries, tiny per-person models</td>
 </tr>
 <tr>
+<td><a href="guides/studio/">Studio</a></td>
+<td>Build a detector for one person in your browser from their real media, and test it on real and fake files; nothing is uploaded</td>
+</tr>
+<tr>
 <td><a href="guides/physics/">Physics forensics</a></td>
 <td>The physics detectors, forensic reports, learned priors</td>
 </tr>
@@ -2216,8 +2280,13 @@ preprocessing details and parity checks against upstream code.</p>
 </tr>
 <tr>
 <td>identity</td>
-<td><code>id-face</code></td>
-<td>pretrained (SFace)</td>
+<td><code>person-anomaly</code></td>
+<td>per-person detector from real media only; enroll in Python or the <a href="guides/studio/">browser studio</a></td>
+</tr>
+<tr>
+<td>identity</td>
+<td><code>id-face</code>, <code>id-voice</code></td>
+<td>pretrained (SFace, ECAPA)</td>
 </tr>
 <tr>
 <td>identity</td>
@@ -2227,7 +2296,7 @@ preprocessing details and parity checks against upstream code.</p>
 <tr>
 <td>physics</td>
 <td><code>phys-bloodflow</code>, <code>phys-motion</code>, <code>phys-lighting</code>, <code>phys-voice</code>, <code>phys-room</code></td>
-<td>algorithmic; ranges provisional until learned priors are fitted</td>
+<td>algorithmic; <code>phys-voice</code> ships a reference fitted on real speech (calibrated scores), the others use provisional ranges until you <a href="guides/physics/#fit-a-reference-on-your-own-media-recommended">fit a reference</a></td>
 </tr>
 <tr>
 <td>physics</td>
@@ -2237,7 +2306,7 @@ preprocessing details and parity checks against upstream code.</p>
 <tr>
 <td>specialized</td>
 <td><code>person-detector</code></td>
-<td>tiny per-person model you train in seconds</td>
+<td>tiny per-person model you train in seconds; superseded by <code>person-anomaly</code> (<a href="guides/identity/#person-detector">why</a>)</td>
 </tr>
 <tr>
 <td>provenance</td>

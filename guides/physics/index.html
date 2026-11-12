@@ -6,14 +6,14 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="End-to-end deepfake detection and media forensics: 38 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
+        <meta name="description" content="End-to-end deepfake detection and media forensics: 39 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
       
       
       
         <link rel="canonical" href="https://anas-rz.github.io/ForensiX/guides/physics/">
       
       
-        <link rel="prev" href="../identity/">
+        <link rel="prev" href="../studio/">
       
       
         <link rel="next" href="../finetuning/">
@@ -676,6 +676,8 @@
       
         
       
+        
+      
     
     
     
@@ -840,6 +842,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Studio: a detector for one person in your browser
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -936,10 +966,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#calibrate-before-you-rely-on-it" class="md-nav__link">
+  <a href="#how-the-score-is-computed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Calibrate before you rely on it
+        How the score is computed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fit-a-reference-on-your-own-media-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fit a reference on your own media (recommended)
       
     </span>
   </a>
@@ -1726,6 +1767,8 @@
       
         
       
+        
+      
     
     
     
@@ -1883,6 +1926,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/benchmark-person-anomaly/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-person detectors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1958,10 +2029,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#calibrate-before-you-rely-on-it" class="md-nav__link">
+  <a href="#how-the-score-is-computed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Calibrate before you rely on it
+        How the score is computed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fit-a-reference-on-your-own-media-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fit a reference on your own media (recommended)
       
     </span>
   </a>
@@ -2074,7 +2156,10 @@ moves) are listed in <code>details</code> but left out of the score.</p>
 - <code>measured</code>: the value in this clip;
 - <code>expected_range_start</code> and <code>worse</code>: where real media stops, and which direction is suspicious;
 - <code>violation</code>: 0 inside the real range, rising to 1 at the end of the range;
-- <code>prior</code>: <code>provisional</code> (hand-set from the literature) or <code>learned</code> (fitted on real media).</p>
+- <code>p_real</code> (reference scoring): the share of real media at least this extreme;
+- <code>prior</code>: <code>reference</code> (a real-media distribution), <code>learned</code> (a range fitted on real media) or
+  <code>provisional</code> (hand-set from the literature).</p>
+<p><code>details["scoring"]</code> says how the score was computed (next section).</p>
 <p><code>details["timeline"]</code> gives per-frame or per-stretch values for localizing the problem in time.</p>
 <h2 id="the-physdf-report">The physdf report<a class="headerlink" href="#the-physdf-report" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"physdf"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"physdf_graph.safetensors"</span><span class="p">)</span>   <span class="c1"># weights_path optional</span>
@@ -2094,30 +2179,76 @@ is weak, and says "low confidence" when only provisional ranges are violated.</p
 <p>Without a trained graph prior, <code>physdf</code> runs the five detectors and reports on them. With the
 prior, it adds cross-system residuals: the mouth predicted from the speech, the speech from the
 mouth, each skin region's pulse from the others, and so on (<a href="../training/#physdf">Training</a>).</p>
-<h2 id="calibrate-before-you-rely-on-it">Calibrate before you rely on it<a class="headerlink" href="#calibrate-before-you-rely-on-it" title="Permanent link">&para;</a></h2>
-<p>The provisional ranges are hand-set, and the video ranges haven't been checked against a large
-set of real videos. In testing, provisional blood-flow and lighting ranges fired on real
-footage. Until you fit learned priors on real media like yours, treat physics output as leads
-for a human reviewer, not as a detector score.</p>
-<p>Learned priors set each constraint's range from real media only, so a real clip trips any one
-constraint of a detector with probability about α (default 1%):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># 1. measure every constraint on real media like yours (resumable JSONL)</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/data/real_videos<span class="w"> </span>--kind<span class="w"> </span>video<span class="w"> </span>--with-audio<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span>--label<span class="w"> </span>real<span class="w"> </span>--source<span class="w"> </span>my-real<span class="w"> </span>--out<span class="w"> </span>m/real.jsonl
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># 2. fit priors on real clips; reports held-out false-alarm rates, learned vs provisional</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>fit<span class="w"> </span>--measurements<span class="w"> </span>m/real.jsonl<span class="w"> </span>--out<span class="w"> </span>learned_priors.json
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># 3. optional: real vs fake AUC per detector and per constraint</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/data/fakes<span class="w"> </span>--kind<span class="w"> </span>video<span class="w"> </span>--with-audio<span class="w"> </span>--label<span class="w"> </span>fake<span class="w"> </span>--out<span class="w"> </span>m/fake.jsonl
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>m/real.jsonl<span class="w"> </span>m/fake.jsonl<span class="w"> </span>--priors<span class="w"> </span>learned_priors.json
+<h2 id="how-the-score-is-computed">How the score is computed<a class="headerlink" href="#how-the-score-is-computed" title="Permanent link">&para;</a></h2>
+<p><strong>Reference scoring</strong> (<code>details["scoring"] == "reference"</code>) compares each measurement with its
+distribution over <em>real</em> media:</p>
+<ol>
+<li>Each constraint becomes a tail probability <code>p_real</code>: how much real media is at least this
+   extreme, in the direction the physics says is suspicious (too clean a voice, too long without
+   a breath).</li>
+<li>Fisher's method adds the constraints up, so several weak signals count together.</li>
+<li>The result is calibrated on real media: the <strong>score is the share of real clips that are less
+   unusual</strong>. A score of 0.99 means "more unusual than 99% of real media". The detector's
+   <code>threshold</code> is 0.99, so on media like the reference, about 1% of real clips are flagged.</li>
+</ol>
+<p>No fakes are used, so a reference can't overfit one generator. It does encode the recording
+conditions of the real media behind it.</p>
+<p><strong>Range scoring</strong> (<code>"provisional"</code>) is the fallback for detectors without a reference: each
+constraint has a hand-set range, and the score is the largest violation. Most clips fall inside
+the ranges and score exactly 0, so range scores rank clips poorly and have no threshold.</p>
+<table>
+<thead>
+<tr>
+<th>Detector</th>
+<th>Packaged default</th>
+<th>Measured result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>phys-voice</code></td>
+<td><strong>Reference</strong>: real ASVspoof 2019 LA train/dev speech plus LibriSpeech dev-clean</td>
+<td>AUC 0.679 on held-out ASVspoof speakers (range scoring: 0.488), with 0.0% false alarms at 0.99</td>
+</tr>
+<tr>
+<td><code>phys-room</code></td>
+<td>Ranges</td>
+<td>A general reference wasn't reliable: room acoustics vary too much between recording setups</td>
+</tr>
+<tr>
+<td><code>phys-bloodflow</code>, <code>phys-motion</code>, <code>phys-lighting</code></td>
+<td>Ranges</td>
+<td>No real-video corpus to fit a default yet</td>
+</tr>
+</tbody>
+</table>
+<p>The <a href="../../reference/benchmark-physics/">physics benchmark</a> has the details.</p>
+<h2 id="fit-a-reference-on-your-own-media-recommended">Fit a reference on your own media (recommended)<a class="headerlink" href="#fit-a-reference-on-your-own-media-recommended" title="Permanent link">&para;</a></h2>
+<p>A reference fitted on real media <em>like yours</em> does better than any general default. Fitted on
+ASVspoof's own real training speech, <code>phys-voice</code> reaches AUC 0.741 on that corpus, against 0.679
+for the general default. It's also the only way to get calibrated video physics. You need real
+media only, ideally a few hundred clips from many speakers or sources:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># 1. measure every constraint on real media like yours (resumable JSONL);</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1">#    the first folder under --media is the group (speaker, channel), the unit of every split</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/data/real<span class="w"> </span>--kind<span class="w"> </span>video<span class="w"> </span>--with-audio<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span>--label<span class="w"> </span>real<span class="w"> </span>--source<span class="w"> </span>my-real<span class="w"> </span>--out<span class="w"> </span>m/real.jsonl
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># 2. fit the reference; it reports false alarms on held-out groups at 0.99 and 0.95</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>fit-reference<span class="w"> </span>--measurements<span class="w"> </span>m/real.jsonl<span class="w"> </span>--out<span class="w"> </span>reference.json
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># 3. optional, if you have labelled fakes: real vs fake AUC per detector and per constraint</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>measure<span class="w"> </span>--media<span class="w"> </span>/data/fakes<span class="w"> </span>--kind<span class="w"> </span>video<span class="w"> </span>--with-audio<span class="w"> </span>--label<span class="w"> </span>fake<span class="w"> </span>--out<span class="w"> </span>m/fake.jsonl
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>m/real.jsonl<span class="w"> </span>m/fake.jsonl<span class="w"> </span>--priors<span class="w"> </span>reference.json
 </code></pre></div>
-<p>Use them:</p>
+<p>Use it:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"phys-bloodflow"</span><span class="p">)</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">det</span><span class="o">.</span><span class="n">load_priors</span><span class="p">(</span><span class="s2">"learned_priors.json"</span><span class="p">)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">det</span><span class="o">.</span><span class="n">load_priors</span><span class="p">(</span><span class="s2">"reference.json"</span><span class="p">)</span>
 </code></pre></div>
-<p>To make them the default for every detector, ship the file as
-<code>forensix/physics/learned_priors.json</code> (the package already declares it as package data). A
-constraint with fewer than 100 applicable real clips keeps its provisional range;
-<code>details["constraints"][k]["prior"]</code> tells you which applied.</p>
+<p>To make it the default everywhere, replace <code>forensix/physics/reference.json</code>, which ships as
+package data.</p>
+<p>A constraint needs at least 100 real measurements to get a distribution; the rest keep their
+provisional range for the evidence but don't count towards the score. A detector needs 50 real
+clips across at least 5 groups to be calibrated.</p>
+<p>Older <strong>learned priors</strong> (<code>fit</code>, ranges fitted on real media) still work with <code>load_priors</code>, and
+an explicit priors table forces range scoring.</p>
 <p>Suggested real data with commercially usable licenses: LibriSpeech (CC BY 4.0) for audio and
 VoxCeleb2 test (CC BY 4.0; video copyright stays with the owners) for video with sound.</p>
 <h2 id="limits">Limits<a class="headerlink" href="#limits" title="Permanent link">&para;</a></h2>
@@ -2128,6 +2259,12 @@ VoxCeleb2 test (CC BY 4.0; video copyright stays with the owners) for video with
   RT60 from a few decays is noisy.</li>
 <li><strong>Pitch continuity:</strong> at this tracker quality, it can't separate fast genuine pitch moves from
   an octave-jumping synthetic voice.</li>
+<li><strong>Face swaps keep physics:</strong> a swap keeps the source video's head motion and lighting, so
+  <code>phys-motion</code> and <code>phys-lighting</code> stay near chance on face swaps even with a reference. Blood
+  flow needs at least 6 s of a steady face: on 2–6 s compressed clips, the pulse isn't measurable
+  even in real faces.</li>
+<li><strong>Recording conditions:</strong> a reference describes the real media it was fitted on. Phone calls,
+  noisy rooms or heavy compression need their own reference.</li>
 <li><strong>No attribution:</strong> the priors know real media only, so the system says <em>that</em> physics was
   violated, not <em>which</em> generator did it.</li>
 </ul>
@@ -2166,7 +2303,7 @@ VoxCeleb2 test (CC BY 4.0; video copyright stays with the owners) for video with
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../identity/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Identity and person models">
+          <a href="../studio/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Studio: a detector for one person in your browser">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2176,7 +2313,7 @@ VoxCeleb2 test (CC BY 4.0; video copyright stays with the owners) for video with
                 Previous
               </span>
               <div class="md-ellipsis">
-                Identity and person models
+                Studio: a detector for one person in your browser
               </div>
             </div>
           </a>

@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="End-to-end deepfake detection and media forensics: 38 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
+        <meta name="description" content="End-to-end deepfake detection and media forensics: 39 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
       
       
       
@@ -674,6 +674,8 @@
       
         
       
+        
+      
     
     
     
@@ -818,6 +820,34 @@
     
   
     Identity and person models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Studio: a detector for one person in your browser
   
 
     
@@ -1770,6 +1800,8 @@
       
         
       
+        
+      
     
     
     
@@ -1917,6 +1949,34 @@
     
   
     Physics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmark-person-anomaly/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-person detectors
   
 
     
@@ -2457,14 +2517,15 @@
 </tbody>
 </table>
 <ul>
-<li>Provisional (hand-set) priors; physics detectors aren't calibrated for video yet.</li>
+<li>Provisional (hand-set) ranges: no packaged video reference yet, since fitting one needs real video separate from this evaluation set.</li>
+<li>Cross-validated reference scoring on SDFVD itself fixes the false alarms but stays near chance: face swaps keep the source video's motion and lighting (physics_benchmark.md).</li>
 </ul>
 <p>Reproduce:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>results/physics/sdfvd_real.jsonl<span class="w"> </span>results/physics/sdfvd_fake.jsonl
 </code></pre></div>
 <h2 id="asvspoof-2019-la-physics-detectors">ASVspoof 2019 LA, physics detectors<a class="headerlink" href="#asvspoof-2019-la-physics-detectors" title="Permanent link">&para;</a></h2>
-<p>Spoofed speech, voice and room physics (learned priors). License: ODC-By 1.0. <a href="https://datashare.ed.ac.uk/handle/10283/3336">Dataset</a>.</p>
-<p>phys-voice and phys-room with priors learned on real ASVspoof speech.</p>
+<p>Spoofed speech, voice and room physics (reference scoring). License: ODC-By 1.0. <a href="https://datashare.ed.ac.uk/handle/10283/3336">Dataset</a>.</p>
+<p>phys-voice with the packaged reference: real-media distributions fitted on real ASVspoof 2019 LA train/dev speech plus LibriSpeech dev-clean (no fakes), combined with Fisher's method and calibrated out of fold. phys-room has no packaged reference and uses its provisional ranges. Evaluated on eval-set speakers never used in fitting.</p>
 <p>Hardware: not recorded · date: not recorded · commit: <code>not recorded</code></p>
 <table>
 <thead>
@@ -2483,10 +2544,10 @@
 <tr>
 <td>1</td>
 <td><code>phys-voice</code></td>
-<td>0.624 [0.582, 0.666]</td>
+<td>0.679 [0.638, 0.719]</td>
 <td>—</td>
-<td>1.4% [0.5%, 3.5%]</td>
-<td>26.0% [21.8%, 30.7%]</td>
+<td>0.0% [0.0%, 1.3%]</td>
+<td>4.1% [2.5%, 6.6%]</td>
 <td>—</td>
 <td>—</td>
 </tr>
@@ -2498,15 +2559,16 @@
 <td>15.4% [6.2%, 33.5%]</td>
 <td>12.0% [5.6%, 23.8%]</td>
 <td>—</td>
-<td>yes</td>
+<td>no</td>
 </tr>
 </tbody>
 </table>
 <ul>
-<li>phys-room applies only to clips long enough to measure the room (76 of the clips).</li>
+<li>phys-voice measures clips with at least 1.5 s of voiced speech (294 real + 369 fake of the 2,001); phys-room needs 6 s (76 clips).</li>
+<li>Fitting a reference on your own real media does better in-domain: fitted on ASVspoof train/dev speech alone, phys-voice reaches AUC 0.741 here (physics_benchmark.md).</li>
 </ul>
 <p>Reproduce:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>&lt;asvspoof<span class="w"> </span>measurements&gt;<span class="w"> </span>--priors<span class="w"> </span>results/physics/learned_priors_asvspoof.json
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span>fit-reference<span class="w"> </span>--detectors<span class="w"> </span>phys-voice<span class="w"> </span>--measurements<span class="w"> </span>results/physics/asvspoof/fit_*.jsonl<span class="w"> </span>results/physics/librispeech/dev_clean.jsonl<span class="w"> </span>--out<span class="w"> </span>forensix/physics/reference.json<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>scripts/calibrate_physics.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--measurements<span class="w"> </span>results/physics/asvspoof/eval_*.jsonl<span class="w"> </span>--out<span class="w"> </span>results/physics/asvspoof_eval_reference.json
 </code></pre></div>
 <h2 id="deepfake-eval-2024">Deepfake-Eval-2024<a class="headerlink" href="#deepfake-eval-2024" title="Permanent link">&para;</a></h2>
 <p>Real-world deepfakes collected in 2024 (video, audio, image). License: CC BY-SA 4.0 (evaluation only, gated). <a href="https://huggingface.co/datasets/nuriachandra/Deepfake-Eval-2024">Dataset</a>.</p>

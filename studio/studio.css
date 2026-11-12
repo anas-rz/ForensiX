@@ -1,0 +1,46 @@
+/* ForensiX Studio: builds on ../style.css tokens and components. */
+.studio-top {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 12px 24px;
+  border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 5;
+}
+.studio-top .brand { padding: 0; }
+.studio { max-width: 980px; margin: 0 auto; padding: 28px 24px 64px; display: flex; flex-direction: column; gap: 16px; }
+.intro h1 { font-size: 24px; }
+.intro .sub { max-width: 72ch; }
+.step { display: grid; grid-template-columns: 32px 1fr; gap: 14px; }
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); color: var(--ink-2);
+  display: grid; place-items: center; font-weight: 700; font-size: 13px;
+}
+.step.done .step-num { background: var(--accent); color: #fff; }
+.step-body { min-width: 0; }
+.step-body > .row { margin-top: 10px; }
+.thumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; max-height: 148px; overflow: auto; }
+.thumbs canvas, .thumbs .clip { width: 44px; height: 44px; border-radius: 6px; background: var(--surface-2); }
+.thumbs .clip { display: grid; place-items: center; font-size: 10px; color: var(--ink-2); width: auto; padding: 0 8px; }
+.small-btn { padding: 7px 14px; display: inline-block; }
+.threshold-row { margin: 8px 0 14px; align-items: flex-end; }
+.grow-field { flex: 1; min-width: 220px; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+#test-tiles { margin-bottom: 14px; }
+.chart { margin-bottom: 12px; }
+.verdict-fake { color: var(--critical-ink); font-weight: 650; }
+.verdict-real { color: var(--good-ink); font-weight: 650; }
+.how { max-width: 78ch; }
+.how p { margin: 6px 0; }
+.toasts { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 60; }
+.toast { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; box-shadow: var(--shadow); max-width: 360px; }
+.toast.error { border-color: var(--critical); }
+@media (max-width: 640px) {
+  .studio { padding: 20px 16px 48px; }
+  .studio-top { padding: 10px 16px; }
+  .step { grid-template-columns: 1fr; }
+  .step-num { display: none; }
+  .segmented { flex-wrap: wrap; }
+}
+.studio .drop { display: block; margin-top: 4px; }
+.studio .form-grid { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+.studio .form-grid > .field { min-width: 200px; }
+.studio .segmented button { white-space: nowrap; }
+.studio .field > span { font-size: 12.5px; color: var(--ink-2); font-weight: 500; }
+.studio div.field { display: flex; flex-direction: column; gap: 4px; }

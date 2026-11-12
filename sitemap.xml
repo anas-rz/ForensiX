@@ -2,138 +2,146 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://anas-rz.github.io/ForensiX/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/api-reference/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/aws/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/azure/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/calibration/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/cloud/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/concepts/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/deployment/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/fairness/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/gcp/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/getting-started/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/provenance/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/recipes/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/server/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/ui/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/buyers-checklist/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/choosing-detectors/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/colab/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/evaluation/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/extending/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/finetuning/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/identity/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/installation/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/interpreting-scores/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/licensing/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/peft/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/physics/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
+    </url>
+    <url>
+         <loc>https://anas-rz.github.io/ForensiX/guides/studio/</loc>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/guides/training/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/reference/models/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/reference/leaderboard/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/reference/benchmark-video-image/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/reference/benchmark-audiovisual/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/reference/benchmark-identity/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
     </url>
     <url>
          <loc>https://anas-rz.github.io/ForensiX/reference/benchmark-physics/</loc>
-         <lastmod>2026-11-11</lastmod>
+         <lastmod>2026-11-12</lastmod>
+    </url>
+    <url>
+         <loc>https://anas-rz.github.io/ForensiX/reference/benchmark-person-anomaly/</loc>
+         <lastmod>2026-11-12</lastmod>
     </url>
 </urlset>

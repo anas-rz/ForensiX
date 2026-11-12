@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="End-to-end deepfake detection and media forensics: 38 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
+        <meta name="description" content="End-to-end deepfake detection and media forensics: 39 commercially licensed detectors for images, video and voice, provenance checks, fine-tuning, calibration, fairness reports and one-command deployment to AWS, Google Cloud and Azure.">
       
       
       
@@ -16,7 +16,7 @@
         <link rel="prev" href="../evaluation/">
       
       
-        <link rel="next" href="../physics/">
+        <link rel="next" href="../studio/">
       
       
         
@@ -676,6 +676,8 @@
       
         
       
+        
+      
     
     
     
@@ -908,6 +910,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#person-anomaly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        person-anomaly
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#person-detector" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -933,6 +946,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Studio: a detector for one person in your browser
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1726,6 +1767,8 @@
       
         
       
+        
+      
     
     
     
@@ -1883,6 +1926,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/benchmark-person-anomaly/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-person detectors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1958,6 +2029,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#person-anomaly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        person-anomaly
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#person-detector" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2009,7 +2091,7 @@
 to show, and compare it with reference media of that person. This fits person-of-interest
 protection: executives, public figures, or customers who enrolled for verification. It needs
 nothing about how a fake was made.</p>
-<p>ForensiX has three tools for this:</p>
+<p>ForensiX has these tools for it:</p>
 <table>
 <thead>
 <tr>
@@ -2021,10 +2103,22 @@ nothing about how a fake was made.</p>
 </thead>
 <tbody>
 <tr>
+<td><code>person-anomaly</code></td>
+<td>Is this media consistent with this one person's real face or voice?</td>
+<td>Their real photos, videos or recordings</td>
+<td>No: enrolling takes seconds, in Python or <a href="../studio/">in the browser</a></td>
+</tr>
+<tr>
 <td><code>id-face</code></td>
 <td>Does the face look like the person?</td>
 <td>Photos and/or videos</td>
 <td>No (SFace weights)</td>
+</tr>
+<tr>
+<td><code>id-voice</code></td>
+<td>Is the voice the person's?</td>
+<td>Recordings, or videos' sound</td>
+<td>No (ECAPA weights)</td>
 </tr>
 <tr>
 <td><code>id-motion</code></td>
@@ -2036,16 +2130,20 @@ nothing about how a fake was made.</p>
 <td><code>person-detector</code></td>
 <td>Is this real media of this one person?</td>
 <td>Their real media (any modality)</td>
-<td>Yes, per person, seconds on CPU</td>
+<td>Yes, per person, seconds on CPU. Superseded by <code>person-anomaly</code>, see below</td>
 </tr>
 </tbody>
 </table>
+<p><code>person-anomaly</code> is the one to start with when all you have is real media of the person: it's what
+measured best when trained on real media only and tested on fakes
+(<a href="../../reference/benchmark-person-anomaly/">benchmark</a>), and the <a href="../studio/">browser studio</a> builds one
+without installing anything.</p>
 <h2 id="what-each-one-catches">What each one catches<a class="headerlink" href="#what-each-one-catches" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Attack</th>
-<th><code>id-face</code></th>
+<th><code>person-anomaly</code>, <code>id-face</code>, <code>id-voice</code></th>
 <th><code>id-motion</code></th>
 <th><code>person-detector</code></th>
 </tr>
@@ -2058,9 +2156,9 @@ nothing about how a fake was made.</p>
 <td>Yes</td>
 </tr>
 <tr>
-<td>Poor face swap of X</td>
+<td>Poor face swap or voice clone of X</td>
 <td>Often</td>
-<td>Yes</td>
+<td>Yes (face)</td>
 <td>Often</td>
 </tr>
 <tr>
@@ -2070,13 +2168,19 @@ nothing about how a fake was made.</p>
 <td>Depends on the training data</td>
 </tr>
 <tr>
+<td>Good voice clone of X</td>
+<td><strong>No</strong>: built to sound like X</td>
+<td>n/a</td>
+<td>Rarely</td>
+</tr>
+<tr>
 <td>Reenactment of X driven by someone else</td>
 <td>No</td>
 <td>Yes</td>
 <td>Depends</td>
 </tr>
 <tr>
-<td>Real X in unusual conditions (lighting, age)</td>
+<td>Real X in unusual conditions (lighting, age, microphone)</td>
 <td>May false-alarm</td>
 <td>May false-alarm</td>
 <td>May false-alarm</td>
@@ -2136,15 +2240,87 @@ videos of the person.</p>
 <li><strong>Training:</strong> on VoxCeleb2 dev on Colab (<a href="../training/#id-motion">Training</a>). The decision
   threshold is the equal-error point measured on held-out people.</li>
 </ul>
+<h2 id="person-anomaly"><code>person-anomaly</code><a class="headerlink" href="#person-anomaly" title="Permanent link">&para;</a></h2>
+<p>A per-person detector built from the person's real media only. The person is described by a frozen,
+pretrained identity encoder; enrolling stores their mean embedding and how much their own media
+varies. Nothing is trained, so it takes seconds on a CPU and needs no fakes.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">forensix.identity.anomaly</span><span class="w"> </span><span class="kn">import</span> <span class="n">fit_person</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">alice</span> <span class="o">=</span> <span class="n">fit_person</span><span class="p">(</span><span class="s2">"alice"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"alice_1.mp4"</span><span class="p">,</span> <span class="s2">"alice_2.jpg"</span><span class="p">,</span> <span class="s2">"alice_3.mp4"</span><span class="p">])</span>   <span class="c1"># kind="auto": face for images/videos</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">alice</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"alice.face.json"</span><span class="p">)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">voice</span> <span class="o">=</span> <span class="n">fit_person</span><span class="p">(</span><span class="s2">"alice"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"call1.wav"</span><span class="p">,</span> <span class="s2">"podcast.mp3"</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"voice"</span><span class="p">)</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">det</span> <span class="o">=</span> <span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"person-anomaly"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"alice.face.json"</span><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">pred</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"new.mp4"</span><span class="p">)</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">pred</span><span class="o">.</span><span class="n">is_fake</span>                          <span class="c1"># similarity &lt; 0.363 (faces) or &lt; 0.25 (voices)</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"similarity"</span><span class="p">]</span>            <span class="c1"># median over frames (2 per second, up to 60) or 3 s speech segments</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"item_similarity"</span><span class="p">]</span>       <span class="c1"># per frame or segment: where it stops looking or sounding like them</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">pred</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">"person_percentile"</span><span class="p">]</span>     <span class="c1"># share of their own held-out media that was less similar</span>
+</code></pre></div>
+<p>How it works:
+- <strong>Faces:</strong> YuNet finds the face on the frame scaled to fit 640×640 (this also finds large faces
+  that detection at full resolution misses), OpenCV's 5-point alignment crops it to 112×112, and
+  SFace embeds it.
+- <strong>Voice:</strong> ECAPA-TDNN embeds the whole clip up to 6 s, or 3 s segments every 1.5 s, skipping
+  near-silent ones (as <code>id-voice</code>).
+- <strong>Decision:</strong> <code>fake_prob = 1 − similarity</code> to the person's mean embedding, flagged below the
+  encoder's published population threshold (SFace 0.363 from OpenCV Zoo; ECAPA 0.25 from
+  SpeechBrain). The person's own media is too narrow a sample to set a threshold on: calibrated
+  that way, a third of held-out real frames were flagged in the benchmark. It still says how
+  typical a clip is for them (<code>person_percentile</code>), from leave-one-file-out similarities.
+- <strong>Files:</strong> a small JSON (<code>forensix-person-anomaly/1</code>), the same format the
+  <a href="../studio/">browser studio</a> saves, so a person enrolled in either place works in the other.</p>
+<p>Measured on held-out people (<a href="../../reference/benchmark-person-anomaly/">benchmark</a>), with the default
+thresholds:</p>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>AUC</th>
+<th>Real flagged</th>
+<th>Fakes caught</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SDFVD face swaps, per video</td>
+<td>0.99</td>
+<td>2% (1 of 53)</td>
+<td>77%</td>
+</tr>
+<tr>
+<td>ASVspoof 2019 LA voice spoofs, per clip</td>
+<td>0.91</td>
+<td>0%</td>
+<td>19%</td>
+</tr>
+</tbody>
+</table>
+<p>The voice threshold is conservative. At a similarity threshold of 0.5 instead of 0.25, 1.4% of
+real clips were flagged and 45% of spoofs were caught. Choose it on your own data
+(<a href="../../calibration/">Calibration</a>).</p>
+<p>Real speech from a different recording session than the enrollment is less similar:
+- <strong>at 0.25:</strong> none of it was flagged;
+- <strong>at 0.5:</strong> 2.1% was flagged;
+- <strong>at 0.6:</strong> 15% was flagged, against 1% from the same session.</p>
+<p>Enroll from more than one session.</p>
 <h2 id="person-detector"><code>person-detector</code><a class="headerlink" href="#person-detector" title="Permanent link">&para;</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Superseded by <code>person-anomaly</code></p>
+<p>Trained on one person's real media only and tested on fakes, <code>person-detector</code> scored AUC 0.91
+on SDFVD face swaps and 0.66 on ASVspoof voice spoofs, where its default 0.5 threshold caught
+none (<a href="../../reference/benchmark-person-anomaly/">benchmark</a>). Its synthetic negatives are random
+vectors in feature space, which a classifier separates from real media without learning what
+real fakes look like. It stays for existing checkpoints.</p>
+</div>
 <p>A tiny model (~23k parameters) trained for one person, on CPU, in seconds. Without negatives,
 it synthesizes manipulated and impostor-like samples from the real ones.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">forensix.specialized</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_person_model</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">det</span> <span class="o">=</span> <span class="n">train_person_model</span><span class="p">(</span><span class="s2">"alice"</span><span class="p">,</span> <span class="n">real_media</span><span class="o">=</span><span class="n">alice_files</span><span class="p">,</span> <span class="n">negative_media</span><span class="o">=</span><span class="n">other_people_files</span><span class="p">,</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>                         <span class="n">modality</span><span class="o">=</span><span class="s2">"video"</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">det</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"alice.safetensors"</span><span class="p">)</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"person-detector"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"alice.safetensors"</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"new.mp4"</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">forensix.specialized</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_person_model</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">det</span> <span class="o">=</span> <span class="n">train_person_model</span><span class="p">(</span><span class="s2">"alice"</span><span class="p">,</span> <span class="n">real_media</span><span class="o">=</span><span class="n">alice_files</span><span class="p">,</span> <span class="n">negative_media</span><span class="o">=</span><span class="n">other_people_files</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>                         <span class="n">modality</span><span class="o">=</span><span class="s2">"video"</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">det</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"alice.safetensors"</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">forensix</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"person-detector"</span><span class="p">,</span> <span class="n">weights_path</span><span class="o">=</span><span class="s2">"alice.safetensors"</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"new.mp4"</span><span class="p">)</span>
 </code></pre></div>
 <ul>
 <li><code>modality</code> is <code>image</code>, <code>audio</code>, <code>video</code>, <code>audiovisual</code> or <code>auto</code>; one model covers one
@@ -2160,12 +2336,12 @@ it synthesizes manipulated and impostor-like samples from the real ones.</p>
 <p><code>scripts/eval_identity.py</code> enrolls each person from <code>references/&lt;person&gt;/</code>, then scores their
 real queries (should pass), their fakes (should be flagged) and other people's real queries
 claimed as them (impostors):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>DATA/references/&lt;person&gt;/*        reference photos or videos
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>DATA/queries/&lt;person&gt;/real/*      genuine media of the person
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>DATA/queries/&lt;person&gt;/fake/*      deepfakes of the person (optional)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>DATA/references/&lt;person&gt;/*        reference photos or videos
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>DATA/queries/&lt;person&gt;/real/*      genuine media of the person
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>DATA/queries/&lt;person&gt;/fake/*      deepfakes of the person (optional)
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python<span class="w"> </span>scripts/eval_identity.py<span class="w"> </span>--data<span class="w"> </span>/content/id_eval<span class="w"> </span>--models<span class="w"> </span>id-face<span class="w"> </span>id-motion<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span>--weights<span class="w"> </span>id-motion<span class="o">=</span>id_motion.safetensors<span class="w"> </span>--out<span class="w"> </span>results/identity.json
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>python<span class="w"> </span>scripts/eval_identity.py<span class="w"> </span>--data<span class="w"> </span>/content/id_eval<span class="w"> </span>--models<span class="w"> </span>id-face<span class="w"> </span>id-motion<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span>--weights<span class="w"> </span>id-motion<span class="o">=</span>id_motion.safetensors<span class="w"> </span>--out<span class="w"> </span>results/identity.json
 </code></pre></div>
 <p>There's no commercially usable deepfake benchmark with per-person references. VoxCeleb2 test
 (CC BY 4.0) alone already measures the impostor rate and the false-alarm rate on real media.</p>
@@ -2221,13 +2397,13 @@ claimed as them (impostors):</p>
         
         
           
-          <a href="../physics/" class="md-footer__link md-footer__link--next" aria-label="Next: Physics forensics">
+          <a href="../studio/" class="md-footer__link md-footer__link--next" aria-label="Next: Studio: a detector for one person in your browser">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Physics forensics
+                Studio: a detector for one person in your browser
               </div>
             </div>
             <div class="md-footer__button md-icon">
