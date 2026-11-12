@@ -34,7 +34,8 @@ dev = ["pytest", "httpx"]
 provenance = ["c2pa-python>=0.38", "audioseal>=0.2", "omegaconf>=2.3"]
 # HTTP server (python -m forensix.server), with the provenance checks it runs by default
 server = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "python-multipart>=0.0.9",
-          "c2pa-python>=0.38", "audioseal>=0.2", "omegaconf>=2.3"]
+          "c2pa-python>=0.38", "audioseal>=0.2", "omegaconf>=2.3",
+          "onnx>=1.16"]   # exports the browser studio's voice model on first request
 # parameter-efficient fine-tuning (python -m forensix.finetuning --mode lora); not needed to serve the result
 finetune = ["peft>=0.13"]
 # documentation site (mkdocs serve / mkdocs build)

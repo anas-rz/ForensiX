@@ -258,6 +258,12 @@ def export_ecapa_onnx(path: str | PathLike) -> Path:
     The studio computes the filterbank itself; the network and weights are the ones id-voice uses."""
     import torch
 
+    try:
+        import onnx  # noqa: F401  (torch.onnx.export needs it)
+    except ImportError:
+        raise ImportError("Exporting the studio's voice model needs the onnx package: pip install onnx "
+                          "(included in forensix[server])") from None
+
     from forensix.audiovisual.avid import ECAPA_WEIGHTS
     from forensix.audiovisual.avid.ecapa import SpeakerEncoder
     from forensix.hub import fetch, torch_load
